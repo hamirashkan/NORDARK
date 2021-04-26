@@ -117,15 +117,18 @@ public class points : MonoBehaviour
     void Start()
     {
         GraphSet1("RoadGraph1");
-        foreach(Node node in graph.Nodes)
-        {
-            Color AccessColor = GameObject.Find(node.MostAccessPOI.name).GetComponent<Renderer>().material.color;
-            float AccessDist = node.LeastCost;
-            GameObject.Find(node.name).GetComponent<Renderer>().material.SetColor("_Color", AccessColor);
-            node.objTransform.GetComponent<Lines>().nColor = AccessColor;
-            node.objTransform.GetComponent<Lines>().dist = AccessDist;
-            Debug.Log("Res: " + node.name + node.MostAccessPOI);
-        }
+        //foreach(Node node in graph.Nodes)
+        //{
+        //    if (node.MostAccessPOI != null)
+        //    {
+        //        Color AccessColor = GameObject.Find(node.MostAccessPOI.name).GetComponent<Renderer>().material.color;
+        //        float AccessDist = node.LeastCost;
+        //        GameObject.Find(node.name).GetComponent<Renderer>().material.SetColor("_Color", AccessColor);
+        //        node.objTransform.GetComponent<Lines>().nColor = AccessColor;
+        //        node.objTransform.GetComponent<Lines>().dist = AccessDist;
+        //        Debug.Log("Res: " + node.name + node.MostAccessPOI);
+        //    }
+        //}
 
     }
 

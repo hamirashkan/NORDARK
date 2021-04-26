@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using System;
 
 public class Graph : ScriptableObject
 {
@@ -10,6 +11,8 @@ public class Graph : ScriptableObject
     private List<Node> POInodes;
     private List<GameObject> lines;
     public int[,] roadcosts;
+
+    private int[] dist;
     public List<Node> Nodes
     {
         get
@@ -64,7 +67,7 @@ public class Graph : ScriptableObject
         {
             foreach (Node x in nodes.FindAll(element => element.index == nodeIndex))
             {
-                Debug.Log("Find nodes by index[" + nodeIndex.ToString() + "]: " + x.name);
+                //Debug.Log("Find nodes by index[" + nodeIndex.ToString() + "]: " + x.name);
                 return x;
             }
             return null;
@@ -74,24 +77,79 @@ public class Graph : ScriptableObject
         return null;
     }
 
-    public List<Node> CreatePOInodes(string[] name, Color[] colors)
+    public void CreatePOInodes(string[] name, Color[] colors)
     {
+        //if (name.Length > 0)
+        //{
+        //    POInodes = new List<Node>();
+        //    for (int i = 0; i < name.Length; i++)
+        //    {
+        //        Node nodeX = FindFirstNode(name[i]);
+        //        nodeX.clr = colors[i];
+        //        if (nodeX != null)
+        //            POInodes.Add(nodeX);
+        //        Debug.Log("Add " + nodeX.name + " as POI nodes");
+        //        dijkstra(roadcosts, nodeX.index);
+        //    }
+        //    return POInodes;
+        //}
+        //else
+        //    return null;
+        dist = new int[Nodes.Count]; // The output array. dist[i]
+                                     // will hold the shortest
+                                     // distance from src to i
         if (name.Length > 0)
         {
-            POInodes = new List<Node>();
+            // update color
             for (int i = 0; i < name.Length; i++)
             {
                 Node nodeX = FindFirstNode(name[i]);
                 nodeX.clr = colors[i];
-                if (nodeX != null)
-                    POInodes.Add(nodeX);
-                Debug.Log("Add " + nodeX.name + " as POI nodes");
-                dijkstra(roadcosts, nodeX.index);
             }
-            return POInodes;
+            // create two lists for index
+            List<int> POINodes_list = new List<int>();
+            List<int> restNodes_list = new List<int>();
+            for (int i = 0; i < Nodes.Count; i++)
+            {
+                Node nodeX = FindNode(i);
+                if (nodeX != null)
+                {
+                    if (Array.IndexOf(name, nodeX.name) == -1)
+                        restNodes_list.Add(nodeX.index);
+                    else
+                        POINodes_list.Add(nodeX.index);
+                }
+            }
+            // calculate the minium distances to POIs for each rest node
+            for (int i = 0; i < restNodes_list.Count; i++)
+            {
+                Node nodeX = FindNode(restNodes_list[i]);
+                if (nodeX != null)
+                {
+                    Debug.Log("Calculate " + nodeX.name + " nodes");
+                    dijkstra(roadcosts, nodeX.index);
+
+                    for (int j = 0; j < POINodes_list.Count; j++)
+                    {
+                        if (dist[POINodes_list[j]] <= nodeX.LeastCost)
+                        {
+                            nodeX.LeastCost = dist[POINodes_list[j]];
+                            nodeX.MostAccessPOI = FindNode(POINodes_list[j]);
+                            // update color as the same of the MostAccessPOI
+                            nodeX.clr = nodeX.MostAccessPOI.clr;
+                        }
+                    }
+                }
+            }
+            // Print the result
+            Debug.Log("POI     calculation result " + "from Source\n");
+            for (int i = 0; i < restNodes_list.Count; i++)
+            {
+                Node nodeX = FindNode(restNodes_list[i]);
+                if (nodeX != null)
+                    Debug.Log(nodeX.name + " \t\t " + nodeX.MostAccessPOI + " \t\t " + nodeX.LeastCost + "\n");
+            }
         }
-        else
-            return null;
     }
 
     // A utility function to find the
@@ -130,7 +188,7 @@ public class Graph : ScriptableObject
     // matrix representation
     void dijkstra(int[,] graph, int src)
     {
-        int[] dist = new int[Nodes.Count]; // The output array. dist[i]
+        dist = new int[Nodes.Count]; // The output array. dist[i]
                                  // will hold the shortest
                                  // distance from src to i
 
@@ -178,21 +236,21 @@ public class Graph : ScriptableObject
                     dist[v] = dist[u] + graph[u, v];
         }
 
-        Node Nodesrc = FindNode(src);
-        if(Nodesrc != null)
-            for (int i = 0; i < Nodes.Count; i++)
-            {
-                Node nodeX = FindNode(i);
-                if (nodeX != null)
-                {
-                    if (dist[i] <= nodeX.LeastCost)
-                    { 
-                        nodeX.LeastCost = dist[i];
-                        nodeX.MostAccessPOI = Nodesrc;
-                    }
-                }
-            }
-        // print the constructed distance array
-        printSolution(dist, Nodes.Count);
+        //Node Nodesrc = FindNode(src);
+        //if(Nodesrc != null)
+        //    for (int i = 0; i < Nodes.Count; i++)
+        //    {
+        //        Node nodeX = FindNode(i);
+        //        if (nodeX != null)
+        //        {
+        //            if (dist[i] <= nodeX.LeastCost)
+        //            { 
+        //                nodeX.LeastCost = dist[i];
+        //                nodeX.MostAccessPOI = Nodesrc;
+        //            }
+        //        }
+        //    }
+        //// print the constructed distance array
+        //printSolution(dist, Nodes.Count);
     }
 }
