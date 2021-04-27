@@ -13,7 +13,8 @@ public class Lines : MonoBehaviour
     public float dist;
     void Start()
     {
-
+        int minW = GameObject.Find("Map").GetComponent<points>().minW;
+        int maxW = GameObject.Find("Map").GetComponent<points>().maxW;
 
         if (Neighbors.Count != 0)
         {
@@ -23,6 +24,8 @@ public class Lines : MonoBehaviour
                 if(dist < Neighbors[i].LeastCost)
                     
                     {
+                        float sWidth = 1 - (dist - minW)/(maxW-minW);
+                        float eWidth = 1- (Neighbors[i].LeastCost - minW) / (maxW - minW);
                         Nclr = nColor;
                         Instantiate(line);
                         l = line.GetComponent<LineRenderer>();
@@ -31,8 +34,8 @@ public class Lines : MonoBehaviour
                         pos.Add(transform.position);
                         pos.Add(Neighbors[i].vec);
 
-                        l.startWidth = 1;
-                        l.endWidth = 0.2f;
+                        l.startWidth = sWidth;
+                        l.endWidth = eWidth;
                         l.startColor = Nclr;
                         l.endColor = Nclr;
 
@@ -42,6 +45,9 @@ public class Lines : MonoBehaviour
                 else {
                     if (!Neighbors[i].NeighborNames.Contains(gameObject.name))
                     {
+                        float sWidth = 1 - (dist - minW) / (maxW - minW);
+                        float eWidth = 1 - (Neighbors[i].LeastCost - minW) / (maxW - minW);
+
                         Nclr = nColor;
                         Instantiate(line);
                         l = line.GetComponent<LineRenderer>();
@@ -50,8 +56,8 @@ public class Lines : MonoBehaviour
                         pos.Add(transform.position);
                         pos.Add(Neighbors[i].vec);
 
-                        l.startWidth = 1;
-                        l.endWidth = 0.2f;
+                        l.startWidth = sWidth;
+                        l.endWidth = eWidth;
                         l.startColor = Nclr;
                         l.endColor = Nclr;
 

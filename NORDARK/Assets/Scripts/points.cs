@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
+using System.Linq;
 
 public class points : MonoBehaviour
 {
@@ -11,6 +13,9 @@ public class points : MonoBehaviour
     public int maxW;
     public GameObject line;
     public Graph graph;
+    public List<float> lambdaMap;
+    public List<Color> colorMap;
+
     // Start is called before the first frame update
 
     public void GraphSet1(string graphName)
@@ -43,11 +48,11 @@ public class points : MonoBehaviour
         }
         //H1,  A,  B,  C,  D, H2
         int[,] roads = new int[,] { {  0,  6,  0,  0,  0,  0},//H1
-                                    {  5,  0,  8,  0,  20,  0},//A
-                                    {  0, 10,  0, 21,  0,  0},//B
-                                    {  0,  0, 25,  0, 15, 12},//C
-                                    {  0, 0,  0, 14,  0,  0},//D
-                                    {  0,  0,  0, 11,  0,  0}};//H2
+                                    {  5,  0,  8,  0,  0,  0},//A
+                                    {  0, 5,  0, 6,  0,  0},//B
+                                    {  0,  0, 7,  0, 7, 10},//C
+                                    {  0, 8,  0, 7,  0,  0},//D
+                                    {  0,  0,  0, 8,  0,  0}};//H2
      
 
 
@@ -103,12 +108,21 @@ public class points : MonoBehaviour
         // set H1, H2 as the nodes of POI nodes
         string[] strPOIs = { "H1", "H2"};
         Color[] clrPOIs = { Color.blue, Color.red };
+
         graph.CreatePOInodes(strPOIs, clrPOIs);
+
+        for (int i =0; i < strPOIs.Length; i++)
+        {
+            GameObject.Find(strPOIs[i]).GetComponent<Renderer>().material.SetColor("_Color", clrPOIs[i]);
+
+        }
+
 
 
         for (int i= 0; i < strPOIs.Length; i++)
         {
-            GameObject.Find(strPOIs[i]).GetComponent<Renderer>().material.SetColor("_Color", clrPOIs[i]);
+            Color AccessColor = GameObject.Find(strPOIs[i]).GetComponent<Renderer>().material.color;
+            GameObject.Find(strPOIs[i]).GetComponent<Lines>().nColor = AccessColor;
         }
 
         graph.printNodes();
@@ -126,6 +140,67 @@ public class points : MonoBehaviour
             node.objTransform.GetComponent<Lines>().dist = AccessDist;
             Debug.Log("Res: " + node.name + node.MostAccessPOI);
         }
+
+
+
+        Vector3 mapSize = transform.GetComponent<Renderer>().bounds.size;
+        Texture2D texture = new Texture2D((int)mapSize.x, (int)mapSize.z);
+        GetComponent<Renderer>().material.mainTexture = texture;
+        GetComponent<Renderer>().material.mainTexture.filterMode = FilterMode.Trilinear;
+
+
+        float mindist;
+        float lambda;
+        float r = 0.003f;
+        float alpha = 2f;
+        Node bestNode = null;
+        for (int z = 0; z < texture.height; z++)
+        {
+            for (int x = 0; x < texture.width; x++)
+            {
+                mindist = Mathf.Infinity;
+                bestNode = null;
+                foreach(Node node in graph.RestNodes)
+                {
+                    Vector3 pos = new Vector3(x-texture.width/2, 0.25f, z-texture.height/2);
+                    float dist = (pos - node.vec).magnitude;
+                    if(dist < mindist)
+                    {
+                        mindist = dist;
+                        bestNode = node;
+                    }
+                }
+                lambda = (1 / (r * Mathf.Sqrt(2 * Mathf.PI))) * Mathf.Exp(-0.5f * Mathf.Pow((Mathf.Pow((mindist + bestNode.LeastCost), -alpha) / r), 2));
+                lambdaMap.Add(lambda);
+                Color col = bestNode.clr;
+                colorMap.Add(col);
+                //col.a = 1 - lambda/200;
+                //texture.SetPixel(-x, -z, col);
+            }
+        }
+
+
+        float lMin = lambdaMap.Min();
+        float lMax = lambdaMap.Max();
+        int iter = 0;
+
+        for (int z = 0; z < texture.height; z++)
+        {
+            for (int x = 0; x < texture.width; x++)
+            {
+                Color col = colorMap[iter];
+                col.a = 1 - (lambdaMap[iter] - lMin)/(lMax - lMin);
+                texture.SetPixel(-x, -z, col);
+                iter += 1;
+            }
+        }
+
+
+
+
+        texture.Apply();
+
+
 
     }
 
