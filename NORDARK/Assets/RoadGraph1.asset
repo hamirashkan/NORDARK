@@ -1,6 +1,10 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+<<<<<<< HEAD
 --- !u!114 &-8378386581841930053
+=======
+--- !u!114 &-741823818491546889
+>>>>>>> e34f30aa4f391a6488f11a48ef809671c010977d
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -10,19 +14,23 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
-  m_Name: H1
+  m_Name: C
   m_EditorClassIdentifier: 
-  vec: {x: -20, y: 0.25, z: 0}
+  vec: {x: 8, y: 0.25, z: 0}
   objTransform: {fileID: 0}
   obj: {fileID: 0}
   clr: {r: 0, g: 0, b: 0, a: 0}
   LeastCost: Infinity
   MostAccessPOI: {fileID: 0}
-  index: 0
+  index: 3
   neighborNames: []
   neighbors: []
   weights: []
+<<<<<<< HEAD
 --- !u!114 &-3390219862708182260
+=======
+--- !u!114 &-148199421686214202
+>>>>>>> e34f30aa4f391a6488f11a48ef809671c010977d
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -58,6 +66,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   restNodes: []
   nodes:
+<<<<<<< HEAD
   - {fileID: -8378386581841930053}
   - {fileID: 22286503783333176}
   - {fileID: 4604105549249157921}
@@ -65,6 +74,15 @@ MonoBehaviour:
   - {fileID: 4735644747328028382}
   - {fileID: -3390219862708182260}
 --- !u!114 &22286503783333176
+=======
+  - {fileID: 5700173494854859611}
+  - {fileID: 7316101827813536239}
+  - {fileID: 3475499786887130978}
+  - {fileID: -741823818491546889}
+  - {fileID: 153860112090821949}
+  - {fileID: -148199421686214202}
+--- !u!114 &153860112090821949
+>>>>>>> e34f30aa4f391a6488f11a48ef809671c010977d
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -74,41 +92,33 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
+<<<<<<< HEAD
   m_Name: A
   m_EditorClassIdentifier: 
   vec: {x: -10, y: 0.25, z: 0}
+=======
+  m_Name: D
+  m_EditorClassIdentifier: 
+  vec: {x: 5, y: 0.25, z: -7}
+>>>>>>> e34f30aa4f391a6488f11a48ef809671c010977d
   objTransform: {fileID: 0}
   obj: {fileID: 0}
   clr: {r: 0, g: 0, b: 0, a: 0}
   LeastCost: Infinity
   MostAccessPOI: {fileID: 0}
+<<<<<<< HEAD
   index: 1
   neighborNames: []
   neighbors: []
   weights: []
 --- !u!114 &635900887109588298
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
-  m_Name: C
-  m_EditorClassIdentifier: 
-  vec: {x: 8, y: 0.25, z: 0}
-  objTransform: {fileID: 0}
-  obj: {fileID: 0}
-  clr: {r: 0, g: 0, b: 0, a: 0}
-  LeastCost: Infinity
-  MostAccessPOI: {fileID: 0}
-  index: 3
+=======
+  index: 4
   neighborNames: []
   neighbors: []
   weights: []
---- !u!114 &4604105549249157921
+--- !u!114 &3475499786887130978
+>>>>>>> e34f30aa4f391a6488f11a48ef809671c010977d
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -130,7 +140,11 @@ MonoBehaviour:
   neighborNames: []
   neighbors: []
   weights: []
---- !u!114 &4735644747328028382
+<<<<<<< HEAD
+--- !u!114 &4604105549249157921
+=======
+--- !u!114 &5700173494854859611
+>>>>>>> e34f30aa4f391a6488f11a48ef809671c010977d
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -140,15 +154,61 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
-  m_Name: D
+<<<<<<< HEAD
+  m_Name: B
   m_EditorClassIdentifier: 
-  vec: {x: 5, y: 0.25, z: -7}
+  vec: {x: -2, y: 0.25, z: 6}
+=======
+  m_Name: H1
+  m_EditorClassIdentifier: 
+  vec: {x: -20, y: 0.25, z: 0}
+>>>>>>> e34f30aa4f391a6488f11a48ef809671c010977d
   objTransform: {fileID: 0}
   obj: {fileID: 0}
   clr: {r: 0, g: 0, b: 0, a: 0}
   LeastCost: Infinity
   MostAccessPOI: {fileID: 0}
+<<<<<<< HEAD
+  index: 2
+  neighborNames: []
+  neighbors: []
+  weights: []
+--- !u!114 &4735644747328028382
+=======
+  index: 0
+  neighborNames: []
+  neighbors: []
+  weights: []
+--- !u!114 &7316101827813536239
+>>>>>>> e34f30aa4f391a6488f11a48ef809671c010977d
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
+<<<<<<< HEAD
+  m_Name: D
+  m_EditorClassIdentifier: 
+  vec: {x: 5, y: 0.25, z: -7}
+=======
+  m_Name: A
+  m_EditorClassIdentifier: 
+  vec: {x: -10, y: 0.25, z: 0}
+>>>>>>> e34f30aa4f391a6488f11a48ef809671c010977d
+  objTransform: {fileID: 0}
+  obj: {fileID: 0}
+  clr: {r: 0, g: 0, b: 0, a: 0}
+  LeastCost: Infinity
+  MostAccessPOI: {fileID: 0}
+<<<<<<< HEAD
   index: 4
+=======
+  index: 1
+>>>>>>> e34f30aa4f391a6488f11a48ef809671c010977d
   neighborNames: []
   neighbors: []
   weights: []
