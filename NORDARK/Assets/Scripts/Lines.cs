@@ -43,8 +43,8 @@ public class Lines : MonoBehaviour
                         l = line.GetComponent<LineRenderer>();
 
                         List<Vector3> pos = new List<Vector3>();
-                        pos.Add(transform.position);
-                        pos.Add(Neighbors[i].vec);
+                        pos.Add(transform.position + new Vector3(0, 0, 0.5f));
+                        pos.Add(Neighbors[i].vec + new Vector3(0, 0, 0.5f));
 
                         l.startWidth = sWidth;
                         l.endWidth = eWidth;
@@ -68,8 +68,8 @@ public class Lines : MonoBehaviour
                             l = line.GetComponent<LineRenderer>();
 
                             List<Vector3> pos = new List<Vector3>();
-                            pos.Add(transform.position);
-                            pos.Add(Neighbors[i].vec);
+                            pos.Add(transform.position + new Vector3(0, 0, 0.5f));
+                            pos.Add(Neighbors[i].vec + new Vector3(0, 0, 0.5f));
 
                             l.startWidth = sWidth;
                             l.endWidth = eWidth;
@@ -78,7 +78,63 @@ public class Lines : MonoBehaviour
 
                             l.SetPositions(pos.ToArray());
                         }
+                        else
+                        {
+                            float sWidth = 1 - (dist - minW) / (maxW - minW);
+                            float eWidth = 1 - (Neighbors[i].LeastCost - minW) / (maxW - minW);
+
+                            Nclr = nColor;
+                            Instantiate(line);
+                            l = line.GetComponent<LineRenderer>();
+
+                            List<Vector3> pos = new List<Vector3>();
+                            pos.Add(transform.position + new Vector3(0, 0, -0.5f));
+                            pos.Add(Neighbors[i].vec + new Vector3(0, 0, -0.5f));
+
+                            l.startWidth = sWidth;
+                            l.endWidth = eWidth;
+                            if (nColor != Neighbors[i].clr)
+                            {
+                                l.startWidth = eWidth;
+                                l.endWidth = sWidth;
+                            }
+                            l.startColor = Nclr;
+                            l.endColor = Nclr;
+
+                            l.SetPositions(pos.ToArray());
+                        }
                     }
+                }
+                else
+                {
+                    float sWidth = 1 - (dist - minW) / (maxW - minW);
+                    float eWidth = 1 - (Neighbors[i].LeastCost - minW) / (maxW - minW);
+
+                    //if (dist == Neighbors[i].LeastCost)
+                    //{
+                    //Neighbors[i].visited.Add(currentNode.name);
+                    //   eWidth = sWidth;
+                    //}
+
+                    Nclr = nColor;
+                    Instantiate(line);
+                    l = line.GetComponent<LineRenderer>();
+
+                    List<Vector3> pos = new List<Vector3>();
+                    pos.Add(transform.position + new Vector3(0,0, -0.5f));
+                    pos.Add(Neighbors[i].vec + new Vector3(0, 0, -0.5f));
+
+                    l.startWidth = sWidth;
+                    l.endWidth = eWidth;
+                    if (nColor != Neighbors[i].clr)
+                    {
+                        l.startWidth = eWidth;
+                        l.endWidth = sWidth;
+                    }
+                    l.startColor = Nclr;
+                    l.endColor = Nclr;
+
+                    l.SetPositions(pos.ToArray());
                 }
             }
         }

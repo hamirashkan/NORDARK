@@ -26,12 +26,12 @@ public class points : MonoBehaviour
         int nodesNum = 6;
         nodesNames = new string[nodesNum];
         coords = new Vector3[nodesNum];
-        nodesNames[0] = "H1";   coords[0] = new Vector3(-20, y, 0);
-        nodesNames[1] = "A";    coords[1] = new Vector3(-10, y, 0);
-        nodesNames[2] = "B";    coords[2] = new Vector3(-2, y, 6);
-        nodesNames[3] = "C";    coords[3] = new Vector3(8, y, 0);
-        nodesNames[4] = "D";    coords[4] = new Vector3(5, y, -7);
-        nodesNames[5] = "H2";   coords[5] = new Vector3(18, y, 0);
+        nodesNames[0] = "H1";   coords[0] = new Vector3(-40, y, 0);
+        nodesNames[1] = "A";    coords[1] = new Vector3(-20, y, 0);
+        nodesNames[2] = "B";    coords[2] = new Vector3(-4, y, 12);
+        nodesNames[3] = "C";    coords[3] = new Vector3(16, y, 0);
+        nodesNames[4] = "D";    coords[4] = new Vector3(10, y, -14);
+        nodesNames[5] = "H2";   coords[5] = new Vector3(36, y, 0);
         for (int i = 0; i < nodesNames.Length; i++)
         {
             Node nodeX = Node.Create<Node>(nodesNames[i], coords[i]);
@@ -48,7 +48,7 @@ public class points : MonoBehaviour
             nodeX.obj.GetComponent<Lines>().currentNode = graph.Nodes[i];
             nodeX.obj.GetComponent<Lines>().line = line;
         }
-        //H1,  A,  B,  C,  D, H2
+                                     //H1,  A,  B,  C,  D, H2
         int[,] roads = new int[,] { {  0,  6,  0,  0,  0,  0},//H1
                                     {  5,  0,  8,  0,  0,  0},//A
                                     {  0, 5,  0, 6,  0,  0},//B
@@ -153,7 +153,7 @@ public class points : MonoBehaviour
 
         float mindist;
         float lambda;
-        float r = 0.003f;
+        float r = 0.005f;
         float alpha = 2f;
         Node bestNode = null;
         for (int z = 0; z <= texture.height; z++)
@@ -173,8 +173,8 @@ public class points : MonoBehaviour
                     }
                 }
 
-                lambda = (1 / (r * Mathf.Sqrt(2 * Mathf.PI))) * Mathf.Exp(-0.5f * Mathf.Pow((Mathf.Pow((mindist + bestNode.LeastCost), -alpha) / r), 2));  //Gaussian
-                //lambda = (1 / r) * 1/(1+Mathf.Exp(Mathf.Pow((mindist + bestNode.LeastCost), -alpha)/r));  //Sigmoid
+                //lambda = (1 / (r * Mathf.Sqrt(2 * Mathf.PI))) * Mathf.Exp(-0.5f * Mathf.Pow((Mathf.Pow((mindist + bestNode.LeastCost), -alpha) / r), 2));  //Gaussian
+                lambda = (1 / r) * 1/(1+Mathf.Exp(Mathf.Pow((mindist + bestNode.LeastCost), -alpha)/r));  //Sigmoid
 
                 lambdaMap.Add(lambda);
                 Color col = bestNode.clr;
