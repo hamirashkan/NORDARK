@@ -9,12 +9,13 @@ public class points : MonoBehaviour
     Vector3[] coords = new Vector3[40];
     string[] nodesNames = new string[40];
     public Transform point;
-    public int minW;
-    public int maxW;
+    public float minW;
+    public float maxW;
     public GameObject line;
     public Graph graph;
     public List<float> lambdaMap;
     public List<Color> colorMap;
+    public List<float> costs;
 
     // Start is called before the first frame update
 
@@ -44,6 +45,7 @@ public class points : MonoBehaviour
             nodeX.obj.GetComponent<Lines>().index = i;
             nodeX.obj.GetComponent<Lines>().Neighbors = graph.Nodes[i].Neighbors;
             nodeX.obj.GetComponent<Lines>().Weights = graph.Nodes[i].Weights;
+            nodeX.obj.GetComponent<Lines>().currentNode = graph.Nodes[i];
             nodeX.obj.GetComponent<Lines>().line = line;
         }
         //H1,  A,  B,  C,  D, H2
@@ -81,9 +83,7 @@ public class points : MonoBehaviour
         }
 
 
-        minW = 0;
-        maxW = 0;
-        for (int i = 0; i < roads.GetLength(0); i++)
+        /* for (int i = 0; i < roads.GetLength(0); i++)
         {
             for (int j = 0; j < roads.GetLength(1); j++)
             {
@@ -101,7 +101,7 @@ public class points : MonoBehaviour
 
             }
 
-        }
+        } */
 
 
 
@@ -135,13 +135,15 @@ public class points : MonoBehaviour
         {
             Color AccessColor = GameObject.Find(node.MostAccessPOI.name).GetComponent<Renderer>().material.color;
             float AccessDist = node.LeastCost;
+            costs.Add(AccessDist);
             GameObject.Find(node.name).GetComponent<Renderer>().material.SetColor("_Color", AccessColor);
             node.objTransform.GetComponent<Lines>().nColor = AccessColor;
             node.objTransform.GetComponent<Lines>().dist = AccessDist;
             Debug.Log("Res: " + node.name + node.MostAccessPOI);
         }
 
-
+        minW = costs.Min();
+        maxW = costs.Max();
 
         Vector3 mapSize = transform.GetComponent<Renderer>().bounds.size;
         Texture2D texture = new Texture2D((int)mapSize.x, (int)mapSize.z);
@@ -154,9 +156,9 @@ public class points : MonoBehaviour
         float r = 0.003f;
         float alpha = 2f;
         Node bestNode = null;
-        for (int z = 0; z < texture.height; z++)
+        for (int z = 0; z <= texture.height; z++)
         {
-            for (int x = 0; x < texture.width; x++)
+            for (int x = 0; x <= texture.width; x++)
             {
                 mindist = Mathf.Infinity;
                 bestNode = null;
@@ -170,12 +172,13 @@ public class points : MonoBehaviour
                         bestNode = node;
                     }
                 }
-                lambda = (1 / (r * Mathf.Sqrt(2 * Mathf.PI))) * Mathf.Exp(-0.5f * Mathf.Pow((Mathf.Pow((mindist + bestNode.LeastCost), -alpha) / r), 2));
+
+                lambda = (1 / (r * Mathf.Sqrt(2 * Mathf.PI))) * Mathf.Exp(-0.5f * Mathf.Pow((Mathf.Pow((mindist + bestNode.LeastCost), -alpha) / r), 2));  //Gaussian
+                //lambda = (1 / r) * 1/(1+Mathf.Exp(Mathf.Pow((mindist + bestNode.LeastCost), -alpha)/r));  //Sigmoid
+
                 lambdaMap.Add(lambda);
                 Color col = bestNode.clr;
                 colorMap.Add(col);
-                //col.a = 1 - lambda/200;
-                //texture.SetPixel(-x, -z, col);
             }
         }
 
@@ -184,9 +187,9 @@ public class points : MonoBehaviour
         float lMax = lambdaMap.Max();
         int iter = 0;
 
-        for (int z = 0; z < texture.height; z++)
+        for (int z = 0; z <= texture.height; z++)
         {
-            for (int x = 0; x < texture.width; x++)
+            for (int x = 0; x <= texture.width; x++)
             {
                 Color col = colorMap[iter];
                 col.a = 1 - (lambdaMap[iter] - lMin)/(lMax - lMin);

@@ -11,21 +11,33 @@ public class Lines : MonoBehaviour
     public List<float> Weights;
     public Color nColor;
     public float dist;
+    public Node currentNode;
     void Start()
     {
-        int minW = GameObject.Find("Map").GetComponent<points>().minW;
-        int maxW = GameObject.Find("Map").GetComponent<points>().maxW;
+        float minW = GameObject.Find("Map").GetComponent<points>().minW;
+        float maxW = GameObject.Find("Map").GetComponent<points>().maxW;
 
         if (Neighbors.Count != 0)
         {
             for (int i = 0; i < Neighbors.Count; i++)
             {
                 Color Nclr;
-                if(dist < Neighbors[i].LeastCost)
-                    
+
+                if (!currentNode.visited.Contains(Neighbors[i].name))
+                {
+
+
+                    if (dist <= Neighbors[i].LeastCost)
                     {
-                        float sWidth = 1 - (dist - minW)/(maxW-minW);
-                        float eWidth = 1- (Neighbors[i].LeastCost - minW) / (maxW - minW);
+                        float sWidth = 1 - (dist - minW) / (maxW - minW);
+                        float eWidth = 1 - (Neighbors[i].LeastCost - minW) / (maxW - minW);
+
+                        //if (dist == Neighbors[i].LeastCost)
+                        //{
+                        Neighbors[i].visited.Add(currentNode.name);
+                        //   eWidth = sWidth;
+                        //}
+
                         Nclr = nColor;
                         Instantiate(line);
                         l = line.GetComponent<LineRenderer>();
@@ -41,32 +53,33 @@ public class Lines : MonoBehaviour
 
                         l.SetPositions(pos.ToArray());
                         //l.useWorldSpace = true;
-                }
-                else {
-                    if (!Neighbors[i].NeighborNames.Contains(gameObject.name))
-                    {
-                        float sWidth = 1 - (dist - minW) / (maxW - minW);
-                        float eWidth = 1 - (Neighbors[i].LeastCost - minW) / (maxW - minW);
-
-                        Nclr = nColor;
-                        Instantiate(line);
-                        l = line.GetComponent<LineRenderer>();
-
-                        List<Vector3> pos = new List<Vector3>();
-                        pos.Add(transform.position);
-                        pos.Add(Neighbors[i].vec);
-
-                        l.startWidth = sWidth;
-                        l.endWidth = eWidth;
-                        l.startColor = Nclr;
-                        l.endColor = Nclr;
-
-                        l.SetPositions(pos.ToArray());
                     }
+                    else
+                    {
+                        if (!Neighbors[i].NeighborNames.Contains(gameObject.name))
+                        {
+                            float sWidth = 1 - (dist - minW) / (maxW - minW);
+                            float eWidth = 1 - (Neighbors[i].LeastCost - minW) / (maxW - minW);
 
-                    //Nclr = Neighbors[i].objTransform.GetComponent<Lines>().nColor;
+                            Neighbors[i].visited.Add(currentNode.name);
+
+                            Nclr = nColor;
+                            Instantiate(line);
+                            l = line.GetComponent<LineRenderer>();
+
+                            List<Vector3> pos = new List<Vector3>();
+                            pos.Add(transform.position);
+                            pos.Add(Neighbors[i].vec);
+
+                            l.startWidth = sWidth;
+                            l.endWidth = eWidth;
+                            l.startColor = Nclr;
+                            l.endColor = Nclr;
+
+                            l.SetPositions(pos.ToArray());
+                        }
+                    }
                 }
-            
             }
         }
     }
