@@ -12,6 +12,7 @@ public class Node : ScriptableObject
     public float LeastCost = Mathf.Infinity;// the least access time
     public Node MostAccessPOI = null;// the most accessible POI
     public int index;// index for calculating the shortest path easlier
+    public string stop_id; // stop_id from raw data file Value[0]
     public List<string> visited = new List<string>();
 
 

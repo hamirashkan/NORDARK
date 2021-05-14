@@ -62,8 +62,8 @@ public class Graph : ScriptableObject
     public void AddNode(Node node)
     {
         Nodes.Add(node);
-        AssetDatabase.AddObjectToAsset(node, this);
-        AssetDatabase.SaveAssets();
+        //AssetDatabase.AddObjectToAsset(node, this);
+        //AssetDatabase.SaveAssets();
     }
 
     // zhicheng
