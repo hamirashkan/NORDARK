@@ -10,6 +10,7 @@ public class points_Scene1 : MonoBehaviour
 {
     Vector3[] coords = new Vector3[40];
     string[] nodesNames = new string[40];
+    public int timeSteps;
     public Transform point;
     public float minW;
     public float maxW;
@@ -209,11 +210,6 @@ public class points_Scene1 : MonoBehaviour
 
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 
     public void GraphSet2(string graphName)
     {
@@ -223,7 +219,7 @@ public class points_Scene1 : MonoBehaviour
         string text = loadFile("Assets/Resources/stops.txt");
         string[] lines = Regex.Split(text, "\n");
 
-        int nodesNum = 100;//lines.Length - 2;//nbStops
+        int nodesNum = 25;//lines.Length - 2;//nbStops
         nodesNames = new string[nodesNum];
         coords = new Vector3[nodesNum];
 
@@ -280,25 +276,36 @@ public class points_Scene1 : MonoBehaviour
                 Debug.Log(DateTime.Now.ToString() + ", inited " + i + "_th nodes");
         }
 
-        int[,] roads = new int[nodesNames.Length, nodesNames.Length];
-        ////H1,  A,  B,  C,  D, H2
-        //int[,] roads = new int[,] { {  0,  6,  0,  0,  0,  0},//H1
-        //                            {  5,  0,  8,  0,  0,  0},//A
-        //                            {  0, 5,  0, 6,  0,  0},//B
-        //                            {  0,  0, 7,  0, 7, 10},//C
-        //                            {  0, 8,  0, 7,  0,  0},//D
-        //                            {  0,  0,  0, 8,  0,  0}};//H2
+        timeSteps = 10;
+        graph.timeSteps = timeSteps;
 
+        int[][,] temporalRoad = Enumerable.Range(0, timeSteps).Select(_ => new int[nodesNames.Length, nodesNames.Length]).ToArray();
+
+        int[,] roads = new int[nodesNames.Length, nodesNames.Length];
+     
         graph.roadcosts = roads;
+        graph.roadTemporal = temporalRoad;
 
         System.Random rnd = new System.Random();
+
+        for (int k = 0; k < timeSteps; k++)
+        {
+            for (int i = 0; i < nodesNames.Length; i++)
+            {
+                for (int j = 0; j < nodesNames.Length; j++)
+                {
+                    if (rnd.Next(1, 10) >= 8) // 70% = 0
+                        temporalRoad[k][i, j] = rnd.Next(1, 20);
+                        roads[i, j] += temporalRoad[k][i, j];
+                }
+            }
+        }
 
         for (int i = 0; i < roads.GetLength(0); i++)
         {
             for (int j = 0; j < roads.GetLength(1); j++)
             {
-                if (rnd.Next(1, 10) >= 8) // 70% = 0
-                    roads[i, j] = rnd.Next(1, 20);
+                roads[i, j] = roads[i, j] /timeSteps;
                 float weight = roads[i, j];
                 if (weight != 0)
                 {
@@ -312,6 +319,9 @@ public class points_Scene1 : MonoBehaviour
                 }
             }
         }
+
+
+
 
         // set Brekke, Vegtun as the nodes of POI nodes
         string[] strPOIs = { "Brekke", "Vegtun" };

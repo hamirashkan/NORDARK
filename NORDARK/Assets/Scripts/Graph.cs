@@ -9,7 +9,9 @@ public class Graph : ScriptableObject
     private List<Node> POInodes;
     private List<GameObject> lines;
     public int[,] roadcosts;
+    public int[][,] roadTemporal;
     private int[] dist;
+    public int timeSteps;
 
     [SerializeField]
     public List<Node> restNodes;
@@ -66,7 +68,6 @@ public class Graph : ScriptableObject
         //AssetDatabase.SaveAssets();
     }
 
-    // zhicheng
     public Node FindFirstNode(string nodeName)
     {
         foreach (Node x in nodes.FindAll(element => element.name == nodeName))
@@ -154,6 +155,9 @@ public class Graph : ScriptableObject
                 }
             }
 
+            // calculate risk
+            risk(roadTemporal, restNodes_list, POINodes_list);
+
             // calculate the minium distances to POIs for each rest node
             for (int i = 0; i < restNodes_list.Count; i++)
             {
@@ -183,7 +187,7 @@ public class Graph : ScriptableObject
             {
                 Node nodeX = FindNode(restNodes_list[i]);
                 if (nodeX != null)
-                    Debug.Log(nodeX.name + " \t\t " + nodeX.MostAccessPOI + " \t\t " + nodeX.LeastCost + "\n");
+                    Debug.Log(nodeX.name + " \t\t " + nodeX.MostAccessPOI + " \t\t " + nodeX.LeastCost + "\t\t RISK FACTOR: " + nodeX.riskFactor + "\n");
             }
         }
 
@@ -292,5 +296,45 @@ public class Graph : ScriptableObject
             }
         // print the constructed distance array
         printSolution(dist, Nodes.Count); */
-    } 
+    }
+    
+
+    void risk(int[][,] temporalCost,List<int> rests,List<int> POIs)
+    {
+        // calculate the minium distances to POIs for each rest node
+        for (int i = 0; i < rests.Count; i++)
+        {
+            Node nodeX = FindNode(rests[i]);
+            nodeX.riskFactor = 0;
+            nodeX.POIList = new Node[timeSteps];
+            nodeX.LeastCostList = new float[timeSteps];
+            float tempCost = Mathf.Infinity;
+            Node tempAccess;
+            if (nodeX != null)
+            {
+                for (int k = 0; k < timeSteps; k++)
+                {
+                    dijkstra(temporalCost[k], nodeX.index);
+                    for (int j = 0; j < POIs.Count; j++)
+                    {
+                        if (dist[POIs[j]] <= tempCost)
+                        {
+                            tempCost = dist[POIs[j]];
+                            tempAccess = FindNode(POIs[j]);
+                            nodeX.LeastCostList[k] = tempCost;
+                            nodeX.POIList[k] = tempAccess;
+                        }
+                    }
+
+                    if (k > 0 && nodeX.POIList[k] != nodeX.POIList[k - 1])
+                    {
+                        nodeX.riskFactor += 1;
+                    }
+                }
+
+            }
+        }
+    }
+
+
 }

@@ -13,7 +13,10 @@ public class Node : ScriptableObject
     public Node MostAccessPOI = null;// the most accessible POI
     public int index;// index for calculating the shortest path easlier
     public string stop_id; // stop_id from raw data file Value[0]
-    public List<string> visited = new List<string>();
+    public List<string> visited = new List<string>(); //List of nodes already visited by this node
+    public Node[] POIList = null; //List of POIs for risk calculation
+    public float[] LeastCostList; //List of costs for different POIs for risk calculation
+    public float riskFactor; //riskFactor calculation happens in Graph.cs
 
 
     [SerializeField]

@@ -12,5 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f8d9ad6e993dfc4a9e28bb495a4b6c1, type: 3}
   m_Name: RoadGraph1
   m_EditorClassIdentifier: 
+  timeSteps: 0
   restNodes: []
   nodes: []
