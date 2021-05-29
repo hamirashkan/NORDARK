@@ -64,8 +64,8 @@ public class Graph : ScriptableObject
     public void AddNode(Node node)
     {
         Nodes.Add(node);
-        //AssetDatabase.AddObjectToAsset(node, this);
-        //AssetDatabase.SaveAssets();
+        AssetDatabase.AddObjectToAsset(node, this);
+        AssetDatabase.SaveAssets();
     }
 
     public Node FindFirstNode(string nodeName)
@@ -308,12 +308,12 @@ public class Graph : ScriptableObject
             nodeX.riskFactor = 0;
             nodeX.POIList = new Node[timeSteps];
             nodeX.LeastCostList = new float[timeSteps];
-            float tempCost = Mathf.Infinity;
             Node tempAccess;
             if (nodeX != null)
             {
                 for (int k = 0; k < timeSteps; k++)
                 {
+                    float tempCost = Mathf.Infinity;
                     dijkstra(temporalCost[k], nodeX.index);
                     for (int j = 0; j < POIs.Count; j++)
                     {
