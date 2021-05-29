@@ -215,7 +215,6 @@ public class points_Scene1 : MonoBehaviour
 
     }
 
-
     public void GraphSet2(string graphName)
     {
         graph = Graph.Create(graphName);
@@ -284,13 +283,13 @@ public class points_Scene1 : MonoBehaviour
                 Debug.Log(DateTime.Now.ToString() + ", inited " + i + "_th nodes");
         }
 
-        timeSteps = 10;
+        timeSteps = 10;//200
         graph.timeSteps = timeSteps;
 
         int[][,] temporalRoad = Enumerable.Range(0, timeSteps).Select(_ => new int[nodesNames.Length, nodesNames.Length]).ToArray();
 
         int[,] roads = new int[nodesNames.Length, nodesNames.Length];
-     
+
         graph.roadcosts = roads;
         graph.roadTemporal = temporalRoad;
 
@@ -298,13 +297,90 @@ public class points_Scene1 : MonoBehaviour
 
         for (int k = 0; k < timeSteps; k++)
         {
+            //for (int i = 0; i < nodesNames.Length; i++)
+            //{
+            //    for (int j = 0; j < nodesNames.Length; j++)
+            //    {
+            //        if (rnd.Next(1, 10) >= 8) // 70% = 0
+            //            temporalRoad[k][i, j] = rnd.Next(1, 20);
+            //            roads[i, j] += temporalRoad[k][i, j];
+            //    }
+            //}
+            int high = 100;//500;//0
+            int low = 0;
+            temporalRoad[k][0, 13] = rnd.Next(low, high) + 40;//Line 1 (1<=>14) (40, 39)
+            temporalRoad[k][13, 0] = rnd.Next(low, high) + 39;
+            temporalRoad[k][13, 9] = rnd.Next(low, high) + 10;//Line 2 (14<=>10) (10, 11)
+            temporalRoad[k][9, 13] = rnd.Next(low, high) + 11;
+            temporalRoad[k][13, 22] = rnd.Next(low, high) + 100;//Line 3 (14<=>23) (100, 110)
+            temporalRoad[k][22, 13] = rnd.Next(low, high) + 110;
+            temporalRoad[k][6, 3] = rnd.Next(low, high) + 8;//Line 4 (7<=>4) (8, 11)
+            temporalRoad[k][3, 6] = rnd.Next(low, high) + 11;
+            temporalRoad[k][3, 23] = rnd.Next(low, high) + 80;//Line 5(4 <=> 23)(80, 85)
+            temporalRoad[k][23, 3] = rnd.Next(low, high) + 85;
+
+            temporalRoad[k][19, 12] = rnd.Next(low, high) + 10;//Line 6 (20=>13) (10, 0)
+            temporalRoad[k][12, 4] = rnd.Next(low, high) + 10;//Line 7 (13<=>5) (10, 11)
+            temporalRoad[k][4, 12] = rnd.Next(low, high) + 11;
+
+            temporalRoad[k][4, 2] = rnd.Next(low, high) + 220;//Line 8 (5<=>3) (220, 200)
+            temporalRoad[k][2, 4] = rnd.Next(low, high) + 200;
+            temporalRoad[k][2, 9] = rnd.Next(low, high) + 10;//Line 9 (3<=>10) (10, 11)
+            temporalRoad[k][9, 2] = rnd.Next(low, high) + 11;
+            temporalRoad[k][1, 9] = rnd.Next(low, high) + 140;//Line 10 (2<=>10) (140, 150)
+            temporalRoad[k][9, 1] = rnd.Next(low, high) + 150;
+            temporalRoad[k][2, 22] = rnd.Next(low, high) + 280;//Line 11 (3<=>23) (280, 270)
+            temporalRoad[k][22, 2] = rnd.Next(low, high) + 270;
+
+            temporalRoad[k][22, 5] = rnd.Next(low, high) + 60;//Line 12 (23<=>6) (60,65)
+            temporalRoad[k][5, 22] = rnd.Next(low, high) + 65;
+            temporalRoad[k][22, 18] = rnd.Next(low, high) + 90;//Line 13 (23<=>19) (90,83)
+            temporalRoad[k][18, 22] = rnd.Next(low, high) + 83;
+            temporalRoad[k][5, 23] = rnd.Next(low, high) + 55;//Line 14 (6<=>24) (55,58)
+            temporalRoad[k][23, 5] = rnd.Next(low, high) + 58;
+            temporalRoad[k][5, 8] = rnd.Next(low, high) + 60;//Line 15 (6<=>9) (60,64)
+            temporalRoad[k][8, 5] = rnd.Next(low, high) + 64;
+
+            temporalRoad[k][24, 18] = rnd.Next(low, high) + 30;//Line 16 (25<=>19) (30,34)
+            temporalRoad[k][18, 24] = rnd.Next(low, high) + 34;
+            temporalRoad[k][24, 23] = rnd.Next(low, high) + 25;//Line 17 (25<=>24) (25,28)
+            temporalRoad[k][23, 24] = rnd.Next(low, high) + 28;
+            temporalRoad[k][24, 17] = rnd.Next(low, high) + 34;//Line 18 (25<=>18) (34,31)
+            temporalRoad[k][17, 24] = rnd.Next(low, high) + 31;
+            temporalRoad[k][18, 23] = rnd.Next(low, high) + 32;//Line 19 (19<=>24) (32,34)
+            temporalRoad[k][23, 18] = rnd.Next(low, high) + 34;
+            temporalRoad[k][17, 23] = rnd.Next(low, high) + 24;//Line 20 (18<=>24) (24,25)
+            temporalRoad[k][23, 17] = rnd.Next(low, high) + 25;
+            temporalRoad[k][8, 23] = rnd.Next(low, high) + 41;//Line 21 (9<=>24) (41,38)
+            temporalRoad[k][23, 8] = rnd.Next(low, high) + 38;
+            temporalRoad[k][8, 16] = rnd.Next(low, high) + 110;//Line 22 (9<=>17) (110,120)
+            temporalRoad[k][16, 8] = rnd.Next(low, high) + 120;
+            temporalRoad[k][16, 23] = rnd.Next(low, high) + 100;//Line 23 (17<=>24) (100,99)
+            temporalRoad[k][23, 16] = rnd.Next(low, high) + 99;
+            temporalRoad[k][8, 17] = rnd.Next(low, high) + 45;//Line 24 (9<=>18) (45,50)
+            temporalRoad[k][17, 8] = rnd.Next(low, high) + 50;
+
+            temporalRoad[k][7, 15] = rnd.Next(low, high) + 15;//Line 25 (8<=>16) (15,12)
+            temporalRoad[k][15, 7] = rnd.Next(low, high) + 12;
+            temporalRoad[k][7, 20] = rnd.Next(low, high) + 18;//Line 26 (8<=>21) (18,17)
+            temporalRoad[k][20, 7] = rnd.Next(low, high) + 17;
+            temporalRoad[k][14, 15] = rnd.Next(low, high) + 8;//Line 27 (15<=>16) (8,7)
+            temporalRoad[k][15, 14] = rnd.Next(low, high) + 7;
+            temporalRoad[k][15, 20] = rnd.Next(low, high) + 23;//Line 28 (16<=>21) (23,21)
+            temporalRoad[k][20, 15] = rnd.Next(low, high) + 21;
+            temporalRoad[k][14, 24] = rnd.Next(low, high) + 65;//Line 29 (15<=>25) (65,59)
+            temporalRoad[k][24, 14] = rnd.Next(low, high) + 59;
+            temporalRoad[k][17, 20] = rnd.Next(low, high) + 40;//Line 30 (18<=>21) (40,47)
+            temporalRoad[k][20, 17] = rnd.Next(low, high) + 47;
+            temporalRoad[k][7, 21] = rnd.Next(low, high) + 80;//Line 31 (8<=>22) (80,75)
+            temporalRoad[k][21, 7] = rnd.Next(low, high) + 75;
+            temporalRoad[k][7, 11] = rnd.Next(low, high) + 180;//Line 32 (8<=>12) (180,170)
+            temporalRoad[k][11, 7] = rnd.Next(low, high) + 170;
             for (int i = 0; i < nodesNames.Length; i++)
             {
                 for (int j = 0; j < nodesNames.Length; j++)
                 {
-                    if (rnd.Next(1, 10) >= 8) // 70% = 0
-                        temporalRoad[k][i, j] = rnd.Next(1, 20);
-                        roads[i, j] += temporalRoad[k][i, j];
+                    roads[i, j] += temporalRoad[k][i, j];
                 }
             }
         }
@@ -313,7 +389,7 @@ public class points_Scene1 : MonoBehaviour
         {
             for (int j = 0; j < roads.GetLength(1); j++)
             {
-                roads[i, j] = roads[i, j] /timeSteps;
+                roads[i, j] = roads[i, j] / timeSteps;
                 float weight = roads[i, j];
                 if (weight != 0)
                 {
@@ -332,7 +408,7 @@ public class points_Scene1 : MonoBehaviour
 
 
         // set Brekke, Vegtun as the nodes of POI nodes
-        string[] strPOIs = { "Brekke", "Vegtun" };
+        string[] strPOIs = { "Nyveien Tomrefjord", "Nåsbru" };//{ "Brendehaug", "Nåsbru" };//{ "Brekke", "Vegtun" };
         Color[] clrPOIs = { Color.blue, Color.red };
 
         graph.CreatePOInodes(strPOIs, clrPOIs);
