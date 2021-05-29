@@ -15,7 +15,7 @@ public class HeightMap : MonoBehaviour
         {
             for (int y = 0; y < td.heightmapResolution; y+=5)
             {
-                HeightMap[x, y] = 0;
+                HeightMap[x, y] = 0.02f;
             }
         }
 
