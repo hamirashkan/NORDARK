@@ -5,6 +5,8 @@ using UnityEditor;
 using System;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Mapbox.Unity.Utilities;
+using Mapbox.Unity.Map;
 
 public class points_Scene1 : MonoBehaviour
 {
@@ -19,6 +21,7 @@ public class points_Scene1 : MonoBehaviour
     public List<float> lambdaMap;
     public List<Color> colorMap;
     public List<float> costs;
+    public AbstractMap map;
 
     // Start is called before the first frame update
 
@@ -133,6 +136,8 @@ public class points_Scene1 : MonoBehaviour
 
     void Start()
     {
+        map = GameObject.Find("Mapbox").GetComponent<AbstractMap>();
+
         GraphSet2("RoadGraph1");
         foreach (Node node in graph.Nodes)
         {
@@ -224,9 +229,9 @@ public class points_Scene1 : MonoBehaviour
         coords = new Vector3[nodesNum];
 
         Debug.Log(DateTime.Now.ToString() + ", init started");
-        float center_lat = 62f;
-        float center_lon = 6f;
-        float scale = 100f;
+        //float center_lat = 62f;
+        //float center_lon = 6f;
+        //float scale = 100f;
         // test1. very fast, 1 sec could do 5K times or more
         //for (int i = 0; i < nodesNames.Length*100; i++)
         //{
@@ -255,7 +260,10 @@ public class points_Scene1 : MonoBehaviour
             float lon = float.Parse(values[5], System.Globalization.CultureInfo.InvariantCulture);
 
             nodesNames[i] = values[2];
-            coords[i] = new Vector3((lat - center_lat) * scale, y, (lon - center_lon) * scale);
+            Vector2 latlong = new Vector2(lat, lon);
+            Vector3 pos = latlong.AsUnityPosition(map.CenterMercator, map.WorldRelativeScale);
+            //coords[i] = new Vector3((lat - center_lat) * scale, y, (lon - center_lon) * scale);
+            coords[i] = pos;
 
             Node nodeX = Node.Create<Node>(nodesNames[i], coords[i]);
             nodeX.index = i;
