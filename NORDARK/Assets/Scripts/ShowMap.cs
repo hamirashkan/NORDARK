@@ -22,6 +22,9 @@ public class ShowMap : MonoBehaviour
     public List<Color> colorMap;
     public List<float> costs;
     public AbstractMap map;
+    public string Kernel = "S"; //defaults to sigmoid, "G" for gaussian
+    public float r = 0.005f;
+    public float alpha = 2;
 
     // Start is called before the first frame update
 
@@ -51,66 +54,78 @@ public class ShowMap : MonoBehaviour
 
         minW = costs.Min();
         maxW = costs.Max();
-        /*
-                Vector3 mapSize = transform.GetComponent<Renderer>().bounds.size;
-                Texture2D texture = new Texture2D((int)mapSize.x, (int)mapSize.z);
-                GetComponent<Renderer>().material.mainTexture = texture;
-                GetComponent<Renderer>().material.mainTexture.filterMode = FilterMode.Trilinear;
+        
+        //creating textures and colormap
+        for(int c = 0; c < gameObject.transform.childCount - 1; c++)
+        {
+            Transform tile = transform.GetChild(c + 1);
+            Vector3 mapSize = tile.gameObject.GetComponent<Renderer>().bounds.size;
+            Texture2D texture = new Texture2D((int)mapSize.x, (int)mapSize.z);
+            tile.gameObject.GetComponent<Renderer>().material.mainTexture = texture;
+            tile.gameObject.GetComponent<Renderer>().material.mainTexture.filterMode = FilterMode.Trilinear;
 
 
-                float mindist;
-                float lambda;
-                float r = 0.005f;
-                float alpha = 2f;
-                Node bestNode = null;
-                for (int z = 0; z <= texture.height; z++)
+            float mindist;
+            float lambda;
+            float r = 0.005f;
+            float alpha = 2f;
+            Node bestNode = null;
+            for (int z = 0; z <= texture.height; z++)
+            {
+                for (int x = 0; x <= texture.width; x++)
                 {
-                    for (int x = 0; x <= texture.width; x++)
+                    mindist = Mathf.Infinity;
+                    bestNode = null;
+                    foreach (Node node in graph.RestNodes)
                     {
-                        mindist = Mathf.Infinity;
-                        bestNode = null;
-                        foreach (Node node in graph.RestNodes)
+                        Vector3 pos = new Vector3(x - texture.width / 2, 0.25f, z - texture.height / 2);
+                        float dist = (pos - node.vec).magnitude;
+                        if (dist < mindist)
                         {
-                            Vector3 pos = new Vector3(x - texture.width / 2, 0.25f, z - texture.height / 2);
-                            float dist = (pos - node.vec).magnitude;
-                            if (dist < mindist)
-                            {
-                                mindist = dist;
-                                bestNode = node;
-                            }
+                            mindist = dist;
+                            bestNode = node;
                         }
-
-                        //lambda = (1 / (r * Mathf.Sqrt(2 * Mathf.PI))) * Mathf.Exp(-0.5f * Mathf.Pow((Mathf.Pow((mindist + bestNode.LeastCost), -alpha) / r), 2));  //Gaussian
-                        lambda = (1 / r) * 1 / (1 + Mathf.Exp(Mathf.Pow((mindist + bestNode.LeastCost), -alpha) / r));  //Sigmoid
-
-                        lambdaMap.Add(lambda);
-                        Color col = bestNode.clr;
-                        colorMap.Add(col);
                     }
-                }
 
-
-                float lMin = lambdaMap.Min();
-                float lMax = lambdaMap.Max();
-                int iter = 0;
-
-                for (int z = 0; z <= texture.height; z++)
-                {
-                    for (int x = 0; x <= texture.width; x++)
+                    //choice of kernel function for density estimation
+                    if (Kernel == "G")
                     {
-                        Color col = colorMap[iter];
-                        col.a = 1 - (lambdaMap[iter] - lMin) / (lMax - lMin);
-                        texture.SetPixel(-x, -z, col);
-                        iter += 1;
+                        lambda = (1 / (r * Mathf.Sqrt(2 * Mathf.PI))) * Mathf.Exp(-0.5f * Mathf.Pow((Mathf.Pow((mindist + bestNode.LeastCost), -alpha) / r), 2));  //Gaussian
                     }
+                    else
+                    {
+                        lambda = (1 / r) * 1 / (1 + Mathf.Exp(Mathf.Pow((mindist + bestNode.LeastCost), -alpha) / r));  //Sigmoid
+                    }
+
+
+                    lambdaMap.Add(lambda);
+                    Color col = bestNode.clr;
+                    colorMap.Add(col);
                 }
+            }
+
+
+            float lMin = lambdaMap.Min();
+            float lMax = lambdaMap.Max();
+            int iter = 0;
+
+            for (int z = 0; z <= texture.height; z++)
+            {
+                for (int x = 0; x <= texture.width; x++)
+                {
+                    Color col = colorMap[iter];
+                    col.a = 1 - (lambdaMap[iter] - lMin) / (lMax - lMin);
+                    texture.SetPixel(-x, -z, col);
+                    iter += 1;
+                }
+            }
 
 
 
 
-                texture.Apply();
-
-                */
+            texture.Apply();
+        }
+        
     }
 
 
