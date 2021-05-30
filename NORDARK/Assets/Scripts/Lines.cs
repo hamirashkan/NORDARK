@@ -14,10 +14,10 @@ public class Lines : MonoBehaviour
     public Node currentNode;
     void Start()
     {
-        //float minW = GameObject.Find("Map").GetComponent<points_Scene1>().minW;//points
-        //float maxW = GameObject.Find("Map").GetComponent<points_Scene1>().maxW;//points
-        float minW = GameObject.Find("Mapbox").GetComponent<ShowMap>().minW;//points
-        float maxW = GameObject.Find("Mapbox").GetComponent<ShowMap>().maxW;//points
+        float minW = GameObject.Find("Map").GetComponent<points_Scene1>().minW;//points
+        float maxW = GameObject.Find("Map").GetComponent<points_Scene1>().maxW;//points
+        //float minW = GameObject.Find("Mapbox").GetComponent<ShowMap>().minW;//points
+        //float maxW = GameObject.Find("Mapbox").GetComponent<ShowMap>().maxW;//points
 
         if (Neighbors.Count != 0)
         {
