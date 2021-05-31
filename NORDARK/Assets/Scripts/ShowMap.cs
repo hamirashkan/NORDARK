@@ -141,7 +141,7 @@ public class ShowMap : MonoBehaviour
        /* string tileName = map.AbsoluteZoom + "/133/70";
         UnityTile tilex = GameObject.Find(tileName).GetComponent<UnityTile>();
         tilex.HeightData[0] = 100000;
-        map.TileProvider.UpdateTileProvider();
+        map.TileProvider.UpdateTileProvider(); */
     }
 
 
