@@ -20,6 +20,7 @@ public class ShowMap : MonoBehaviour
     public Graph graph;
     public List<float> lambdaMap;
     public List<Color> colorMap;
+    public List<Texture2D> textMap;
     public List<float> costs;
     public AbstractMap map;
     public string Kernel = "S"; //defaults to sigmoid, "G" for gaussian
@@ -54,15 +55,16 @@ public class ShowMap : MonoBehaviour
 
         minW = costs.Min();
         maxW = costs.Max();
-        
+
         //creating textures and colormap
-        for(int c = 0; c < gameObject.transform.childCount - 1; c++)
+        for (int c = 0; c < gameObject.transform.childCount - 1; c++)
         {
-            Transform tile = transform.GetChild(c + 1);
+            Transform tile = transform.GetChild(c + 1); //ignoring first child that is not a tile
             Vector3 mapSize = tile.gameObject.GetComponent<Renderer>().bounds.size;
             Texture2D texture = new Texture2D((int)mapSize.x, (int)mapSize.z);
-            tile.gameObject.GetComponent<Renderer>().material.mainTexture = texture;
-            tile.gameObject.GetComponent<Renderer>().material.mainTexture.filterMode = FilterMode.Trilinear;
+            textMap.Add(texture);
+            //tile.gameObject.GetComponent<Renderer>().material.mainTexture = texture;
+            //tile.gameObject.GetComponent<Renderer>().material.mainTexture.filterMode = FilterMode.Trilinear;
 
 
             float mindist;
@@ -70,6 +72,8 @@ public class ShowMap : MonoBehaviour
             float r = 0.005f;
             float alpha = 2f;
             Node bestNode = null;
+            float posStepX = mapSize.x / texture.width;
+            float posStepZ = mapSize.z / texture.height;
             for (int z = 0; z <= texture.height; z++)
             {
                 for (int x = 0; x <= texture.width; x++)
@@ -78,7 +82,9 @@ public class ShowMap : MonoBehaviour
                     bestNode = null;
                     foreach (Node node in graph.RestNodes)
                     {
-                        Vector3 pos = new Vector3(x - texture.width / 2, 0.25f, z - texture.height / 2);
+                        float posX = (tile.position.x - mapSize.x/2) + x*posStepX;
+                        float posZ = (tile.position.z - mapSize.z / 2) + z * posStepZ;
+                        Vector3 pos = new Vector3(posX , 0.25f, posZ);
                         float dist = (pos - node.vec).magnitude;
                         if (dist < mindist)
                         {
@@ -104,11 +110,17 @@ public class ShowMap : MonoBehaviour
                 }
             }
 
+        }
+        float lMin = lambdaMap.Min();
+        float lMax = lambdaMap.Max();
+        int iter = 0;
 
-            float lMin = lambdaMap.Min();
-            float lMax = lambdaMap.Max();
-            int iter = 0;
-
+        for (int c = 0; c < gameObject.transform.childCount - 1; c++)
+        {
+            Transform tile = transform.GetChild(c + 1);
+            Texture2D texture = textMap[c];
+            tile.gameObject.GetComponent<Renderer>().material.mainTexture = texture;
+            tile.gameObject.GetComponent<Renderer>().material.mainTexture.filterMode = FilterMode.Trilinear;
             for (int z = 0; z <= texture.height; z++)
             {
                 for (int x = 0; x <= texture.width; x++)
@@ -120,13 +132,10 @@ public class ShowMap : MonoBehaviour
                 }
             }
 
-
-
-
             texture.Apply();
         }
-        
     }
+
 
 
 
@@ -275,4 +284,47 @@ public class ShowMap : MonoBehaviour
         }
         return file.text;
     }
+
+
+    public Vector3 UvTo3D(Vector2 uv)
+    {
+        Mesh mesh = GetComponent<MeshFilter>().mesh;
+        int[] tris = mesh.triangles;
+        Vector2[] uvs = mesh.uv;
+        Vector3[] verts = mesh.vertices;
+        for (int i = 0; i < tris.Length; i += 3){
+            Vector2 u1 = uvs[tris[i]]; // get the triangle UVs
+            Vector2 u2 = uvs[tris[i + 1]];
+            Vector2 u3 = uvs[tris[i + 2]];
+            // calculate triangle area - if zero, skip it
+            float a = Area(u1, u2, u3); if (a == 0) continue;
+            // calculate barycentric coordinates of u1, u2 and u3
+            // if anyone is negative, point is outside the triangle: skip it
+            float a1 = Area(u2, u3, uv) / a; if (a1 < 0) continue;
+            float a2 = Area(u3, u1, uv) / a; if (a2 < 0) continue;
+            float a3 = Area(u1, u2, uv) / a; if (a3 < 0) continue;
+            // point inside the triangle - find mesh position by interpolation...
+            Vector3 p3D = a1 * verts[tris[i]] + a2 * verts[tris[i + 1]] + a3 * verts[tris[i + 2]];
+            // and return it in world coordinates:
+            return transform.TransformPoint(p3D);
+        }
+        // point outside any uv triangle: return Vector3.zero
+        return Vector3.zero;
+    }
+
+    // calculate signed triangle area using a kind of "2D cross product":
+    float Area(Vector2 p1, Vector2 p2, Vector2 p3)
+    {
+    Vector2 v1 = p1 - p3;
+    Vector2 v2= p2 - p3;
+    return (v1.x* v2.y - v1.y* v2.x) / 2;
+    }
+
+
+
 }
+
+
+
+
+
