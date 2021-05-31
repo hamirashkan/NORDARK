@@ -74,16 +74,16 @@ public class ShowMap : MonoBehaviour
             Node bestNode = null;
             float posStepX = mapSize.x / texture.width;
             float posStepZ = mapSize.z / texture.height;
-            for (int z = 0; z <= texture.height; z++)
+            for (int z = 0; z < texture.height; z++)
             {
-                for (int x = 0; x <= texture.width; x++)
+                for (int x = 0; x < texture.width; x++)
                 {
                     mindist = Mathf.Infinity;
                     bestNode = null;
                     foreach (Node node in graph.RestNodes)
                     {
-                        float posX = (tile.position.x - mapSize.x/2) + x*posStepX;
-                        float posZ = (tile.position.z - mapSize.z / 2) + z * posStepZ;
+                        float posX = (tile.position.x - mapSize.x/2) + x;
+                        float posZ = (tile.position.z - mapSize.z/2) + z;
                         Vector3 pos = new Vector3(posX , 0.25f, posZ);
                         float dist = (pos - node.vec).magnitude;
                         if (dist < mindist)
@@ -121,13 +121,15 @@ public class ShowMap : MonoBehaviour
             Texture2D texture = textMap[c];
             tile.gameObject.GetComponent<Renderer>().material.mainTexture = texture;
             tile.gameObject.GetComponent<Renderer>().material.mainTexture.filterMode = FilterMode.Trilinear;
-            for (int z = 0; z <= texture.height; z++)
+            Shader shader; shader = Shader.Find("Legacy Shaders/Transparent/Diffuse");
+            tile.gameObject.GetComponent<Renderer>().material.shader = shader;
+            for (int z = 0; z < texture.height; z++)
             {
-                for (int x = 0; x <= texture.width; x++)
+                for (int x = 0; x < texture.width; x++)
                 {
                     Color col = colorMap[iter];
                     col.a = 1 - (lambdaMap[iter] - lMin) / (lMax - lMin);
-                    texture.SetPixel(-x, -z, col);
+                    texture.SetPixel(x, z, col);
                     iter += 1;
                 }
             }
@@ -234,14 +236,14 @@ public class ShowMap : MonoBehaviour
             int low = 0;
             temporalRoad[k][0, 13] = rnd.Next(low, high) + 40;//Line 1 (1<=>14) (40, 39)
             temporalRoad[k][13, 0] = rnd.Next(low, high) + 39;
-            temporalRoad[k][13, 9] = rnd.Next(low, high) + 10;//Line 2 (14<=>10) (10, 11)
-            temporalRoad[k][9, 13] = rnd.Next(low, high) + 11;
+            temporalRoad[k][13, 10] = rnd.Next(low, high) + 10;//Line 2 (14<=>11) (10, 11)
+            temporalRoad[k][10, 13] = rnd.Next(low, high) + 11;
             temporalRoad[k][13, 22] = rnd.Next(low, high) + 100;//Line 3 (14<=>23) (100, 110)
             temporalRoad[k][22, 13] = rnd.Next(low, high) + 110;
             temporalRoad[k][6, 3] = rnd.Next(low, high) + 8;//Line 4 (7<=>4) (8, 11)
             temporalRoad[k][3, 6] = rnd.Next(low, high) + 11;
-            temporalRoad[k][3, 23] = rnd.Next(low, high) + 80;//Line 5(4 <=> 23)(80, 85)
-            temporalRoad[k][23, 3] = rnd.Next(low, high) + 85;
+            temporalRoad[k][3, 22] = rnd.Next(low, high) + 80;//Line 5(4 <=> 23)(80, 85)
+            temporalRoad[k][22, 3] = rnd.Next(low, high) + 85;
 
             temporalRoad[k][19, 12] = rnd.Next(low, high) + 10;//Line 6 (20=>13) (10, 0)
             temporalRoad[k][12, 4] = rnd.Next(low, high) + 10;//Line 7 (13<=>5) (10, 11)
