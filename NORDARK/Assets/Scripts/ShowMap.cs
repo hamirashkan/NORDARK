@@ -29,6 +29,12 @@ public class ShowMap : MonoBehaviour
     public float r = 0.005f;
     public float alpha = 2;
 
+
+    float scale = 1.0f;
+    bool recalculateNormals = false;
+    private Vector3[] baseVertices;
+
+
     // Start is called before the first frame update
 
 
@@ -123,8 +129,8 @@ public class ShowMap : MonoBehaviour
             Texture2D texture = textMap[c];
             tile.gameObject.GetComponent<Renderer>().material.mainTexture = texture;
             tile.gameObject.GetComponent<Renderer>().material.mainTexture.filterMode = FilterMode.Trilinear;
-            Shader shader; shader = Shader.Find("Legacy Shaders/Transparent/Diffuse");
-            tile.gameObject.GetComponent<Renderer>().material.shader = shader;
+            //Shader shader; shader = Shader.Find("Legacy Shaders/Transparent/Diffuse");
+            //tile.gameObject.GetComponent<Renderer>().material.shader = shader;
             for (int z = 0; z < texture.height; z++)
             {
                 for (int x = 0; x < texture.width; x++)
@@ -137,6 +143,52 @@ public class ShowMap : MonoBehaviour
             }
 
             texture.Apply();
+
+
+
+
+
+
+
+
+            if (c == 2 || c == 5)
+            {
+
+     
+            Mesh mesh = tile.gameObject.GetComponent<MeshFilter>().mesh;
+
+            baseVertices = mesh.vertices;
+
+            var vertices = new Vector3[baseVertices.Length];
+
+            for (var i = 0; i < vertices.Length; i++)
+            {
+                var vertex = baseVertices[i];
+                vertex.x = vertex.x * scale;
+                vertex.y = vertex.y + i;
+                vertex.z = vertex.z * scale;
+
+                vertices[i] = vertex;
+            }
+                Debug.Log(baseVertices.Length);
+
+            mesh.vertices = vertices;
+
+            if (recalculateNormals)
+                mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
+
+            }
+
+
+
+
+
+
+
+
+
+
         }
        /* string tileName = map.AbsoluteZoom + "/133/70";
         UnityTile tilex = GameObject.Find(tileName).GetComponent<UnityTile>();
