@@ -7,6 +7,8 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Mapbox.Unity.Utilities;
 using Mapbox.Unity.Map;
+using Mapbox.Map;
+using Mapbox.Unity.MeshGeneration.Data;
 
 public class ShowMap : MonoBehaviour
 {
@@ -72,8 +74,8 @@ public class ShowMap : MonoBehaviour
             float r = 0.005f;
             float alpha = 2f;
             Node bestNode = null;
-            float posStepX = mapSize.x / texture.width;
-            float posStepZ = mapSize.z / texture.height;
+            //float posStepX = mapSize.x / texture.width;
+            //float posStepZ = mapSize.z / texture.height;
             for (int z = 0; z < texture.height; z++)
             {
                 for (int x = 0; x < texture.width; x++)
@@ -103,7 +105,7 @@ public class ShowMap : MonoBehaviour
                         lambda = (1 / r) * 1 / (1 + Mathf.Exp(Mathf.Pow((mindist + bestNode.LeastCost), -alpha) / r));  //Sigmoid
                     }
 
-
+                                        
                     lambdaMap.Add(lambda);
                     Color col = bestNode.clr;
                     colorMap.Add(col);
@@ -136,6 +138,10 @@ public class ShowMap : MonoBehaviour
 
             texture.Apply();
         }
+       /* string tileName = map.AbsoluteZoom + "/133/70";
+        UnityTile tilex = GameObject.Find(tileName).GetComponent<UnityTile>();
+        tilex.HeightData[0] = 100000;
+        map.TileProvider.UpdateTileProvider();*/
     }
 
 
