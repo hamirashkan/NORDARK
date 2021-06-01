@@ -28,7 +28,8 @@ public class ShowMap : MonoBehaviour
     public string Kernel = "S"; //defaults to sigmoid, "G" for gaussian
     public float r = 0.005f;
     public float alpha = 2;
-
+    public float scale_dis = 1000;
+    public float scale_risk = 10;
 
     float scale = 1.0f;
     bool recalculateNormals = false;
@@ -123,6 +124,7 @@ public class ShowMap : MonoBehaviour
         float lMax = lambdaMap.Max();
         int iter = 0;
 
+
         for (int c = 0; c < gameObject.transform.childCount - 1; c++)
         {
             Transform tile = transform.GetChild(c + 1);
@@ -151,10 +153,12 @@ public class ShowMap : MonoBehaviour
 
 
 
-            if (c == 2 || c == 5)
-            {
+            
 
-     
+            float mindist;
+            Node bestNode = null;
+            int step = 10;
+
             Mesh mesh = tile.gameObject.GetComponent<MeshFilter>().mesh;
 
             baseVertices = mesh.vertices;
@@ -163,14 +167,40 @@ public class ShowMap : MonoBehaviour
 
             for (var i = 0; i < vertices.Length; i++)
             {
+                //int x = i % 10;
+                //int z = i / 10;
+                mindist = Mathf.Infinity;
+                bestNode = null;
+                
+
                 var vertex = baseVertices[i];
                 vertex.x = vertex.x * scale;
-                vertex.y = vertex.y + i;
                 vertex.z = vertex.z * scale;
 
+                foreach (Node node in graph.RestNodes)
+                {
+                    float posX = vertex.x;
+                    float posZ = vertex.z;
+                    Vector3 pos = new Vector3(posX, node.vec.y, posZ);
+
+
+                    float dist = (pos - node.vec).magnitude;
+
+                    if (dist < mindist)
+                    {
+                        mindist = dist;
+                        bestNode = node;
+                    }
+
+                }
+                float dis_new = bestNode.riskFactor * scale_dis / (1 + mindist);
+
+                vertex.y = dis_new;// vertex.y + i;
                 vertices[i] = vertex;
+
+                Debug.Log(dis_new);
             }
-                Debug.Log(baseVertices.Length);
+            Debug.Log(baseVertices.Length);
 
             mesh.vertices = vertices;
 
@@ -178,7 +208,7 @@ public class ShowMap : MonoBehaviour
                 mesh.RecalculateNormals();
             mesh.RecalculateBounds();
 
-            }
+            
 
 
 
