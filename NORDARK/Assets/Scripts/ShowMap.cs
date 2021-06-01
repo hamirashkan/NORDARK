@@ -131,8 +131,8 @@ public class ShowMap : MonoBehaviour
             Texture2D texture = textMap[c];
             tile.gameObject.GetComponent<Renderer>().material.mainTexture = texture;
             tile.gameObject.GetComponent<Renderer>().material.mainTexture.filterMode = FilterMode.Trilinear;
-            //Shader shader; shader = Shader.Find("Legacy Shaders/Transparent/Diffuse");
-            //tile.gameObject.GetComponent<Renderer>().material.shader = shader;
+            Shader shader; shader = Shader.Find("Legacy Shaders/Transparent/Diffuse");
+            tile.gameObject.GetComponent<Renderer>().material.shader = shader;
             for (int z = 0; z < texture.height; z++)
             {
                 for (int x = 0; x < texture.width; x++)
@@ -171,7 +171,7 @@ public class ShowMap : MonoBehaviour
                 //int z = i / 10;
                 mindist = Mathf.Infinity;
                 bestNode = null;
-                
+
 
                 var vertex = baseVertices[i];
                 vertex.x = vertex.x * scale;
@@ -179,26 +179,33 @@ public class ShowMap : MonoBehaviour
 
                 foreach (Node node in graph.RestNodes)
                 {
-                    float posX = vertex.x;
-                    float posZ = vertex.z;
-                    Vector3 pos = new Vector3(posX, node.vec.y, posZ);
-
-
-                    float dist = (pos - node.vec).magnitude;
-
-                    if (dist < mindist)
                     {
-                        mindist = dist;
-                        bestNode = node;
+                        float posX = vertex.x;
+                        float posZ = vertex.z;
+                        Vector3 pos = new Vector3(posX + tile.position.x, node.vec.y, posZ + tile.position.z);
+
+                        float dist = (pos - node.vec).magnitude;
+
+                        if (dist < mindist)
+                        {
+                            mindist = dist;
+                            bestNode = node;
+                        }
+
                     }
 
+                    float dis_new = bestNode.riskFactor * scale_dis / (1 + mindist);
+
+                    vertex.y = dis_new;// vertex.y + i;
+                    vertices[i] = vertex;
+
+                    //Debug.Log(dis_new);
+
+                    //Transform objectX;
+                    //objectX = Instantiate(point);
+                    //objectX.position = vertex;
+                    //objectX = nodeX.name;
                 }
-                float dis_new = bestNode.riskFactor * scale_dis / (1 + mindist);
-
-                vertex.y = dis_new;// vertex.y + i;
-                vertices[i] = vertex;
-
-                Debug.Log(dis_new);
             }
             Debug.Log(baseVertices.Length);
 

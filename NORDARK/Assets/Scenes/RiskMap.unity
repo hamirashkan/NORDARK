@@ -379,8 +379,8 @@ MonoBehaviour:
   Kernel: S
   r: 0.005
   alpha: 2
-  scale_dis: 10
-  scale_risk: 10
+  scale_dis: 20
+  scale_risk: 20
 --- !u!28 &625973412
 Texture2D:
   m_ObjectHideFlags: 0
