@@ -129,6 +129,54 @@ public class ShowMap : MonoBehaviour
         {
             Transform tile = transform.GetChild(c + 1);
             Texture2D texture = textMap[c];
+
+            float mindist;
+            Node bestNode = null;
+            int step = 10;
+
+            Mesh mesh = tile.gameObject.GetComponent<MeshFilter>().mesh;
+
+            baseVertices = mesh.vertices;
+            // high scale for the vertices interpolation
+            int vertices_scale = 1;// scale parameters
+            int vertices_max = 10;
+            int vertices_scalemax = 10 * vertices_scale; // max index for the row or column
+            int row = 0, column = 0;
+            int p1_row = 0, p1_column = 0; // point 1
+            int p2_row = 0, p2_column = 0; // point 2
+            Vector3 p1 = Vector3.zero;
+            Vector3 p2 = Vector3.zero;
+            Vector3 p3 = Vector3.zero;
+            Vector3 p4 = Vector3.zero;
+            Vector3 newValue = Vector3.zero;
+            float k_row, k_column, k_height = 0;
+            // interpolation the vertices
+            var scale_vertices = new Vector3[baseVertices.Length * vertices_scale * vertices_scale];
+            for (var i = 0; i < scale_vertices.Length; i++)
+            {
+                row = (int)Math.Floor((double)i / vertices_scalemax);
+                column = i % vertices_scalemax;
+                p1_row = (int)Math.Floor((double)row / vertices_scale);
+                p2_row = (p1_row + 1) >= vertices_max ? p1_row : (p1_row + 1);
+                p1_column = (int)Math.Floor((double)column / vertices_scale);
+                p2_column = (p1_column + 1) >= vertices_max ? p1_column : (p1_column + 1);
+                p1 = baseVertices[p1_row * vertices_max + p1_column];//p1,  p2
+                p2 = baseVertices[p1_row * vertices_max + p2_column];//   p
+                p3 = baseVertices[p2_row * vertices_max + p2_column];//p4,  p3
+                p4 = baseVertices[p2_row * vertices_max + p1_column];
+                k_row = (float)((row - p1_row * vertices_scale) / (float)vertices_scale);
+                k_column = (float)((column - p1_column * vertices_scale) / (float)vertices_scale);
+                k_height = (float)((Math.Sqrt((row - p1_row * vertices_scale) * (row - p1_row * vertices_scale)
+                    + (column - p1_column * vertices_scale) * (column - p1_column * vertices_scale)))
+                    / ((float)vertices_scale * Math.Sqrt(2)));
+                newValue.z = p1.z + (p4.z - p1.z) * k_row;
+                newValue.x = p1.x + (p2.x - p1.x) * k_column;
+                newValue.y = p1.y + (p3.y - p1.y) * k_height;
+                scale_vertices[i] = newValue;
+            }
+            baseVertices = scale_vertices;
+            //
+
             tile.gameObject.GetComponent<Renderer>().material.mainTexture = texture;
             tile.gameObject.GetComponent<Renderer>().material.mainTexture.filterMode = FilterMode.Trilinear;
             Shader shader; shader = Shader.Find("Legacy Shaders/Transparent/Diffuse");
@@ -145,23 +193,6 @@ public class ShowMap : MonoBehaviour
             }
 
             texture.Apply();
-
-
-
-
-
-
-
-
-            
-
-            float mindist;
-            Node bestNode = null;
-            int step = 10;
-
-            Mesh mesh = tile.gameObject.GetComponent<MeshFilter>().mesh;
-
-            baseVertices = mesh.vertices;
 
             var vertices = new Vector3[baseVertices.Length];
 
@@ -201,10 +232,7 @@ public class ShowMap : MonoBehaviour
 
                     //Debug.Log(dis_new);
 
-                    //Transform objectX;
-                    //objectX = Instantiate(point);
-                    //objectX.position = vertex;
-                    //objectX = nodeX.name;
+
                 }
             }
             Debug.Log(baseVertices.Length);
@@ -215,10 +243,25 @@ public class ShowMap : MonoBehaviour
                 mesh.RecalculateNormals();
             mesh.RecalculateBounds();
 
-            
-
-
-
+            // set triangles
+            int[] baseTriangles = mesh.triangles;
+            int[] triangles = new int[(vertices_scalemax - 1) * (vertices_scalemax - 1) * 6];
+            int index = 0;
+            for (int row_i = 0; row_i < vertices_scalemax - 1; row_i++)
+            {
+                for (int column_j = 0; column_j < vertices_scalemax - 1; column_j++)
+                {
+                    triangles[index] = row_i * vertices_scalemax + column_j;
+                    triangles[index + 1] = (row_i + 1) * vertices_scalemax + column_j + 1;
+                    triangles[index + 2] = (row_i + 1) * vertices_scalemax + column_j;
+                    triangles[index + 3] = row_i * vertices_scalemax + column_j;
+                    triangles[index + 4] = row_i * vertices_scalemax + column_j + 1;
+                    triangles[index + 5] = (row_i + 1) * vertices_scalemax + column_j + 1;
+                    index += 6;
+                    Debug.Log(index);
+                }
+            }
+            mesh.triangles = triangles;
 
 
 
@@ -227,10 +270,20 @@ public class ShowMap : MonoBehaviour
 
 
         }
-       /* string tileName = map.AbsoluteZoom + "/133/70";
-        UnityTile tilex = GameObject.Find(tileName).GetComponent<UnityTile>();
-        tilex.HeightData[0] = 100000;
-        map.TileProvider.UpdateTileProvider(); */
+        //Transform tile1 = transform.GetChild(2);
+        //Mesh mesh1 = tile1.gameObject.GetComponent<MeshFilter>().mesh;
+        //baseVertices = mesh1.vertices;
+        //for (var i = 0; i < baseVertices.Length; i++)
+        //{
+        //    Transform objectX;
+        //    objectX = Instantiate(point);
+        //    objectX.position = baseVertices[i];
+        //    objectX.name = "node_" + i;
+        //}
+        //string tileName = map.AbsoluteZoom + "/133/70";
+        //UnityTile tilex = GameObject.Find(tileName).GetComponent<UnityTile>();
+        //tilex.HeightData[0] = 100000;
+        //map.TileProvider.UpdateTileProvider(); 
     }
 
 
