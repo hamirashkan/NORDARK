@@ -35,7 +35,7 @@ public class ShowMap : MonoBehaviour
     bool recalculateNormals = false;
     private Vector3[] baseVertices;
 
-
+    public Material SurfaceMat;
     // Start is called before the first frame update
 
 
@@ -69,9 +69,9 @@ public class ShowMap : MonoBehaviour
         for (int c = 0; c < gameObject.transform.childCount - 1; c++)
         {
             Transform tile = transform.GetChild(c + 1); //ignoring first child that is not a tile
-            Vector3 mapSize = tile.gameObject.GetComponent<Renderer>().bounds.size;
-            Texture2D texture = new Texture2D((int)mapSize.x, (int)mapSize.z);
-            textMap.Add(texture);
+            //Vector3 mapSize = tile.gameObject.GetComponent<Renderer>().bounds.size;
+            //Texture2D texture = new Texture2D((int)mapSize.x, (int)mapSize.z);
+            //textMap.Add(texture);
             //tile.gameObject.GetComponent<Renderer>().material.mainTexture = texture;
             //tile.gameObject.GetComponent<Renderer>().material.mainTexture.filterMode = FilterMode.Trilinear;
 
@@ -83,52 +83,54 @@ public class ShowMap : MonoBehaviour
             Node bestNode = null;
             //float posStepX = mapSize.x / texture.width;
             //float posStepZ = mapSize.z / texture.height;
-            for (int z = 0; z < texture.height; z++)
-            {
-                for (int x = 0; x < texture.width; x++)
-                {
-                    mindist = Mathf.Infinity;
-                    bestNode = null;
-                    foreach (Node node in graph.RestNodes)
-                    {
-                        float posX = (tile.position.x - mapSize.x/2) + x;
-                        float posZ = (tile.position.z - mapSize.z/2) + z;
-                        Vector3 pos = new Vector3(posX , 0.25f, posZ);
-                        float dist = (pos - node.vec).magnitude;
-                        if (dist < mindist)
-                        {
-                            mindist = dist;
-                            bestNode = node;
-                        }
-                    }
+            /*       for (int z = 0; z < texture.height; z++)
+                   {
+                       for (int x = 0; x < texture.width; x++)
+                       {
+                           mindist = Mathf.Infinity;
+                           bestNode = null;
+                           foreach (Node node in graph.RestNodes)
+                           {
+                               float posX = (tile.position.x - mapSize.x/2) + x;
+                               float posZ = (tile.position.z - mapSize.z/2) + z;
+                               Vector3 pos = new Vector3(posX , 0.25f, posZ);
+                               float dist = (pos - node.vec).magnitude;
+                               if (dist < mindist)
+                               {
+                                   mindist = dist;
+                                   bestNode = node;
+                               }
+                           }
 
-                    //choice of kernel function for density estimation
-                    if (Kernel == "G")
-                    {
-                        lambda = (1 / (r * Mathf.Sqrt(2 * Mathf.PI))) * Mathf.Exp(-0.5f * Mathf.Pow((Mathf.Pow((mindist + bestNode.LeastCost), -alpha) / r), 2));  //Gaussian
-                    }
-                    else
-                    {
-                        lambda = (1 / r) * 1 / (1 + Mathf.Exp(Mathf.Pow((mindist + bestNode.LeastCost), -alpha) / r));  //Sigmoid
-                    }
+                           //choice of kernel function for density estimation
+                           if (Kernel == "G")
+                           {
+                               lambda = (1 / (r * Mathf.Sqrt(2 * Mathf.PI))) * Mathf.Exp(-0.5f * Mathf.Pow((Mathf.Pow((mindist + bestNode.LeastCost), -alpha) / r), 2));  //Gaussian
+                           }
+                           else
+                           {
+                               lambda = (1 / r) * 1 / (1 + Mathf.Exp(Mathf.Pow((mindist + bestNode.LeastCost), -alpha) / r));  //Sigmoid
+                           }
 
-                                        
-                    lambdaMap.Add(lambda);
-                    Color col = bestNode.clr;
-                    colorMap.Add(col);
-                }
-            }
 
+                           lambdaMap.Add(lambda);
+                           Color col = bestNode.clr;
+                           colorMap.Add(col);
+                       }
+                   }
+
+               }
+               float lMin = lambdaMap.Min();
+               float lMax = lambdaMap.Max();
+               int iter = 0;
+
+                   */
         }
-        float lMin = lambdaMap.Min();
-        float lMax = lambdaMap.Max();
-        int iter = 0;
-
-
         for (int c = 0; c < gameObject.transform.childCount - 1; c++)
         {
             Transform tile = transform.GetChild(c + 1);
-            Texture2D texture = textMap[c];
+            //Texture2D texture = textMap[c];
+            float lambda;
 
             float mindist;
             Node bestNode = null;
@@ -200,7 +202,6 @@ public class ShowMap : MonoBehaviour
                 vertex.z = vertex.z * scale;
 
                 foreach (Node node in graph.RestNodes)
-                {
                     {
                         float posX = vertex.x;
                         float posZ = vertex.z;
@@ -224,13 +225,30 @@ public class ShowMap : MonoBehaviour
                     //Debug.Log(dis_new);
 
 
+                
+                    //choice of kernel function for density estimation
+                    if (Kernel == "G")
+                    {
+                        lambda = (1 / (r * Mathf.Sqrt(2 * Mathf.PI))) * Mathf.Exp(-0.5f * Mathf.Pow((Mathf.Pow((mindist + bestNode.LeastCost), -alpha) / r), 2));  //Gaussian
+                    }
+                    else
+                    {
+                        lambda = (1 / r) * 1 / (1 + Mathf.Exp(Mathf.Pow((mindist + bestNode.LeastCost), -alpha) / r));  //Sigmoid
+                    }
+
+
+                    lambdaMap.Add(lambda);
+                    Color col = bestNode.clr;
+                    colorMap.Add(col);
                 }
-            }
+
             //Debug.Log(baseVertices.Length);
 
             mesh.vertices = vertices;
 
-            // set triangles
+            
+
+                // set triangles
             int[] baseTriangles = mesh.triangles;
             int[] triangles = new int[(vertices_scalemax - 1) * (vertices_scalemax - 1) * 6];
             int index = 0;
@@ -251,7 +269,7 @@ public class ShowMap : MonoBehaviour
             mesh.triangles = triangles;
             //
 
-            tile.gameObject.GetComponent<Renderer>().material.mainTexture = texture;
+            /*tile.gameObject.GetComponent<Renderer>().material.mainTexture = texture;
             tile.gameObject.GetComponent<Renderer>().material.mainTexture.filterMode = FilterMode.Trilinear;
             Shader shader; shader = Shader.Find("Legacy Shaders/Transparent/Diffuse");
             tile.gameObject.GetComponent<Renderer>().material.shader = shader;
@@ -266,8 +284,35 @@ public class ShowMap : MonoBehaviour
                 }
             }
 
-            texture.Apply();
+            texture.Apply();*/
         }
+
+        float lMin = lambdaMap.Min();
+        float lMax = lambdaMap.Max();
+        int iter = 0;
+
+        for (int c = 0; c < gameObject.transform.childCount - 1; c++)
+        {
+            Transform tile = transform.GetChild(c + 1);
+            Mesh mesh = tile.gameObject.GetComponent<MeshFilter>().mesh;
+            var vertices = mesh.vertices;
+            Color[] colors = new Color[vertices.Length];
+
+            for (var i = 0; i < vertices.Length; i++)
+            {
+                colors[i] = colorMap[iter];
+                colors[i].a = 1 - (lambdaMap[iter] - lMin) / (lMax - lMin);
+                iter += 1;
+            }
+
+            Shader shader; shader = Shader.Find("Particles/Standard Unlit");
+
+            //tile.gameObject.GetComponent<Renderer>().material.shader = shader;
+            tile.gameObject.GetComponent<Renderer>().material = SurfaceMat;
+            mesh.colors = colors;
+        }
+
+
         //Transform tile1 = transform.GetChild(2);
         //Mesh mesh1 = tile1.gameObject.GetComponent<MeshFilter>().mesh;
         //baseVertices = mesh1.vertices;
@@ -355,7 +400,7 @@ public class ShowMap : MonoBehaviour
                 Debug.Log(DateTime.Now.ToString() + ", inited " + i + "_th nodes");
         }
 
-        timeSteps = 100;
+        timeSteps = 10;
         graph.timeSteps = timeSteps;
 
         int[][,] temporalRoad = Enumerable.Range(0, timeSteps).Select(_ => new int[nodesNames.Length, nodesNames.Length]).ToArray();

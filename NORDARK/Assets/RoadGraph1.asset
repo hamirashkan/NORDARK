@@ -1,370 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-8392094951645800537
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
-  m_Name: "Langeseth\xF8gda"
-  m_EditorClassIdentifier: 
-  vec: {x: -63.884514, y: 0, z: -126.07546}
-  objTransform: {fileID: 0}
-  obj: {fileID: 0}
-  clr: {r: 0, g: 0, b: 0, a: 0}
-  LeastCost: Infinity
-  MostAccessPOI: {fileID: 0}
-  index: 12
-  stop_id: NSR:StopPlace:34745
-  visited: []
-  POIList: []
-  LeastCostList: []
-  riskFactor: 0
-  neighborNames: []
-  neighbors: []
-  weights: []
---- !u!114 &-7328311455496699822
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
-  m_Name: Langeset
-  m_EditorClassIdentifier: 
-  vec: {x: -64.664375, y: 0, z: -125.066925}
-  objTransform: {fileID: 0}
-  obj: {fileID: 0}
-  clr: {r: 0, g: 0, b: 0, a: 0}
-  LeastCost: Infinity
-  MostAccessPOI: {fileID: 0}
-  index: 4
-  stop_id: NSR:StopPlace:34737
-  visited: []
-  POIList: []
-  LeastCostList: []
-  riskFactor: 0
-  neighborNames: []
-  neighbors: []
-  weights: []
---- !u!114 &-6904187360618701023
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
-  m_Name: "N\xF8rvegata vest"
-  m_EditorClassIdentifier: 
-  vec: {x: -92.76594, y: 0, z: -38.96302}
-  objTransform: {fileID: 0}
-  obj: {fileID: 0}
-  clr: {r: 0, g: 0, b: 0, a: 0}
-  LeastCost: Infinity
-  MostAccessPOI: {fileID: 0}
-  index: 13
-  stop_id: NSR:StopPlace:41039
-  visited: []
-  POIList: []
-  LeastCostList: []
-  riskFactor: 0
-  neighborNames: []
-  neighbors: []
-  weights: []
---- !u!114 &-6146983364445629850
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
-  m_Name: "Skj\xE6rah\xF8gda"
-  m_EditorClassIdentifier: 
-  vec: {x: 20.574846, y: 0, z: 56.728153}
-  objTransform: {fileID: 0}
-  obj: {fileID: 0}
-  clr: {r: 0, g: 0, b: 0, a: 0}
-  LeastCost: Infinity
-  MostAccessPOI: {fileID: 0}
-  index: 7
-  stop_id: NSR:StopPlace:41035
-  visited: []
-  POIList: []
-  LeastCostList: []
-  riskFactor: 0
-  neighborNames: []
-  neighbors: []
-  weights: []
---- !u!114 &-5277551106479185865
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
-  m_Name: "Skj\xE6rn\xE6set"
-  m_EditorClassIdentifier: 
-  vec: {x: 6.01308, y: 0, z: 55.760994}
-  objTransform: {fileID: 0}
-  obj: {fileID: 0}
-  clr: {r: 0, g: 0, b: 0, a: 0}
-  LeastCost: Infinity
-  MostAccessPOI: {fileID: 0}
-  index: 14
-  stop_id: NSR:StopPlace:41046
-  visited: []
-  POIList: []
-  LeastCostList: []
-  riskFactor: 0
-  neighborNames: []
-  neighbors: []
-  weights: []
---- !u!114 &-3451420177162745477
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
-  m_Name: Brekke
-  m_EditorClassIdentifier: 
-  vec: {x: -95.62751, y: 0, z: -83.03181}
-  objTransform: {fileID: 0}
-  obj: {fileID: 0}
-  clr: {r: 0, g: 0, b: 0, a: 0}
-  LeastCost: Infinity
-  MostAccessPOI: {fileID: 0}
-  index: 2
-  stop_id: NSR:StopPlace:41020
-  visited: []
-  POIList: []
-  LeastCostList: []
-  riskFactor: 0
-  neighborNames: []
-  neighbors: []
-  weights: []
---- !u!114 &-3157344041097068468
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
-  m_Name: Vegtun
-  m_EditorClassIdentifier: 
-  vec: {x: -63.953617, y: 0, z: -127.0003}
-  objTransform: {fileID: 0}
-  obj: {fileID: 0}
-  clr: {r: 0, g: 0, b: 0, a: 0}
-  LeastCost: Infinity
-  MostAccessPOI: {fileID: 0}
-  index: 19
-  stop_id: NSR:StopPlace:34754
-  visited: []
-  POIList: []
-  LeastCostList: []
-  riskFactor: 0
-  neighborNames: []
-  neighbors: []
-  weights: []
---- !u!114 &-2619370779714350857
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
-  m_Name: Skjong nordre
-  m_EditorClassIdentifier: 
-  vec: {x: -99.788376, y: 0, z: -33.913403}
-  objTransform: {fileID: 0}
-  obj: {fileID: 0}
-  clr: {r: 0, g: 0, b: 0, a: 0}
-  LeastCost: Infinity
-  MostAccessPOI: {fileID: 0}
-  index: 3
-  stop_id: NSR:StopPlace:41021
-  visited: []
-  POIList: []
-  LeastCostList: []
-  riskFactor: 0
-  neighborNames: []
-  neighbors: []
-  weights: []
---- !u!114 &-2397531613957973321
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
-  m_Name: "Skj\xE6ret"
-  m_EditorClassIdentifier: 
-  vec: {x: -38.366497, y: 0, z: 24.902052}
-  objTransform: {fileID: 0}
-  obj: {fileID: 0}
-  clr: {r: 0, g: 0, b: 0, a: 0}
-  LeastCost: Infinity
-  MostAccessPOI: {fileID: 0}
-  index: 18
-  stop_id: NSR:StopPlace:41041
-  visited: []
-  POIList: []
-  LeastCostList: []
-  riskFactor: 0
-  neighborNames: []
-  neighbors: []
-  weights: []
---- !u!114 &-2244652559573341220
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
-  m_Name: "Skj\xE6rs\xE5"
-  m_EditorClassIdentifier: 
-  vec: {x: -5.837234, y: 0, z: 7.009625}
-  objTransform: {fileID: 0}
-  obj: {fileID: 0}
-  clr: {r: 0, g: 0, b: 0, a: 0}
-  LeastCost: Infinity
-  MostAccessPOI: {fileID: 0}
-  index: 23
-  stop_id: NSR:StopPlace:41053
-  visited: []
-  POIList: []
-  LeastCostList: []
-  riskFactor: 0
-  neighborNames: []
-  neighbors: []
-  weights: []
---- !u!114 &-2133316976200916278
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
-  m_Name: Or
-  m_EditorClassIdentifier: 
-  vec: {x: 22.471481, y: 0, z: 48.98521}
-  objTransform: {fileID: 0}
-  obj: {fileID: 0}
-  clr: {r: 0, g: 0, b: 0, a: 0}
-  LeastCost: Infinity
-  MostAccessPOI: {fileID: 0}
-  index: 20
-  stop_id: NSR:StopPlace:41057
-  visited: []
-  POIList: []
-  LeastCostList: []
-  riskFactor: 0
-  neighborNames: []
-  neighbors: []
-  weights: []
---- !u!114 &-1877834563972222305
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
-  m_Name: Nytun
-  m_EditorClassIdentifier: 
-  vec: {x: -96.48475, y: 0, z: -40.544468}
-  objTransform: {fileID: 0}
-  obj: {fileID: 0}
-  clr: {r: 0, g: 0, b: 0, a: 0}
-  LeastCost: Infinity
-  MostAccessPOI: {fileID: 0}
-  index: 0
-  stop_id: NSR:StopPlace:41025
-  visited: []
-  POIList: []
-  LeastCostList: []
-  riskFactor: 0
-  neighborNames: []
-  neighbors: []
-  weights: []
---- !u!114 &11400000
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3f8d9ad6e993dfc4a9e28bb495a4b6c1, type: 3}
-  m_Name: RoadGraph1
-  m_EditorClassIdentifier: 
-  timeSteps: 0
-  restNodes: []
-  nodes:
-  - {fileID: -1877834563972222305}
-  - {fileID: 7826145381592807080}
-  - {fileID: -3451420177162745477}
-  - {fileID: -2619370779714350857}
-  - {fileID: -7328311455496699822}
-  - {fileID: 4529064722321930650}
-  - {fileID: 61045597408435854}
-  - {fileID: -6146983364445629850}
-  - {fileID: 8691730164693263664}
-  - {fileID: 5845134475147808768}
-  - {fileID: 2236267929401340536}
-  - {fileID: 4707594829931024119}
-  - {fileID: -8392094951645800537}
-  - {fileID: -6904187360618701023}
-  - {fileID: -5277551106479185865}
-  - {fileID: 5211179761141935376}
-  - {fileID: 2737009011775642271}
-  - {fileID: 7167302423134281336}
-  - {fileID: -2397531613957973321}
-  - {fileID: -3157344041097068468}
-  - {fileID: -2133316976200916278}
-  - {fileID: 8342970059690455080}
-  - {fileID: 5231957913017495308}
-  - {fileID: -2244652559573341220}
-  - {fileID: 114628862455345279}
---- !u!114 &61045597408435854
+--- !u!114 &-6923760142739783015
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -391,7 +27,61 @@ MonoBehaviour:
   neighborNames: []
   neighbors: []
   weights: []
---- !u!114 &114628862455345279
+--- !u!114 &-6004659794163121951
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
+  m_Name: Brekke
+  m_EditorClassIdentifier: 
+  vec: {x: -95.62751, y: 0, z: -83.03181}
+  objTransform: {fileID: 0}
+  obj: {fileID: 0}
+  clr: {r: 0, g: 0, b: 0, a: 0}
+  LeastCost: Infinity
+  MostAccessPOI: {fileID: 0}
+  index: 2
+  stop_id: NSR:StopPlace:41020
+  visited: []
+  POIList: []
+  LeastCostList: []
+  riskFactor: 0
+  neighborNames: []
+  neighbors: []
+  weights: []
+--- !u!114 &-5554705238680717246
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
+  m_Name: "Skj\xE6rn\xE6set"
+  m_EditorClassIdentifier: 
+  vec: {x: 6.01308, y: 0, z: 55.760994}
+  objTransform: {fileID: 0}
+  obj: {fileID: 0}
+  clr: {r: 0, g: 0, b: 0, a: 0}
+  LeastCost: Infinity
+  MostAccessPOI: {fileID: 0}
+  index: 14
+  stop_id: NSR:StopPlace:41046
+  visited: []
+  POIList: []
+  LeastCostList: []
+  riskFactor: 0
+  neighborNames: []
+  neighbors: []
+  weights: []
+--- !u!114 &-5452099765137171180
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -418,196 +108,7 @@ MonoBehaviour:
   neighborNames: []
   neighbors: []
   weights: []
---- !u!114 &2236267929401340536
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
-  m_Name: "N\xF8rvasund"
-  m_EditorClassIdentifier: 
-  vec: {x: -90.46803, y: 0, z: -38.978867}
-  objTransform: {fileID: 0}
-  obj: {fileID: 0}
-  clr: {r: 0, g: 0, b: 0, a: 0}
-  LeastCost: Infinity
-  MostAccessPOI: {fileID: 0}
-  index: 10
-  stop_id: NSR:StopPlace:41034
-  visited: []
-  POIList: []
-  LeastCostList: []
-  riskFactor: 0
-  neighborNames: []
-  neighbors: []
-  weights: []
---- !u!114 &2737009011775642271
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
-  m_Name: "L\xF8nset"
-  m_EditorClassIdentifier: 
-  vec: {x: 129.86917, y: 0, z: -21.76373}
-  objTransform: {fileID: 0}
-  obj: {fileID: 0}
-  clr: {r: 0, g: 0, b: 0, a: 0}
-  LeastCost: Infinity
-  MostAccessPOI: {fileID: 0}
-  index: 16
-  stop_id: NSR:StopPlace:42375
-  visited: []
-  POIList: []
-  LeastCostList: []
-  riskFactor: 0
-  neighborNames: []
-  neighbors: []
-  weights: []
---- !u!114 &4529064722321930650
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
-  m_Name: Nyveien Tomrefjord
-  m_EditorClassIdentifier: 
-  vec: {x: -40.11756, y: 0, z: -17.369791}
-  objTransform: {fileID: 0}
-  obj: {fileID: 0}
-  clr: {r: 0, g: 0, b: 0, a: 0}
-  LeastCost: Infinity
-  MostAccessPOI: {fileID: 0}
-  index: 5
-  stop_id: NSR:StopPlace:41028
-  visited: []
-  POIList: []
-  LeastCostList: []
-  riskFactor: 0
-  neighborNames: []
-  neighbors: []
-  weights: []
---- !u!114 &4707594829931024119
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
-  m_Name: Hallguttu
-  m_EditorClassIdentifier: 
-  vec: {x: 160.7154, y: 0, z: 81.4699}
-  objTransform: {fileID: 0}
-  obj: {fileID: 0}
-  clr: {r: 0, g: 0, b: 0, a: 0}
-  LeastCost: Infinity
-  MostAccessPOI: {fileID: 0}
-  index: 11
-  stop_id: NSR:StopPlace:42360
-  visited: []
-  POIList: []
-  LeastCostList: []
-  riskFactor: 0
-  neighborNames: []
-  neighbors: []
-  weights: []
---- !u!114 &5211179761141935376
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
-  m_Name: "Bremsnes rundkj\xF8ring"
-  m_EditorClassIdentifier: 
-  vec: {x: 10.743949, y: 0, z: 56.373985}
-  objTransform: {fileID: 0}
-  obj: {fileID: 0}
-  clr: {r: 0, g: 0, b: 0, a: 0}
-  LeastCost: Infinity
-  MostAccessPOI: {fileID: 0}
-  index: 15
-  stop_id: NSR:StopPlace:41044
-  visited: []
-  POIList: []
-  LeastCostList: []
-  riskFactor: 0
-  neighborNames: []
-  neighbors: []
-  weights: []
---- !u!114 &5231957913017495308
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
-  m_Name: Brendehaug
-  m_EditorClassIdentifier: 
-  vec: {x: -77.09815, y: 0, z: -33.109554}
-  objTransform: {fileID: 0}
-  obj: {fileID: 0}
-  clr: {r: 0, g: 0, b: 0, a: 0}
-  LeastCost: Infinity
-  MostAccessPOI: {fileID: 0}
-  index: 22
-  stop_id: NSR:StopPlace:41056
-  visited: []
-  POIList: []
-  LeastCostList: []
-  riskFactor: 0
-  neighborNames: []
-  neighbors: []
-  weights: []
---- !u!114 &5845134475147808768
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
-  m_Name: Brekke nedre
-  m_EditorClassIdentifier: 
-  vec: {x: -96.47884, y: 0, z: -82.55278}
-  objTransform: {fileID: 0}
-  obj: {fileID: 0}
-  clr: {r: 0, g: 0, b: 0, a: 0}
-  LeastCost: Infinity
-  MostAccessPOI: {fileID: 0}
-  index: 9
-  stop_id: NSR:StopPlace:41033
-  visited: []
-  POIList: []
-  LeastCostList: []
-  riskFactor: 0
-  neighborNames: []
-  neighbors: []
-  weights: []
---- !u!114 &7167302423134281336
+--- !u!114 &-5049696218684319074
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -634,7 +135,479 @@ MonoBehaviour:
   neighborNames: []
   neighbors: []
   weights: []
---- !u!114 &7826145381592807080
+--- !u!114 &-4028607120394348287
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
+  m_Name: Langeset
+  m_EditorClassIdentifier: 
+  vec: {x: -64.664375, y: 0, z: -125.066925}
+  objTransform: {fileID: 0}
+  obj: {fileID: 0}
+  clr: {r: 0, g: 0, b: 0, a: 0}
+  LeastCost: Infinity
+  MostAccessPOI: {fileID: 0}
+  index: 4
+  stop_id: NSR:StopPlace:34737
+  visited: []
+  POIList: []
+  LeastCostList: []
+  riskFactor: 0
+  neighborNames: []
+  neighbors: []
+  weights: []
+--- !u!114 &-3864304787926904499
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
+  m_Name: Skjong nordre
+  m_EditorClassIdentifier: 
+  vec: {x: -99.788376, y: 0, z: -33.913403}
+  objTransform: {fileID: 0}
+  obj: {fileID: 0}
+  clr: {r: 0, g: 0, b: 0, a: 0}
+  LeastCost: Infinity
+  MostAccessPOI: {fileID: 0}
+  index: 3
+  stop_id: NSR:StopPlace:41021
+  visited: []
+  POIList: []
+  LeastCostList: []
+  riskFactor: 0
+  neighborNames: []
+  neighbors: []
+  weights: []
+--- !u!114 &-3425492287213129008
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
+  m_Name: Brekke nedre
+  m_EditorClassIdentifier: 
+  vec: {x: -96.47884, y: 0, z: -82.55278}
+  objTransform: {fileID: 0}
+  obj: {fileID: 0}
+  clr: {r: 0, g: 0, b: 0, a: 0}
+  LeastCost: Infinity
+  MostAccessPOI: {fileID: 0}
+  index: 9
+  stop_id: NSR:StopPlace:41033
+  visited: []
+  POIList: []
+  LeastCostList: []
+  riskFactor: 0
+  neighborNames: []
+  neighbors: []
+  weights: []
+--- !u!114 &-2643059256226732188
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
+  m_Name: "Langeseth\xF8gda"
+  m_EditorClassIdentifier: 
+  vec: {x: -63.884514, y: 0, z: -126.07546}
+  objTransform: {fileID: 0}
+  obj: {fileID: 0}
+  clr: {r: 0, g: 0, b: 0, a: 0}
+  LeastCost: Infinity
+  MostAccessPOI: {fileID: 0}
+  index: 12
+  stop_id: NSR:StopPlace:34745
+  visited: []
+  POIList: []
+  LeastCostList: []
+  riskFactor: 0
+  neighborNames: []
+  neighbors: []
+  weights: []
+--- !u!114 &-2320687810869660453
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
+  m_Name: "L\xF8nset"
+  m_EditorClassIdentifier: 
+  vec: {x: 129.86917, y: 0, z: -21.76373}
+  objTransform: {fileID: 0}
+  obj: {fileID: 0}
+  clr: {r: 0, g: 0, b: 0, a: 0}
+  LeastCost: Infinity
+  MostAccessPOI: {fileID: 0}
+  index: 16
+  stop_id: NSR:StopPlace:42375
+  visited: []
+  POIList: []
+  LeastCostList: []
+  riskFactor: 0
+  neighborNames: []
+  neighbors: []
+  weights: []
+--- !u!114 &-2293207572084706430
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
+  m_Name: Hallguttu
+  m_EditorClassIdentifier: 
+  vec: {x: 160.7154, y: 0, z: 81.4699}
+  objTransform: {fileID: 0}
+  obj: {fileID: 0}
+  clr: {r: 0, g: 0, b: 0, a: 0}
+  LeastCost: Infinity
+  MostAccessPOI: {fileID: 0}
+  index: 11
+  stop_id: NSR:StopPlace:42360
+  visited: []
+  POIList: []
+  LeastCostList: []
+  riskFactor: 0
+  neighborNames: []
+  neighbors: []
+  weights: []
+--- !u!114 &-2025253029624548502
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
+  m_Name: "N\xF8rvasund"
+  m_EditorClassIdentifier: 
+  vec: {x: -90.46803, y: 0, z: -38.978867}
+  objTransform: {fileID: 0}
+  obj: {fileID: 0}
+  clr: {r: 0, g: 0, b: 0, a: 0}
+  LeastCost: Infinity
+  MostAccessPOI: {fileID: 0}
+  index: 10
+  stop_id: NSR:StopPlace:41034
+  visited: []
+  POIList: []
+  LeastCostList: []
+  riskFactor: 0
+  neighborNames: []
+  neighbors: []
+  weights: []
+--- !u!114 &-94878020603990620
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
+  m_Name: "Skj\xE6ret"
+  m_EditorClassIdentifier: 
+  vec: {x: -38.366497, y: 0, z: 24.902052}
+  objTransform: {fileID: 0}
+  obj: {fileID: 0}
+  clr: {r: 0, g: 0, b: 0, a: 0}
+  LeastCost: Infinity
+  MostAccessPOI: {fileID: 0}
+  index: 18
+  stop_id: NSR:StopPlace:41041
+  visited: []
+  POIList: []
+  LeastCostList: []
+  riskFactor: 0
+  neighborNames: []
+  neighbors: []
+  weights: []
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f8d9ad6e993dfc4a9e28bb495a4b6c1, type: 3}
+  m_Name: RoadGraph1
+  m_EditorClassIdentifier: 
+  timeSteps: 0
+  restNodes: []
+  nodes:
+  - {fileID: 3126405453982200431}
+  - {fileID: 6144435922245021081}
+  - {fileID: -6004659794163121951}
+  - {fileID: -3864304787926904499}
+  - {fileID: -4028607120394348287}
+  - {fileID: 5698115079720973385}
+  - {fileID: -6923760142739783015}
+  - {fileID: 1486303338024858229}
+  - {fileID: 8320844610144626407}
+  - {fileID: -3425492287213129008}
+  - {fileID: -2025253029624548502}
+  - {fileID: -2293207572084706430}
+  - {fileID: -2643059256226732188}
+  - {fileID: 1647271092595644545}
+  - {fileID: -5554705238680717246}
+  - {fileID: 345461394684231033}
+  - {fileID: -2320687810869660453}
+  - {fileID: -5049696218684319074}
+  - {fileID: -94878020603990620}
+  - {fileID: 5644720344775113928}
+  - {fileID: 5220356648925361532}
+  - {fileID: 6381510604793356958}
+  - {fileID: 8033391716209989581}
+  - {fileID: 1000212899376057579}
+  - {fileID: -5452099765137171180}
+--- !u!114 &345461394684231033
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
+  m_Name: "Bremsnes rundkj\xF8ring"
+  m_EditorClassIdentifier: 
+  vec: {x: 10.743949, y: 0, z: 56.373985}
+  objTransform: {fileID: 0}
+  obj: {fileID: 0}
+  clr: {r: 0, g: 0, b: 0, a: 0}
+  LeastCost: Infinity
+  MostAccessPOI: {fileID: 0}
+  index: 15
+  stop_id: NSR:StopPlace:41044
+  visited: []
+  POIList: []
+  LeastCostList: []
+  riskFactor: 0
+  neighborNames: []
+  neighbors: []
+  weights: []
+--- !u!114 &1000212899376057579
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
+  m_Name: "Skj\xE6rs\xE5"
+  m_EditorClassIdentifier: 
+  vec: {x: -5.837234, y: 0, z: 7.009625}
+  objTransform: {fileID: 0}
+  obj: {fileID: 0}
+  clr: {r: 0, g: 0, b: 0, a: 0}
+  LeastCost: Infinity
+  MostAccessPOI: {fileID: 0}
+  index: 23
+  stop_id: NSR:StopPlace:41053
+  visited: []
+  POIList: []
+  LeastCostList: []
+  riskFactor: 0
+  neighborNames: []
+  neighbors: []
+  weights: []
+--- !u!114 &1486303338024858229
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
+  m_Name: "Skj\xE6rah\xF8gda"
+  m_EditorClassIdentifier: 
+  vec: {x: 20.574846, y: 0, z: 56.728153}
+  objTransform: {fileID: 0}
+  obj: {fileID: 0}
+  clr: {r: 0, g: 0, b: 0, a: 0}
+  LeastCost: Infinity
+  MostAccessPOI: {fileID: 0}
+  index: 7
+  stop_id: NSR:StopPlace:41035
+  visited: []
+  POIList: []
+  LeastCostList: []
+  riskFactor: 0
+  neighborNames: []
+  neighbors: []
+  weights: []
+--- !u!114 &1647271092595644545
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
+  m_Name: "N\xF8rvegata vest"
+  m_EditorClassIdentifier: 
+  vec: {x: -92.76594, y: 0, z: -38.96302}
+  objTransform: {fileID: 0}
+  obj: {fileID: 0}
+  clr: {r: 0, g: 0, b: 0, a: 0}
+  LeastCost: Infinity
+  MostAccessPOI: {fileID: 0}
+  index: 13
+  stop_id: NSR:StopPlace:41039
+  visited: []
+  POIList: []
+  LeastCostList: []
+  riskFactor: 0
+  neighborNames: []
+  neighbors: []
+  weights: []
+--- !u!114 &3126405453982200431
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
+  m_Name: Nytun
+  m_EditorClassIdentifier: 
+  vec: {x: -96.48475, y: 0, z: -40.544468}
+  objTransform: {fileID: 0}
+  obj: {fileID: 0}
+  clr: {r: 0, g: 0, b: 0, a: 0}
+  LeastCost: Infinity
+  MostAccessPOI: {fileID: 0}
+  index: 0
+  stop_id: NSR:StopPlace:41025
+  visited: []
+  POIList: []
+  LeastCostList: []
+  riskFactor: 0
+  neighborNames: []
+  neighbors: []
+  weights: []
+--- !u!114 &5220356648925361532
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
+  m_Name: Or
+  m_EditorClassIdentifier: 
+  vec: {x: 22.471481, y: 0, z: 48.98521}
+  objTransform: {fileID: 0}
+  obj: {fileID: 0}
+  clr: {r: 0, g: 0, b: 0, a: 0}
+  LeastCost: Infinity
+  MostAccessPOI: {fileID: 0}
+  index: 20
+  stop_id: NSR:StopPlace:41057
+  visited: []
+  POIList: []
+  LeastCostList: []
+  riskFactor: 0
+  neighborNames: []
+  neighbors: []
+  weights: []
+--- !u!114 &5644720344775113928
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
+  m_Name: Vegtun
+  m_EditorClassIdentifier: 
+  vec: {x: -63.953617, y: 0, z: -127.0003}
+  objTransform: {fileID: 0}
+  obj: {fileID: 0}
+  clr: {r: 0, g: 0, b: 0, a: 0}
+  LeastCost: Infinity
+  MostAccessPOI: {fileID: 0}
+  index: 19
+  stop_id: NSR:StopPlace:34754
+  visited: []
+  POIList: []
+  LeastCostList: []
+  riskFactor: 0
+  neighborNames: []
+  neighbors: []
+  weights: []
+--- !u!114 &5698115079720973385
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
+  m_Name: Nyveien Tomrefjord
+  m_EditorClassIdentifier: 
+  vec: {x: -40.11756, y: 0, z: -17.369791}
+  objTransform: {fileID: 0}
+  obj: {fileID: 0}
+  clr: {r: 0, g: 0, b: 0, a: 0}
+  LeastCost: Infinity
+  MostAccessPOI: {fileID: 0}
+  index: 5
+  stop_id: NSR:StopPlace:41028
+  visited: []
+  POIList: []
+  LeastCostList: []
+  riskFactor: 0
+  neighborNames: []
+  neighbors: []
+  weights: []
+--- !u!114 &6144435922245021081
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -661,7 +634,7 @@ MonoBehaviour:
   neighborNames: []
   neighbors: []
   weights: []
---- !u!114 &8342970059690455080
+--- !u!114 &6381510604793356958
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -688,7 +661,34 @@ MonoBehaviour:
   neighborNames: []
   neighbors: []
   weights: []
---- !u!114 &8691730164693263664
+--- !u!114 &8033391716209989581
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 029cb538288e81f438de368af56c50b2, type: 3}
+  m_Name: Brendehaug
+  m_EditorClassIdentifier: 
+  vec: {x: -77.09815, y: 0, z: -33.109554}
+  objTransform: {fileID: 0}
+  obj: {fileID: 0}
+  clr: {r: 0, g: 0, b: 0, a: 0}
+  LeastCost: Infinity
+  MostAccessPOI: {fileID: 0}
+  index: 22
+  stop_id: NSR:StopPlace:41056
+  visited: []
+  POIList: []
+  LeastCostList: []
+  riskFactor: 0
+  neighborNames: []
+  neighbors: []
+  weights: []
+--- !u!114 &8320844610144626407
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
