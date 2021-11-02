@@ -8,6 +8,8 @@ using System.Text.RegularExpressions;
 using Mapbox.Unity.Utilities;
 using Mapbox.Unity.Map;
 
+// points_Scene1.cs
+// old version discarded
 public class points_Scene1 : MonoBehaviour
 {
     Vector3[] coords = new Vector3[40];
@@ -138,7 +140,7 @@ public class points_Scene1 : MonoBehaviour
     {
         map = GameObject.Find("Mapbox").GetComponent<AbstractMap>();
 
-        GraphSet2("RoadGraph1");
+        GraphSet1("RoadGraph1");//GraphSet1 or 2
         foreach (Node node in graph.Nodes)
         {
             Color AccessColor = GameObject.Find(node.MostAccessPOI.name).GetComponent<Renderer>().material.color;

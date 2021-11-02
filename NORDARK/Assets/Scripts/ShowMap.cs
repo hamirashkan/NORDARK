@@ -42,7 +42,7 @@ public class ShowMap : MonoBehaviour
 
     void Start()
     {
-        if(!IsBGMap)
+        if (!IsBGMap)// if GraphSet1
             StartCoroutine(CreateMap(0.01f));
     }
 
@@ -51,7 +51,7 @@ public class ShowMap : MonoBehaviour
         yield return new WaitForSeconds(time);
         map = GameObject.Find("Mapbox").GetComponent<AbstractMap>();
 
-        GraphSet2("RoadGraph1");
+        GraphSet2("RoadGraph1");//GraphSet1 or 2
         foreach (Node node in graph.Nodes)
         {
             Color AccessColor = GameObject.Find(node.MostAccessPOI.name).GetComponent<Renderer>().material.color;
@@ -556,42 +556,149 @@ public class ShowMap : MonoBehaviour
         return file.text;
     }
 
+    // comment UvTo3D, not used
+    //public Vector3 UvTo3D(Vector2 uv)
+    //{
+    //    Mesh mesh = GetComponent<MeshFilter>().mesh;
+    //    int[] tris = mesh.triangles;
+    //    Vector2[] uvs = mesh.uv;
+    //    Vector3[] verts = mesh.vertices;
+    //    for (int i = 0; i < tris.Length; i += 3){
+    //        Vector2 u1 = uvs[tris[i]]; // get the triangle UVs
+    //        Vector2 u2 = uvs[tris[i + 1]];
+    //        Vector2 u3 = uvs[tris[i + 2]];
+    //        // calculate triangle area - if zero, skip it
+    //        float a = Area(u1, u2, u3); if (a == 0) continue;
+    //        // calculate barycentric coordinates of u1, u2 and u3
+    //        // if anyone is negative, point is outside the triangle: skip it
+    //        float a1 = Area(u2, u3, uv) / a; if (a1 < 0) continue;
+    //        float a2 = Area(u3, u1, uv) / a; if (a2 < 0) continue;
+    //        float a3 = Area(u1, u2, uv) / a; if (a3 < 0) continue;
+    //        // point inside the triangle - find mesh position by interpolation...
+    //        Vector3 p3D = a1 * verts[tris[i]] + a2 * verts[tris[i + 1]] + a3 * verts[tris[i + 2]];
+    //        // and return it in world coordinates:
+    //        return transform.TransformPoint(p3D);
+    //    }
+    //    // point outside any uv triangle: return Vector3.zero
+    //    return Vector3.zero;
+    //}
 
-    public Vector3 UvTo3D(Vector2 uv)
+    //// calculate signed triangle area using a kind of "2D cross product":
+    //float Area(Vector2 p1, Vector2 p2, Vector2 p3)
+    //{
+    //Vector2 v1 = p1 - p3;
+    //Vector2 v2= p2 - p3;
+    //return (v1.x* v2.y - v1.y* v2.x) / 2;
+    //}
+
+    public void GraphSet1(string graphName)
     {
-        Mesh mesh = GetComponent<MeshFilter>().mesh;
-        int[] tris = mesh.triangles;
-        Vector2[] uvs = mesh.uv;
-        Vector3[] verts = mesh.vertices;
-        for (int i = 0; i < tris.Length; i += 3){
-            Vector2 u1 = uvs[tris[i]]; // get the triangle UVs
-            Vector2 u2 = uvs[tris[i + 1]];
-            Vector2 u3 = uvs[tris[i + 2]];
-            // calculate triangle area - if zero, skip it
-            float a = Area(u1, u2, u3); if (a == 0) continue;
-            // calculate barycentric coordinates of u1, u2 and u3
-            // if anyone is negative, point is outside the triangle: skip it
-            float a1 = Area(u2, u3, uv) / a; if (a1 < 0) continue;
-            float a2 = Area(u3, u1, uv) / a; if (a2 < 0) continue;
-            float a3 = Area(u1, u2, uv) / a; if (a3 < 0) continue;
-            // point inside the triangle - find mesh position by interpolation...
-            Vector3 p3D = a1 * verts[tris[i]] + a2 * verts[tris[i + 1]] + a3 * verts[tris[i + 2]];
-            // and return it in world coordinates:
-            return transform.TransformPoint(p3D);
+        graph = Graph.Create(graphName);
+        float y = 0.25f;// xOz plane is the map 2D coordinates
+        int nodesNum = 6;
+        nodesNames = new string[nodesNum];
+        coords = new Vector3[nodesNum];
+        nodesNames[0] = "H1"; coords[0] = new Vector3(-40, y, 0);
+        nodesNames[1] = "A"; coords[1] = new Vector3(-20, y, 0);
+        nodesNames[2] = "B"; coords[2] = new Vector3(-4, y, 12);
+        nodesNames[3] = "C"; coords[3] = new Vector3(16, y, 0);
+        nodesNames[4] = "D"; coords[4] = new Vector3(10, y, -14);
+        nodesNames[5] = "H2"; coords[5] = new Vector3(36, y, 0);
+        for (int i = 0; i < nodesNames.Length; i++)
+        {
+            Node nodeX = Node.Create<Node>(nodesNames[i], coords[i]);
+            nodeX.index = i;
+            graph.AddNode(nodeX);
+            nodeX.objTransform = Instantiate(point);
+            nodeX.obj = nodeX.objTransform.gameObject;
+            nodeX.objTransform.name = nodeX.name;
+            nodeX.objTransform.position = nodeX.vec;
+
+            nodeX.obj.GetComponent<Lines>().index = i;
+            nodeX.obj.GetComponent<Lines>().Neighbors = graph.Nodes[i].Neighbors;
+            nodeX.obj.GetComponent<Lines>().Weights = graph.Nodes[i].Weights;
+            nodeX.obj.GetComponent<Lines>().currentNode = graph.Nodes[i];
+            nodeX.obj.GetComponent<Lines>().line = line;
         }
-        // point outside any uv triangle: return Vector3.zero
-        return Vector3.zero;
+        //H1,  A,  B,  C,  D, H2
+        int[,] roads = new int[,] { {  0,  6,  0,  0,  0,  0},//H1
+                                    {  5,  0,  8,  0,  0,  0},//A
+                                    {  0, 5,  0, 6,  0,  0},//B
+                                    {  0,  0, 7,  0, 7, 10},//C
+                                    {  0, 8,  0, 7,  0,  0},//D
+                                    {  0,  0,  0, 8,  0,  0}};//H2
+
+
+
+
+
+        graph.roadcosts = roads;
+
+
+
+        for (int i = 0; i < roads.GetLength(0); i++)
+        {
+            for (int j = 0; j < roads.GetLength(1); j++)
+            {
+                float weight = roads[i, j];
+                if (weight != 0)
+                {
+                    Node nodeX = graph.FindNode(i);
+                    if (nodeX != null)
+                    {
+                        nodeX.Neighbors.Add(graph.FindNode(j));
+                        nodeX.NeighborNames.Add(graph.FindNode(j).name);
+                        nodeX.Weights.Add(roads[i, j]);
+                    }
+                }
+            }
+        }
+
+
+        /* for (int i = 0; i < roads.GetLength(0); i++)
+        {
+            for (int j = 0; j < roads.GetLength(1); j++)
+            {
+                //Assign current array element to max, if (arr[i,j] > max)
+                if (roads[i, j] > maxW)
+                {
+                    maxW = roads[i, j];
+                }
+
+                //Assign current array element to min if if (arr[i,j] < min)
+                if (roads[i, j] < minW)
+                {
+                    minW = roads[i, j];
+                }
+
+            }
+
+        } */
+
+
+
+        // set H1, H2 as the nodes of POI nodes
+        string[] strPOIs = { "H1", "H2" };
+        Color[] clrPOIs = { Color.blue, Color.red };
+
+        graph.CreatePOInodes(strPOIs, clrPOIs);
+
+        for (int i = 0; i < strPOIs.Length; i++)
+        {
+            GameObject.Find(strPOIs[i]).GetComponent<Renderer>().material.SetColor("_Color", clrPOIs[i]);
+
+        }
+
+
+
+        for (int i = 0; i < strPOIs.Length; i++)
+        {
+            Color AccessColor = GameObject.Find(strPOIs[i]).GetComponent<Renderer>().material.color;
+            GameObject.Find(strPOIs[i]).GetComponent<Lines>().nColor = AccessColor;
+        }
+
+        graph.printNodes();
     }
-
-    // calculate signed triangle area using a kind of "2D cross product":
-    float Area(Vector2 p1, Vector2 p2, Vector2 p3)
-    {
-    Vector2 v1 = p1 - p3;
-    Vector2 v2= p2 - p3;
-    return (v1.x* v2.y - v1.y* v2.x) / 2;
-    }
-
-
 
 }
 

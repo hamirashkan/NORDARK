@@ -4,6 +4,8 @@ using UnityEngine;
 using System;
 using System.Linq;
 
+// points_Scene1.cs
+// old version discarded
 public class points : MonoBehaviour
 {
     Vector3[] coords = new Vector3[40];
