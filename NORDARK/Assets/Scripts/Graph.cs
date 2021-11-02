@@ -135,6 +135,7 @@ public class Graph : ScriptableObject
                 if (nodeX != null)
                 {
                     if (Array.IndexOf(name, nodeX.name) == -1)
+                        //if(Array.IndexOf())// felando
                         restNodes_list.Add(nodeX.index);
                     else
                         POINodes_list.Add(nodeX.index);

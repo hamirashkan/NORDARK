@@ -409,6 +409,7 @@ public class points_Scene1 : MonoBehaviour
 
         // set Brekke, Vegtun as the nodes of POI nodes
         string[] strPOIs = { "Nyveien Tomrefjord", "Nåsbru" };//{ "Brendehaug", "Nåsbru" };//{ "Brekke", "Vegtun" };
+        string[] removeNodes = { "Brendehaug" };
         Color[] clrPOIs = { Color.blue, Color.red };
 
         graph.CreatePOInodes(strPOIs, clrPOIs);

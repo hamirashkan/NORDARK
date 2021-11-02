@@ -37,12 +37,13 @@ public class ShowMap : MonoBehaviour
 
     public Material SurfaceMat;
     // Start is called before the first frame update
-
+    public GameObject BackgroundMap;
+    public Boolean IsBGMap;
 
     void Start()
     {
-
-        StartCoroutine(CreateMap(0.01f));
+        if(!IsBGMap)
+            StartCoroutine(CreateMap(0.01f));
     }
 
     public IEnumerator CreateMap(float time)
@@ -183,7 +184,7 @@ public class ShowMap : MonoBehaviour
             }
             baseVertices = scale_vertices;
 
-            if (recalculateNormals)
+            if (recalculateNormals)//felando
                 mesh.RecalculateNormals();
             mesh.RecalculateBounds();
 
@@ -237,14 +238,14 @@ public class ShowMap : MonoBehaviour
                     }
 
 
-                    lambdaMap.Add(lambda);
+                    lambdaMap.Add(lambda);//Felando   
                     Color col = bestNode.clr;
-                    colorMap.Add(col);
+                    colorMap.Add(col);//felando
                 }
 
             //Debug.Log(baseVertices.Length);
 
-            mesh.vertices = vertices;
+            mesh.vertices = vertices;//felando, decrease the mesh vertices size to normal 100
 
             
 
@@ -286,7 +287,7 @@ public class ShowMap : MonoBehaviour
 
             texture.Apply();*/
         }
-
+        
         float lMin = lambdaMap.Min();
         float lMax = lambdaMap.Max();
         int iter = 0;
