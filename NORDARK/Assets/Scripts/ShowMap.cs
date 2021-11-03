@@ -51,7 +51,7 @@ public class ShowMap : MonoBehaviour
         yield return new WaitForSeconds(time);
         map = GameObject.Find("Mapbox").GetComponent<AbstractMap>();
 
-        GraphSet2("RoadGraph1");//GraphSet1 or 2
+        GraphSet1("RoadGraph1");//GraphSet1 or 2
         foreach (Node node in graph.Nodes)
         {
             Color AccessColor = GameObject.Find(node.MostAccessPOI.name).GetComponent<Renderer>().material.color;
@@ -556,6 +556,183 @@ public class ShowMap : MonoBehaviour
         return file.text;
     }
 
+    public void GraphSet1(string graphName)
+    {
+        graph = Graph.Create(graphName);
+        float y = 0.25f;// xOz plane is the map 2D coordinates
+        int nodesNum = 6;
+        nodesNames = new string[nodesNum];
+        coords = new Vector3[nodesNum];
+
+        Debug.Log(DateTime.Now.ToString() + ", init started");
+        nodesNames[0] = "H1"; coords[0] = new Vector3(-40, y, 0);
+        nodesNames[1] = "A"; coords[1] = new Vector3(-20, y, 0);
+        nodesNames[2] = "B"; coords[2] = new Vector3(-4, y, 12);
+        nodesNames[3] = "C"; coords[3] = new Vector3(16, y, 0);
+        nodesNames[4] = "D"; coords[4] = new Vector3(10, y, -14);
+        nodesNames[5] = "H2"; coords[5] = new Vector3(36, y, 0);
+        for (int i = 0; i < nodesNames.Length; i++)
+        {
+            Node nodeX = Node.Create<Node>(nodesNames[i], coords[i]);
+            nodeX.index = i;
+            graph.AddNode(nodeX);
+            nodeX.objTransform = Instantiate(point);
+            nodeX.obj = nodeX.objTransform.gameObject;
+            nodeX.objTransform.name = nodeX.name;
+            nodeX.objTransform.position = nodeX.vec;
+
+            nodeX.obj.GetComponent<Lines>().index = i;
+            nodeX.obj.GetComponent<Lines>().Neighbors = graph.Nodes[i].Neighbors;
+            nodeX.obj.GetComponent<Lines>().Weights = graph.Nodes[i].Weights;
+            nodeX.obj.GetComponent<Lines>().currentNode = graph.Nodes[i];
+            nodeX.obj.GetComponent<Lines>().line = line;
+        }
+
+        timeSteps = 4;
+        graph.timeSteps = timeSteps;
+
+        ////H1,  A,  B,  C,  D, H2
+        //int[,] roads = new int[,] { {  0,  6,  0,  0,  0,  0},//H1
+        //                            {  5,  0,  8,  0,  0,  0},//A
+        //                            {  0, 5,  0, 6,  0,  0},//B
+        //                            {  0,  0, 7,  0, 7, 10},//C
+        //                            {  0, 8,  0, 7,  0,  0},//D
+        //                            {  0,  0,  0, 8,  0,  0}};//H2
+        int[][,] temporalRoad = Enumerable.Range(0, timeSteps).Select(_ => new int[nodesNames.Length, nodesNames.Length]).ToArray();
+
+        int[,] roads = new int[nodesNames.Length, nodesNames.Length];
+
+        graph.roadcosts = roads;
+        graph.roadTemporal = temporalRoad;
+
+        System.Random rnd = new System.Random();
+
+        for (int k = 0; k < timeSteps; k++)
+        {
+            // random value
+            /*
+            int high = 10;//500;//0
+            int low = 0;
+            temporalRoad[k][0, 1] = rnd.Next(low, high) + 6;//Line 1 (H1<=>A) (6, 5)
+            temporalRoad[k][1, 0] = rnd.Next(low, high) + 5;
+            temporalRoad[k][1, 2] = rnd.Next(low, high) + 8;//Line 2 (A<=>B) (8, 10)
+            temporalRoad[k][2, 1] = rnd.Next(low, high) + 10;
+            temporalRoad[k][2, 3] = rnd.Next(low, high) + 21;//Line 3 (B<=>C) (21, 25)
+            temporalRoad[k][3, 2] = rnd.Next(low, high) + 25;
+            temporalRoad[k][3, 4] = rnd.Next(low, high) + 15;//Line 4 (C<=>D) (15, 14)
+            temporalRoad[k][4, 3] = rnd.Next(low, high) + 14;
+            temporalRoad[k][3, 5] = rnd.Next(low, high) + 12;//Line 5 (C<=>H2) (12, 11)
+            temporalRoad[k][5, 3] = rnd.Next(low, high) + 11;
+            temporalRoad[k][4, 1] = rnd.Next(low, high) + 20;//Line 6 (D=>A) (20, 0)
+            */
+            // T=4 test demo
+            if (k == 0)
+            {
+                temporalRoad[k][0, 1] = 6;//Line 1 (H1<=>A) (6, 5)
+                temporalRoad[k][1, 0] = 5;
+                temporalRoad[k][1, 2] = 8;//Line 2 (A<=>B) (8, 10)
+                temporalRoad[k][2, 1] = 10;
+                temporalRoad[k][2, 3] = 21;//Line 3 (B<=>C) (21, 25)
+                temporalRoad[k][3, 2] = 25;
+                temporalRoad[k][3, 4] = 15;//Line 4 (C<=>D) (15, 14)
+                temporalRoad[k][4, 3] = 14;
+                temporalRoad[k][3, 5] = 12;//Line 5 (C<=>H2) (12, 11)
+                temporalRoad[k][5, 3] = 11;
+                temporalRoad[k][4, 1] = 20;//Line 6 (D=>A) (20, 0)
+            }
+            else if (k == 1)
+            {
+                temporalRoad[k][0, 1] = 6;//Line 1 (H1<=>A) (6, 5)
+                temporalRoad[k][1, 0] = 5;
+                temporalRoad[k][1, 2] = 8;//Line 2 (A<=>B) (8, 30)
+                temporalRoad[k][2, 1] = 30;
+                temporalRoad[k][2, 3] = 21;//Line 3 (B<=>C) (21, 10)
+                temporalRoad[k][3, 2] = 10;
+                temporalRoad[k][3, 4] = 15;//Line 4 (C<=>D) (15, 14)
+                temporalRoad[k][4, 3] = 14;
+                temporalRoad[k][3, 5] = 12;//Line 5 (C<=>H2) (12, 11)
+                temporalRoad[k][5, 3] = 11;
+                temporalRoad[k][4, 1] = 20;//Line 6 (D=>A) (20, 0)
+            }
+            else if (k == 2)
+            {
+                temporalRoad[k][0, 1] = 6;//Line 1 (H1<=>A) (6, 5)
+                temporalRoad[k][1, 0] = 5;
+                temporalRoad[k][1, 2] = 8;//Line 2 (A<=>B) (8, 10)
+                temporalRoad[k][2, 1] = 10;
+                temporalRoad[k][2, 3] = 21;//Line 3 (B<=>C) (21, 24)
+                temporalRoad[k][3, 2] = 24;
+                temporalRoad[k][3, 4] = 15;//Line 4 (C<=>D) (15, 14)
+                temporalRoad[k][4, 3] = 14;
+                temporalRoad[k][3, 5] = 12;//Line 5 (C<=>H2) (12, 11)
+                temporalRoad[k][5, 3] = 11;
+                temporalRoad[k][4, 1] = 20;//Line 6 (D=>A) (20, 0)
+            }
+            else if (k == 3)
+            {
+                temporalRoad[k][0, 1] = 6;//Line 1 (H1<=>A) (6, 5)
+                temporalRoad[k][1, 0] = 5;
+                temporalRoad[k][1, 2] = 15;//Line 2 (A<=>B) (15, 10)
+                temporalRoad[k][2, 1] = 10;
+                temporalRoad[k][2, 3] = 21;//Line 3 (B<=>C) (21, 25)
+                temporalRoad[k][3, 2] = 25;
+                temporalRoad[k][3, 4] = 20;//Line 4 (C<=>D) (20, 14)
+                temporalRoad[k][4, 3] = 14;
+                temporalRoad[k][3, 5] = 12;//Line 5 (C<=>H2) (12, 11)
+                temporalRoad[k][5, 3] = 11;
+                temporalRoad[k][4, 1] = 30;//Line 6 (D=>A) (30, 0)
+            }
+            for (int i = 0; i < nodesNames.Length; i++)
+            {
+                for (int j = 0; j < nodesNames.Length; j++)
+                {
+                    roads[i, j] += temporalRoad[k][i, j];
+                }
+            }
+        }
+
+        for (int i = 0; i < roads.GetLength(0); i++)
+        {
+            for (int j = 0; j < roads.GetLength(1); j++)
+            {
+                roads[i, j] = roads[i, j] / timeSteps;
+                float weight = roads[i, j];
+                if (weight != 0)
+                {
+                    Node nodeX = graph.FindNode(i);
+                    if (nodeX != null)
+                    {
+                        nodeX.Neighbors.Add(graph.FindNode(j));
+                        nodeX.NeighborNames.Add(graph.FindNode(j).name);
+                        nodeX.Weights.Add(roads[i, j]);
+                    }
+                }
+            }
+        }
+
+        // set H1, H2 as the nodes of POI nodes
+        string[] strPOIs = { "H1", "H2" };
+        Color[] clrPOIs = { Color.blue, Color.red };
+
+        graph.CreatePOInodes(strPOIs, clrPOIs);
+
+        for (int i = 0; i < strPOIs.Length; i++)
+        {
+            GameObject.Find(strPOIs[i]).GetComponent<Renderer>().material.SetColor("_Color", clrPOIs[i]);
+
+        }
+
+
+
+        for (int i = 0; i < strPOIs.Length; i++)
+        {
+            Color AccessColor = GameObject.Find(strPOIs[i]).GetComponent<Renderer>().material.color;
+            GameObject.Find(strPOIs[i]).GetComponent<Lines>().nColor = AccessColor;
+        }
+
+        graph.printNodes();
+    }
+
     // comment UvTo3D, not used
     //public Vector3 UvTo3D(Vector2 uv)
     //{
@@ -591,114 +768,114 @@ public class ShowMap : MonoBehaviour
     //return (v1.x* v2.y - v1.y* v2.x) / 2;
     //}
 
-    public void GraphSet1(string graphName)
-    {
-        graph = Graph.Create(graphName);
-        float y = 0.25f;// xOz plane is the map 2D coordinates
-        int nodesNum = 6;
-        nodesNames = new string[nodesNum];
-        coords = new Vector3[nodesNum];
-        nodesNames[0] = "H1"; coords[0] = new Vector3(-40, y, 0);
-        nodesNames[1] = "A"; coords[1] = new Vector3(-20, y, 0);
-        nodesNames[2] = "B"; coords[2] = new Vector3(-4, y, 12);
-        nodesNames[3] = "C"; coords[3] = new Vector3(16, y, 0);
-        nodesNames[4] = "D"; coords[4] = new Vector3(10, y, -14);
-        nodesNames[5] = "H2"; coords[5] = new Vector3(36, y, 0);
-        for (int i = 0; i < nodesNames.Length; i++)
-        {
-            Node nodeX = Node.Create<Node>(nodesNames[i], coords[i]);
-            nodeX.index = i;
-            graph.AddNode(nodeX);
-            nodeX.objTransform = Instantiate(point);
-            nodeX.obj = nodeX.objTransform.gameObject;
-            nodeX.objTransform.name = nodeX.name;
-            nodeX.objTransform.position = nodeX.vec;
+    //public void GraphSet1(string graphName)
+    //{
+    //    graph = Graph.Create(graphName);
+    //    float y = 0.25f;// xOz plane is the map 2D coordinates
+    //    int nodesNum = 6;
+    //    nodesNames = new string[nodesNum];
+    //    coords = new Vector3[nodesNum];
+    //    nodesNames[0] = "H1"; coords[0] = new Vector3(-40, y, 0);
+    //    nodesNames[1] = "A"; coords[1] = new Vector3(-20, y, 0);
+    //    nodesNames[2] = "B"; coords[2] = new Vector3(-4, y, 12);
+    //    nodesNames[3] = "C"; coords[3] = new Vector3(16, y, 0);
+    //    nodesNames[4] = "D"; coords[4] = new Vector3(10, y, -14);
+    //    nodesNames[5] = "H2"; coords[5] = new Vector3(36, y, 0);
+    //    for (int i = 0; i < nodesNames.Length; i++)
+    //    {
+    //        Node nodeX = Node.Create<Node>(nodesNames[i], coords[i]);
+    //        nodeX.index = i;
+    //        graph.AddNode(nodeX);
+    //        nodeX.objTransform = Instantiate(point);
+    //        nodeX.obj = nodeX.objTransform.gameObject;
+    //        nodeX.objTransform.name = nodeX.name;
+    //        nodeX.objTransform.position = nodeX.vec;
 
-            nodeX.obj.GetComponent<Lines>().index = i;
-            nodeX.obj.GetComponent<Lines>().Neighbors = graph.Nodes[i].Neighbors;
-            nodeX.obj.GetComponent<Lines>().Weights = graph.Nodes[i].Weights;
-            nodeX.obj.GetComponent<Lines>().currentNode = graph.Nodes[i];
-            nodeX.obj.GetComponent<Lines>().line = line;
-        }
-        //H1,  A,  B,  C,  D, H2
-        int[,] roads = new int[,] { {  0,  6,  0,  0,  0,  0},//H1
-                                    {  5,  0,  8,  0,  0,  0},//A
-                                    {  0, 5,  0, 6,  0,  0},//B
-                                    {  0,  0, 7,  0, 7, 10},//C
-                                    {  0, 8,  0, 7,  0,  0},//D
-                                    {  0,  0,  0, 8,  0,  0}};//H2
-
-
+    //        nodeX.obj.GetComponent<Lines>().index = i;
+    //        nodeX.obj.GetComponent<Lines>().Neighbors = graph.Nodes[i].Neighbors;
+    //        nodeX.obj.GetComponent<Lines>().Weights = graph.Nodes[i].Weights;
+    //        nodeX.obj.GetComponent<Lines>().currentNode = graph.Nodes[i];
+    //        nodeX.obj.GetComponent<Lines>().line = line;
+    //    }
+    //    //H1,  A,  B,  C,  D, H2
+    //    int[,] roads = new int[,] { {  0,  6,  0,  0,  0,  0},//H1
+    //                                {  5,  0,  8,  0,  0,  0},//A
+    //                                {  0, 5,  0, 6,  0,  0},//B
+    //                                {  0,  0, 7,  0, 7, 10},//C
+    //                                {  0, 8,  0, 7,  0,  0},//D
+    //                                {  0,  0,  0, 8,  0,  0}};//H2
 
 
 
-        graph.roadcosts = roads;
+
+
+    //    graph.roadcosts = roads;
 
 
 
-        for (int i = 0; i < roads.GetLength(0); i++)
-        {
-            for (int j = 0; j < roads.GetLength(1); j++)
-            {
-                float weight = roads[i, j];
-                if (weight != 0)
-                {
-                    Node nodeX = graph.FindNode(i);
-                    if (nodeX != null)
-                    {
-                        nodeX.Neighbors.Add(graph.FindNode(j));
-                        nodeX.NeighborNames.Add(graph.FindNode(j).name);
-                        nodeX.Weights.Add(roads[i, j]);
-                    }
-                }
-            }
-        }
+    //    for (int i = 0; i < roads.GetLength(0); i++)
+    //    {
+    //        for (int j = 0; j < roads.GetLength(1); j++)
+    //        {
+    //            float weight = roads[i, j];
+    //            if (weight != 0)
+    //            {
+    //                Node nodeX = graph.FindNode(i);
+    //                if (nodeX != null)
+    //                {
+    //                    nodeX.Neighbors.Add(graph.FindNode(j));
+    //                    nodeX.NeighborNames.Add(graph.FindNode(j).name);
+    //                    nodeX.Weights.Add(roads[i, j]);
+    //                }
+    //            }
+    //        }
+    //    }
 
 
-        /* for (int i = 0; i < roads.GetLength(0); i++)
-        {
-            for (int j = 0; j < roads.GetLength(1); j++)
-            {
-                //Assign current array element to max, if (arr[i,j] > max)
-                if (roads[i, j] > maxW)
-                {
-                    maxW = roads[i, j];
-                }
+    //    /* for (int i = 0; i < roads.GetLength(0); i++)
+    //    {
+    //        for (int j = 0; j < roads.GetLength(1); j++)
+    //        {
+    //            //Assign current array element to max, if (arr[i,j] > max)
+    //            if (roads[i, j] > maxW)
+    //            {
+    //                maxW = roads[i, j];
+    //            }
 
-                //Assign current array element to min if if (arr[i,j] < min)
-                if (roads[i, j] < minW)
-                {
-                    minW = roads[i, j];
-                }
+    //            //Assign current array element to min if if (arr[i,j] < min)
+    //            if (roads[i, j] < minW)
+    //            {
+    //                minW = roads[i, j];
+    //            }
 
-            }
+    //        }
 
-        } */
-
-
-
-        // set H1, H2 as the nodes of POI nodes
-        string[] strPOIs = { "H1", "H2" };
-        Color[] clrPOIs = { Color.blue, Color.red };
-
-        graph.CreatePOInodes(strPOIs, clrPOIs);
-
-        for (int i = 0; i < strPOIs.Length; i++)
-        {
-            GameObject.Find(strPOIs[i]).GetComponent<Renderer>().material.SetColor("_Color", clrPOIs[i]);
-
-        }
+    //    } */
 
 
 
-        for (int i = 0; i < strPOIs.Length; i++)
-        {
-            Color AccessColor = GameObject.Find(strPOIs[i]).GetComponent<Renderer>().material.color;
-            GameObject.Find(strPOIs[i]).GetComponent<Lines>().nColor = AccessColor;
-        }
+    //    // set H1, H2 as the nodes of POI nodes
+    //    string[] strPOIs = { "H1", "H2" };
+    //    Color[] clrPOIs = { Color.blue, Color.red };
 
-        graph.printNodes();
-    }
+    //    graph.CreatePOInodes(strPOIs, clrPOIs);
+
+    //    for (int i = 0; i < strPOIs.Length; i++)
+    //    {
+    //        GameObject.Find(strPOIs[i]).GetComponent<Renderer>().material.SetColor("_Color", clrPOIs[i]);
+
+    //    }
+
+
+
+    //    for (int i = 0; i < strPOIs.Length; i++)
+    //    {
+    //        Color AccessColor = GameObject.Find(strPOIs[i]).GetComponent<Renderer>().material.color;
+    //        GameObject.Find(strPOIs[i]).GetComponent<Lines>().nColor = AccessColor;
+    //    }
+
+    //    graph.printNodes();
+    //}
 
 }
 
