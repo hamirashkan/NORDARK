@@ -5,10 +5,12 @@ using System;
 
 public class UIButton : MonoBehaviour
 {
+    public ShowMap other;
+
     // Start is called before the first frame update
     void Start()
     {
-        
+        other = GameObject.Find("Mapbox").GetComponent<ShowMap>();
     }
 
     // Update is called once per frame
@@ -35,6 +37,8 @@ public class UIButton : MonoBehaviour
         Debug.Log("lat=" + lat + ", z=" + z + ", tile_y=" + y);
         Debug.Log("difflon=" + lon + ", z=" + z + ", tile_x=" + (tilex2long(x + 1, z) - tilex2long(x, z)));
         Debug.Log("difflat=" + lat + ", z=" + z + ", tile_y=" + (tiley2lat(y + 1, z) - tiley2lat(y, z)));
+
+        Debug.Log("timeIndex=" + other.timeIndex);
     }
 
     int long2tilex(double lon, int z)

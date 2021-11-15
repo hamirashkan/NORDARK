@@ -9,6 +9,7 @@ using Mapbox.Unity.Utilities;
 using Mapbox.Unity.Map;
 using Mapbox.Map;
 using Mapbox.Unity.MeshGeneration.Data;
+using UnityEngine.UI;
 
 public class ShowMap : MonoBehaviour
 {
@@ -30,6 +31,10 @@ public class ShowMap : MonoBehaviour
     public float alpha = 2;
     public float scale_dis = 1000;
     public float scale_risk = 10;
+    // CFH
+    public string FeatureString = "010";
+    private float ws = 1; // x
+    private float hs = 1; // z
 
     float scale = 1.0f;
     bool recalculateNormals = false;
@@ -39,9 +44,18 @@ public class ShowMap : MonoBehaviour
     // Start is called before the first frame update
     public GameObject BackgroundMap;
     public Boolean IsBGMap;
+    public List<int> NodeIndexArray;
+    public List<int>[,] NodeIndexArrayS;
+    public List<Node> NodeArray;
+    public List<Node>[,] NodeArrayS;
+    public int timeIndex;
+    public int tileIndex;
+    public Slider slrTimeLine;
 
     void Start()
     {
+        slrTimeLine = GameObject.Find("SlrTimeLine").GetComponent<Slider>();
+
         if (!IsBGMap)// if GraphSet1
             StartCoroutine(CreateMap(0.01f));
     }
@@ -127,6 +141,12 @@ public class ShowMap : MonoBehaviour
 
                    */
         }
+        // TimeLine Initilization
+        NodeIndexArrayS = new List<int>[gameObject.transform.childCount - 1,timeSteps];
+        NodeArrayS = new List<Node>[gameObject.transform.childCount - 1, timeSteps];
+        slrTimeLine.maxValue = timeSteps;
+        slrTimeLine.minValue = 1;
+        //
         for (int c = 0; c < gameObject.transform.childCount - 1; c++)
         {
             Transform tile = transform.GetChild(c + 1);
@@ -203,6 +223,64 @@ public class ShowMap : MonoBehaviour
                 vertex.z = vertex.z * scale;
 
                 foreach (Node node in graph.RestNodes)
+                {
+                    float posX = vertex.x;
+                    float posZ = vertex.z;
+                    Vector3 pos = new Vector3(posX + tile.position.x, node.vec.y, posZ + tile.position.z);
+
+                    float dist = (pos - node.vec).magnitude;
+
+                    if (dist < mindist)
+                    {
+                        mindist = dist;
+                        bestNode = node;
+                    }
+
+                }
+
+                float dis_new = bestNode.riskFactor * scale_dis / (1 + mindist);
+
+                vertex.y = dis_new;// vertex.y + i;
+                vertices[i] = vertex;
+
+                //Debug.Log(dis_new);
+
+
+                
+                //choice of kernel function for density estimation
+                if (Kernel == "G")
+                {
+                    lambda = (1 / (r * Mathf.Sqrt(2 * Mathf.PI))) * Mathf.Exp(-0.5f * Mathf.Pow((Mathf.Pow((mindist + bestNode.LeastCost), -alpha) / r), 2));  //Gaussian
+                }
+                else
+                {
+                    lambda = (1 / r) * 1 / (1 + Mathf.Exp(Mathf.Pow((mindist + bestNode.LeastCost), -alpha) / r));  //Sigmoid
+                }
+
+                    
+                lambdaMap.Add(lambda);//Felando   
+                Color col = bestNode.clr;
+                colorMap.Add(col);//felando
+            }
+
+            // TimeLine 
+            // calculate the POI value array for every points/vertics
+            for (int k = 0; k < timeSteps; k++)
+            {
+                NodeIndexArray = new List<int>();
+                NodeArray = new List<Node>();
+                for (var i = 0; i < vertices.Length; i++)
+                {
+                    //int x = i % 10;
+                    //int z = i / 10;
+                    mindist = Mathf.Infinity;
+                    bestNode = null;
+
+
+                    var vertex = baseVertices[i];
+                    vertex.x = vertex.x * scale;
+                    vertex.z = vertex.z * scale;
+                    foreach (Node node in graph.RestNodes)
                     {
                         float posX = vertex.x;
                         float posZ = vertex.z;
@@ -217,37 +295,16 @@ public class ShowMap : MonoBehaviour
                         }
 
                     }
-
-                    float dis_new = bestNode.riskFactor * scale_dis / (1 + mindist);
-
-                    vertex.y = dis_new;// vertex.y + i;
-                    vertices[i] = vertex;
-
-                    //Debug.Log(dis_new);
-
-
-                
-                    //choice of kernel function for density estimation
-                    if (Kernel == "G")
-                    {
-                        lambda = (1 / (r * Mathf.Sqrt(2 * Mathf.PI))) * Mathf.Exp(-0.5f * Mathf.Pow((Mathf.Pow((mindist + bestNode.LeastCost), -alpha) / r), 2));  //Gaussian
-                    }
-                    else
-                    {
-                        lambda = (1 / r) * 1 / (1 + Mathf.Exp(Mathf.Pow((mindist + bestNode.LeastCost), -alpha) / r));  //Sigmoid
-                    }
-
-
-                    lambdaMap.Add(lambda);//Felando   
-                    Color col = bestNode.clr;
-                    colorMap.Add(col);//felando
+                    NodeIndexArray.Add(bestNode.POIList[k].index);
+                    NodeArray.Add(bestNode.POIList[k]);
                 }
+                NodeIndexArrayS[c,k] = NodeIndexArray;
+                NodeArrayS[c, k] = NodeArray;
+            }
 
             //Debug.Log(baseVertices.Length);
 
             mesh.vertices = vertices;//felando, decrease the mesh vertices size to normal 100
-
-            
 
                 // set triangles
             int[] baseTriangles = mesh.triangles;
@@ -328,6 +385,43 @@ public class ShowMap : MonoBehaviour
         //UnityTile tilex = GameObject.Find(tileName).GetComponent<UnityTile>();
         //tilex.HeightData[0] = 100000;
         //map.TileProvider.UpdateTileProvider(); 
+    }
+
+    public void UpdateTexture()
+    {
+        int iter = 0;
+        if (NodeArrayS[0, 0] != null)
+        {
+            for (int c = 0; c < gameObject.transform.childCount - 1; c++)
+            {
+                Transform tile = transform.GetChild(c + 1);
+                Mesh mesh = tile.gameObject.GetComponent<MeshFilter>().mesh;
+                var vertices = mesh.vertices;
+                Color[] colors = new Color[vertices.Length];
+                for (var i = 0; i < vertices.Length; i++)
+                {
+                    colors[i] = NodeArrayS[c, timeIndex-1][i].clr;//colorMap[iter];
+                    colors[i].a = 0.5f;
+                    iter += 1;
+                }
+
+                Shader shader; shader = Shader.Find("Particles/Standard Unlit");
+
+                tile.gameObject.GetComponent<Renderer>().material = SurfaceMat;
+                mesh.colors = colors;
+            }
+
+            foreach (Node node in graph.restNodes)
+            {
+                Color AccessColor = GameObject.Find(node.POIList[timeIndex-1].name).GetComponent<Renderer>().material.color;
+                float AccessDist = node.LeastCost;
+                costs.Add(AccessDist);
+                GameObject.Find(node.name).GetComponent<Renderer>().material.SetColor("_Color", AccessColor);
+                node.objTransform.GetComponent<Lines>().nColor = AccessColor;
+                node.objTransform.GetComponent<Lines>().dist = AccessDist;
+                Debug.Log("Res: " + node.name + node.MostAccessPOI);
+            }
+        }
     }
 
 
@@ -731,6 +825,128 @@ public class ShowMap : MonoBehaviour
         }
 
         graph.printNodes();
+    }
+
+    public bool TestMode = false;
+
+    private List<int> MatrixA_Array = new List<int>();
+    private string strFeatureString;
+    private int patternMax = 1;
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="stept">the step size, min 1</param>
+    /// <param name="start_time">the index of start time</param>
+    /// <param name="stop_time">the index of stop time</param>
+    /// <returns></returns>
+    public List<int> ComputeCFH(int stept, int start_time, int stop_time)
+    {
+        MatrixA_Array = new List<int>();
+        int t_count = 0;
+        for (int i = start_time; i <= stop_time; i = i + stept)
+        {
+            t_count++;
+            List<int> tMatrixA_Array = ComputeMatrixA(i);
+            MatrixA_Array.AddRange(tMatrixA_Array);
+        }
+
+        List<int> CountParkShadowsCFH = new List<int>();
+        if (t_count >= 1)
+        {
+            // t count = frame size of t
+            // ws = account size of width
+            // hs = account size of height
+            int[] sub;// = new int[] { 0, 1 };//{ 1, 1, 1 }
+            sub = Fun_FeatureStrToInt(FeatureString);
+            if (sub == null)
+            {
+                FeatureString = "010";
+                strFeatureString = FeatureString;
+                sub = Fun_FeatureStrToInt(FeatureString);
+            }
+            int i_count = (int)hs;
+            int j_count = (int)ws;
+            int[] data = new int[t_count - 1];
+            int max = 1;
+            if (t_count >= 2)
+                for (int i = 0; i < i_count; i++)
+                    for (int j = 0; j < j_count; j++)
+                    {
+                        for (int t = 0; t < t_count - 1; t++)
+                        {
+                            // ComputeMatrixD, binary pattern
+                            int binaryMapData = MatrixA_Array[t * (j_count * i_count) + i * j_count + j] !=
+                                MatrixA_Array[(t + 1) * (j_count * i_count) + i * j_count + j] ? 1 : 0;
+                            data[t] = binaryMapData;
+                        }
+                        List<int> a = Fun_SubFeatureForData(data, sub);
+                        if (a.Count > max)
+                            max = a.Count;
+                        CountParkShadowsCFH.Add(a.Count);
+                    }
+
+            patternMax = max;
+        }
+        else
+        {
+            patternMax = 0;
+            CountParkShadowsCFH = null;
+        }
+        if (TestMode)
+            Debug.Log("E004: feature (" + FeatureString + ") max value per minimum unit is " + patternMax.ToString() + ", marked as Red color in heatmap.");
+        return CountParkShadowsCFH;
+    }
+
+    //Function ComputeMatrixA
+    public List<int> ComputeMatrixA(int i)
+    {
+        MatrixA_Array = NodeIndexArrayS[tileIndex, i];
+        return MatrixA_Array;
+    }
+
+    public int[] Fun_FeatureStrToInt(string feature)
+    {
+        char[] c_feature;
+        int[] result;
+        if (feature.Length > 0)
+        {
+            c_feature = feature.ToCharArray();
+            result = new int[c_feature.Length];
+            for (int i = 0; i < c_feature.Length; i++)
+            {
+                if (c_feature[i] == '0')
+                    result[i] = 0;
+                else if (c_feature[i] == '1')
+                    result[i] = 1;
+                else
+                    return null;
+            }
+            return result;
+        }
+        return null;
+    }
+
+    public List<int> Fun_SubFeatureForData(int[] data, int[] sub)
+    {
+        //int[] data = new int[] { 1, 1, 1, 0, 1, 0, 1 };
+        //int[] sub = new int[] { 1, 0, 1 };
+        List<int> result = new List<int>();
+        for (int i = 0; i < data.Length - sub.Length + 1; i++)
+            for (int j = 0; j < sub.Length; j++)
+            {
+                if (data[i + j] == sub[j])
+                {
+                    if (j + 1 == sub.Length)
+                    {
+                        result.Add(i);
+                    }
+                }
+                else
+                    break;
+            }
+        // return [2,4] for List
+        return result;
     }
 
     // comment UvTo3D, not used

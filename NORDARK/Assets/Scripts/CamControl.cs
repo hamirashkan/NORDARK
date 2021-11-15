@@ -5,7 +5,7 @@ using UnityEngine;
 public class CamControl : MonoBehaviour
 {
     private float movementTime = 5;
-    private float rotationAmount = 1;
+    private float rotationAmount = 0.1f;
     private Vector3 zoomAmount = new Vector3(-10, -10, 0);
 
     private float maxZoom = 100;
@@ -48,7 +48,7 @@ public class CamControl : MonoBehaviour
 
     void HandleMouseInput()
     {
-        bool UIhit = GameObject.Find("Canvas").GetComponent<CanvasRaycast>().isUI;
+        bool UIhit = false;// GameObject.Find("Canvas").GetComponent<CanvasRaycast>().isUI;
         // Mouse Zoom
         if (Input.mouseScrollDelta.y!=0)
         {
@@ -113,7 +113,24 @@ public class CamControl : MonoBehaviour
 
         }
 
+        // Mouse Rotation
 
+        if (Input.GetMouseButtonDown(1))
+        {
+            rotateStartPosition = Input.mousePosition;
+        }
+
+        if (Input.GetMouseButton(1))
+        {
+            rotateCurrentPosition = Input.mousePosition;
+
+            Vector3 difference = rotateStartPosition - rotateCurrentPosition;
+
+            rotateStartPosition = rotateCurrentPosition;
+
+            newRotation *= Quaternion.Euler(new Vector3(1, 0, 0) * (-difference.x / 5));
+
+        }
     }
 
     void HandleMovementInput()
@@ -138,6 +155,16 @@ public class CamControl : MonoBehaviour
         if(Input.GetKey(KeyCode.S))
         {
             newRotation *= Quaternion.Euler(new Vector3(0, 0, -1) * rotationAmount);
+        }
+
+        if (Input.GetKey(KeyCode.Z))
+        {
+            newRotation *= Quaternion.Euler(new Vector3(1, 0, 0) * rotationAmount);
+        }
+
+        if (Input.GetKey(KeyCode.X))
+        {
+            newRotation *= Quaternion.Euler(new Vector3(-1, 0, 0) * rotationAmount);
         }
 
         transform.position = Vector3.Lerp(transform.position, newPosition, Time.deltaTime * movementTime);
