@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System;
+using Mapbox.Unity.Utilities;
+using Mapbox.Unity.Map;
 
 public class UIButton : MonoBehaviour
 {
@@ -25,6 +27,7 @@ public class UIButton : MonoBehaviour
         int op = this.GetComponent<Dropdown>().value;
         other.DestroyChildren("Nodes");
         other.DestroyChildren("Edges");
+        //other.DisplayMapbox = Instantiate(GameObject.Find("Mapbox"));
         StartCoroutine(other.CreateMap(0.01f, op));
     }
 

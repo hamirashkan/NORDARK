@@ -55,6 +55,9 @@ public class ShowMap : MonoBehaviour
     private GameObject Nodes;
     private GameObject Edges;
 
+    private Vector3[][] ArrayV3 = new Vector3[12][];
+    private int[][] ArrayTriangles = new int[12][];
+
     void Start()
     {
         Nodes = GameObject.Find("Nodes");
@@ -62,15 +65,23 @@ public class ShowMap : MonoBehaviour
 
         slrTimeLine = GameObject.Find("SlrTimeLine").GetComponent<Slider>();
 
+        for (int c = 0; c < 12; c++)
+        {
+            Transform tile = gameObject.transform.GetChild(c + 1);
+            ArrayV3[c] = new Vector3[tile.gameObject.GetComponent<MeshFilter>().mesh.vertices.Length];
+            Array.Copy(tile.gameObject.GetComponent<MeshFilter>().mesh.vertices, ArrayV3[c], ArrayV3[c].Length);
+            ArrayTriangles[c] = new int[tile.gameObject.GetComponent<MeshFilter>().mesh.triangles.Length];
+            Array.Copy(tile.gameObject.GetComponent<MeshFilter>().mesh.triangles, ArrayTriangles[c], ArrayTriangles[c].Length);
+        }
+
         if (!IsBGMap)// if GraphSet1
-            StartCoroutine(CreateMap(0.01f));
+        StartCoroutine(CreateMap(0.01f, 1));
     }
 
     public IEnumerator CreateMap(float time, int graph_op = 0)
     {
         yield return new WaitForSeconds(time);
-        map = GameObject.Find("Mapbox").GetComponent<AbstractMap>();
-
+        map = gameObject.GetComponent<AbstractMap>();// GameObject.Find("Mapbox").GetComponent<AbstractMap>();
         if (graph_op == 0)
             GraphSet1("RoadGraph1");
         else
@@ -89,10 +100,14 @@ public class ShowMap : MonoBehaviour
         minW = costs.Min();
         maxW = costs.Max();
 
+        // Build 0004
+        lambdaMap = new List<float>();
+        colorMap = new List<Color>();
+
         //creating textures and colormap
         for (int c = 0; c < gameObject.transform.childCount - 1; c++)
         {
-            Transform tile = transform.GetChild(c + 1); //ignoring first child that is not a tile
+            Transform tile = gameObject.transform.GetChild(c + 1); //ignoring first child that is not a tile
             //Vector3 mapSize = tile.gameObject.GetComponent<Renderer>().bounds.size;
             //Texture2D texture = new Texture2D((int)mapSize.x, (int)mapSize.z);
             //textMap.Add(texture);
@@ -114,7 +129,7 @@ public class ShowMap : MonoBehaviour
         //
         for (int c = 0; c < gameObject.transform.childCount - 1; c++)
         {
-            Transform tile = transform.GetChild(c + 1);
+            Transform tile = gameObject.transform.GetChild(c + 1);
             //Texture2D texture = textMap[c];
             float lambda;
 
@@ -124,7 +139,8 @@ public class ShowMap : MonoBehaviour
 
             Mesh mesh = tile.gameObject.GetComponent<MeshFilter>().mesh;
 
-            baseVertices = mesh.vertices;
+            //baseVertices = mesh.vertices;
+            baseVertices = ArrayV3[c];//
             // high scale for the vertices interpolation
             int vertices_scale = 4;// scale parameters
             int vertices_max = 10;
@@ -168,6 +184,7 @@ public class ShowMap : MonoBehaviour
                 scale_vertices[i] = newValue;
             }
             baseVertices = scale_vertices;
+            mesh.vertices = baseVertices;// Build 0004
 
             if (recalculateNormals)//felando
                 mesh.RecalculateNormals();
@@ -272,7 +289,8 @@ public class ShowMap : MonoBehaviour
             mesh.vertices = vertices;//felando, decrease the mesh vertices size to normal 100
 
                 // set triangles
-            int[] baseTriangles = mesh.triangles;
+            //int[] baseTriangles = mesh.triangles;
+            int[] baseTriangles = ArrayTriangles[c];// Build 0004
             int[] triangles = new int[(vertices_scalemax - 1) * (vertices_scalemax - 1) * 6];
             int index = 0;
             for (int row_i = 0; row_i < vertices_scalemax - 1; row_i++)
@@ -316,7 +334,7 @@ public class ShowMap : MonoBehaviour
 
         for (int c = 0; c < gameObject.transform.childCount - 1; c++)
         {
-            Transform tile = transform.GetChild(c + 1);
+            Transform tile = gameObject.transform.GetChild(c + 1);
             Mesh mesh = tile.gameObject.GetComponent<MeshFilter>().mesh;
             var vertices = mesh.vertices;
             Color[] colors = new Color[vertices.Length];
@@ -358,11 +376,11 @@ public class ShowMap : MonoBehaviour
     public void UpdateTexture()
     {
         int iter = 0;
-        if (NodeArrayS[0, 0] != null)
+        if ((NodeArrayS != null) && (NodeArrayS[0,0]!=null))// Build 0004, null bug
         {
             for (int c = 0; c < gameObject.transform.childCount - 1; c++)
             {
-                Transform tile = transform.GetChild(c + 1);
+                Transform tile = gameObject.transform.GetChild(c + 1);
                 Mesh mesh = tile.gameObject.GetComponent<MeshFilter>().mesh;
                 var vertices = mesh.vertices;
                 Color[] colors = new Color[vertices.Length];
