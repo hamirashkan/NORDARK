@@ -7,7 +7,7 @@ public class UISlirTimeLine : MonoBehaviour
 {
     ShowMap other;
     Slider slider;
-    static Text label;
+    public static Text label;
     // Start is called before the first frame update
     void Start()
     {

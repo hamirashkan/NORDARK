@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using System;
 
 public class UIButton : MonoBehaviour
@@ -19,6 +20,13 @@ public class UIButton : MonoBehaviour
         
     }
 
+    public void OptionValueChange()
+    {
+        int op = this.GetComponent<Dropdown>().value;
+        other.DestroyChildren("Nodes");
+        other.DestroyChildren("Edges");
+        StartCoroutine(other.CreateMap(0.01f, op));
+    }
 
     public void test()
     {

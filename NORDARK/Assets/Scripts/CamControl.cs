@@ -64,7 +64,7 @@ public class CamControl : MonoBehaviour
 
         // Mouse Pan    
 
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0) && Input.GetKey(KeyCode.LeftControl))
         {
             Plane plane = new Plane(Vector3.up, Vector3.zero);
 
@@ -78,7 +78,7 @@ public class CamControl : MonoBehaviour
             }
         }
 
-        if (Input.GetMouseButton(0))
+        if (Input.GetMouseButton(0) && Input.GetKey(KeyCode.LeftControl))
         {
             Plane plane = new Plane(Vector3.up, Vector3.zero);
 
@@ -109,7 +109,7 @@ public class CamControl : MonoBehaviour
 
             rotateStartPosition = rotateCurrentPosition;
 
-            newRotation *= Quaternion.Euler(Vector3.up * (-difference.x/5));
+            newRotation *= Quaternion.Euler(Vector3.up * (-difference.x/5));//Vector3.up
 
         }
 
@@ -128,7 +128,7 @@ public class CamControl : MonoBehaviour
 
             rotateStartPosition = rotateCurrentPosition;
 
-            newRotation *= Quaternion.Euler(new Vector3(1, 0, 0) * (-difference.x / 5));
+            newRotation *= Quaternion.Euler(new Vector3(0, 0, 1) * (difference.y / 5));//new Vector3(1, 0, 0) * (-difference.x / 5)
 
         }
     }

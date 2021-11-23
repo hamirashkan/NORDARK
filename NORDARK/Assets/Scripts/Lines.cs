@@ -12,8 +12,11 @@ public class Lines : MonoBehaviour
     public Color nColor;
     public float dist;
     public Node currentNode;
+
+    public GameObject newline;
     void Start()
     {
+        
         //float minW = GameObject.Find("Map").GetComponent<points_Scene1>().minW;//points
         //float maxW = GameObject.Find("Map").GetComponent<points_Scene1>().maxW;//points
         float minW = GameObject.Find("Mapbox").GetComponent<ShowMap>().minW;//points
@@ -41,8 +44,9 @@ public class Lines : MonoBehaviour
                         //}
 
                         Nclr = nColor;
-                        Instantiate(line);
+                        newline = Instantiate(line);
                         l = line.GetComponent<LineRenderer>();
+                        newline.transform.parent = GameObject.Find("Edges").transform;
 
                         List<Vector3> pos = new List<Vector3>();
                         pos.Add(transform.position + new Vector3(0, 0, 0.5f));
@@ -66,8 +70,9 @@ public class Lines : MonoBehaviour
                             Neighbors[i].visited.Add(currentNode.name);
 
                             Nclr = nColor;
-                            Instantiate(line);
+                            newline = Instantiate(line);
                             l = line.GetComponent<LineRenderer>();
+                            newline.transform.parent = GameObject.Find("Edges").transform;
 
                             List<Vector3> pos = new List<Vector3>();
                             pos.Add(transform.position + new Vector3(0, 0, 0.5f));
@@ -86,8 +91,9 @@ public class Lines : MonoBehaviour
                             float eWidth = 1 - (Neighbors[i].LeastCost - minW) / (maxW - minW);
 
                             Nclr = nColor;
-                            Instantiate(line);
+                            newline = Instantiate(line);
                             l = line.GetComponent<LineRenderer>();
+                            newline.transform.parent = GameObject.Find("Edges").transform;
 
                             List<Vector3> pos = new List<Vector3>();
                             pos.Add(transform.position + new Vector3(0, 0, -0.5f));
@@ -119,8 +125,9 @@ public class Lines : MonoBehaviour
                     //}
 
                     Nclr = nColor;
-                    Instantiate(line);
+                    newline = Instantiate(line);
                     l = line.GetComponent<LineRenderer>();
+                    newline.transform.parent = GameObject.Find("Edges").transform;
 
                     List<Vector3> pos = new List<Vector3>();
                     pos.Add(transform.position + new Vector3(0,0, -0.5f));
@@ -138,6 +145,7 @@ public class Lines : MonoBehaviour
 
                     l.SetPositions(pos.ToArray());
                 }
+                
             }
         }
     }
