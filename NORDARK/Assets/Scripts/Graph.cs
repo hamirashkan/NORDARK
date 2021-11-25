@@ -12,6 +12,7 @@ public class Graph : ScriptableObject
     public int[][,] roadTemporal;
     private int[] dist;
     public int timeSteps;
+    public static int LinesNum;
 
     [SerializeField]
     public List<Node> restNodes;
@@ -51,6 +52,7 @@ public class Graph : ScriptableObject
         string path = string.Format("Assets/{0}.asset", name);
         AssetDatabase.CreateAsset(graph, path);
 
+        LinesNum = 0;
         return graph;
     }
 
