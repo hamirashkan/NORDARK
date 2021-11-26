@@ -50,8 +50,8 @@ public class points : MonoBehaviour
             nodeX.obj.GetComponent<Lines>().currentNode = graph.Nodes[i];
             nodeX.obj.GetComponent<Lines>().line = line;
         }
-                                     //H1,  A,  B,  C,  D, H2
-        int[,] roads = new int[,] { {  0,  6,  0,  0,  0,  0},//H1
+        //H1,  A,  B,  C,  D, H2
+        float[,] roads = new float[,] { {  0,  6,  0,  0,  0,  0},//H1
                                     {  5,  0,  8,  0,  0,  0},//A
                                     {  0, 5,  0, 6,  0,  0},//B
                                     {  0,  0, 7,  0, 7, 10},//C

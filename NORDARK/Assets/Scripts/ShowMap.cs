@@ -15,6 +15,7 @@ public class ShowMap : MonoBehaviour
 {
     Vector3[] coords = new Vector3[40];
     string[] nodesNames = new string[40];
+    string[] edgesNames;
     public int timeSteps;
     public Transform point;
     public float minW;
@@ -84,8 +85,21 @@ public class ShowMap : MonoBehaviour
         map = gameObject.GetComponent<AbstractMap>();// GameObject.Find("Mapbox").GetComponent<AbstractMap>();
         if (graph_op == 0)
             GraphSet1("RoadGraph1");
+        else if (graph_op == 2)
+        {
+            //map.SetZoom(17);
+            //map.SetCenterLatitudeLongitude(new Mapbox.Utils.Vector2d(62.4750425, 6.1914948));
+            //map.UpdateMap();
+            GraphSet3("RoadGraph3");
+        }
+            
         else
-            GraphSet2("RoadGraph1");//GraphSet1 or 2
+        {
+            //map.SetZoom(8);
+            //map.SetCenterLatitudeLongitude(new Mapbox.Utils.Vector2d(62.7233, 7.51087));
+            //map.UpdateMap();
+            GraphSet2("RoadGraph2");//GraphSet2
+        }
         foreach (Node node in graph.Nodes)
         {
             Color AccessColor = GameObject.Find(node.MostAccessPOI.name).GetComponent<Renderer>().material.color;
@@ -94,7 +108,7 @@ public class ShowMap : MonoBehaviour
             GameObject.Find(node.name).GetComponent<Renderer>().material.SetColor("_Color", AccessColor);
             node.objTransform.GetComponent<Lines>().nColor = AccessColor;
             node.objTransform.GetComponent<Lines>().dist = AccessDist;
-            Debug.Log("Res: " + node.name + node.MostAccessPOI);
+            Debug.Log("Res: name=" + node.name + ",MostAccessPOI=" + node.MostAccessPOI);
         }
 
         minW = costs.Min();
@@ -485,9 +499,9 @@ public class ShowMap : MonoBehaviour
         timeSteps = 10;
         graph.timeSteps = timeSteps;
 
-        int[][,] temporalRoad = Enumerable.Range(0, timeSteps).Select(_ => new int[nodesNames.Length, nodesNames.Length]).ToArray();
+        float[][,] temporalRoad = Enumerable.Range(0, timeSteps).Select(_ => new float[nodesNames.Length, nodesNames.Length]).ToArray();
 
-        int[,] roads = new int[nodesNames.Length, nodesNames.Length];
+        float[,] roads = new float[nodesNames.Length, nodesNames.Length];
 
         graph.roadcosts = roads;
         graph.roadTemporal = temporalRoad;
@@ -580,7 +594,7 @@ public class ShowMap : MonoBehaviour
             for (int j = 0; j < roads.GetLength(1); j++)
             {
                 roads[i, j] = roads[i, j] / timeSteps;
-                float weight = roads[i, j];
+                double weight = roads[i, j];
                 if (weight != 0)
                 {
                     Node nodeX = graph.FindNode(i);
@@ -600,6 +614,168 @@ public class ShowMap : MonoBehaviour
         // set Brekke, Vegtun as the nodes of POI nodes
         string[] strPOIs = { "Nyveien Tomrefjord", "Nåsbru" };//{ "Brendehaug", "Nåsbru" };//{ "Brekke", "Vegtun" };
         Color[] clrPOIs = { Color.blue, Color.red };
+
+        graph.CreatePOInodes(strPOIs, clrPOIs);
+
+        for (int i = 0; i < strPOIs.Length; i++)
+        {
+            GameObject.Find(strPOIs[i]).GetComponent<Renderer>().material.SetColor("_Color", clrPOIs[i]);
+
+        }
+
+        for (int i = 0; i < strPOIs.Length; i++)
+        {
+            Color AccessColor = GameObject.Find(strPOIs[i]).GetComponent<Renderer>().material.color;
+            GameObject.Find(strPOIs[i]).GetComponent<Lines>().nColor = AccessColor;
+        }
+
+        graph.printNodes();
+    }
+
+    public void GraphSet3(string graphName)
+    {
+        graph = Graph.Create(graphName);
+        float y = 0.25f;// xOz plane is the map 2D coordinates
+
+        string text = loadFile("Assets/Resources/nodes.csv");
+        string[] lines = Regex.Split(text, "\n");
+
+        int nodesNum = lines.Length - 2; //25;//lines.Length - 2;//nbStops
+        nodesNames = new string[nodesNum];
+        coords = new Vector3[nodesNum];
+
+        Debug.Log(DateTime.Now.ToString() + ", init started");
+        //float center_lat = 62f;
+        //float center_lon = 6f;
+        //float scale = 100f;
+        // test1. very fast, 1 sec could do 5K times or more
+        //for (int i = 0; i < nodesNames.Length*100; i++)
+        //{
+        //    Instantiate(point);
+        //    if (i % 5000 == 0)
+        //        Debug.Log(DateTime.Now.ToString() + ", inited " + i + "_th nodes");
+        //}
+        for (int i = 0; i < nodesNames.Length; i++)
+        {
+            string rowdata = lines[i + 1];
+
+            //if (!rowdata.Contains("NSR:Quay"))
+            //{
+            //    continue;
+            //}
+
+            string[] values = Regex.Split(rowdata, ",");
+            //string id = values[0];
+            float lat = float.Parse(values[1], System.Globalization.CultureInfo.InvariantCulture);
+            float lon = float.Parse(values[2], System.Globalization.CultureInfo.InvariantCulture);
+
+            nodesNames[i] = values[0];
+            Vector2 latlong = new Vector2(lat, lon);
+            Vector3 pos = latlong.AsUnityPosition(map.CenterMercator, map.WorldRelativeScale);
+            //coords[i] = new Vector3((lat - center_lat) * scale, y, (lon - center_lon) * scale);
+            coords[i] = pos;
+
+            Node nodeX = Node.Create<Node>(nodesNames[i], coords[i]);
+            nodeX.index = i;
+            nodeX.stop_id = values[0];
+            graph.AddNode(nodeX);
+            nodeX.objTransform = Instantiate(point);
+            nodeX.obj = nodeX.objTransform.gameObject;
+            nodeX.objTransform.name = nodeX.name;
+            nodeX.objTransform.position = nodeX.vec;
+            nodeX.objTransform.parent = Nodes.transform;
+
+            nodeX.obj.GetComponent<Lines>().index = i;
+            nodeX.obj.GetComponent<Lines>().Neighbors = graph.Nodes[i].Neighbors;
+            nodeX.obj.GetComponent<Lines>().Weights = graph.Nodes[i].Weights;
+            nodeX.obj.GetComponent<Lines>().currentNode = graph.Nodes[i];
+            nodeX.obj.GetComponent<Lines>().line = line;
+
+            if (i % 50 == 0)
+                Debug.Log(DateTime.Now.ToString() + ", inited " + i + "_th nodes");
+        }
+
+        // Load raw edges
+        float[,] t0Road = new float[nodesNames.Length, nodesNames.Length];
+        text = loadFile("Assets/Resources/edges.csv");
+        string[] edges_data = Regex.Split(text, "\n");
+
+        int edgesNum = edges_data.Length - 2;
+        edgesNames = new string[edgesNum];
+
+        for (int i = 0; i < edgesNames.Length; i++)
+        {
+            string rowdata = edges_data[i + 1];
+
+            string[] values = Regex.Split(rowdata, ",");
+            //string id = values[0];
+            int startindex = graph.FindFirstNode(values[1]).index;
+            int stopindex = graph.FindFirstNode(values[2]).index;
+            if (values[6] == "nan")
+                t0Road[startindex, stopindex] = 300 / 300;// 1e-4f;
+            else
+                t0Road[startindex, stopindex] = 300 / float.Parse(values[6], System.Globalization.CultureInfo.InvariantCulture);
+            //Linename values[6]
+        }
+
+        timeSteps = 10;
+        graph.timeSteps = timeSteps;
+
+        float[][,] temporalRoad = Enumerable.Range(0, timeSteps).Select(_ => new float[nodesNames.Length, nodesNames.Length]).ToArray();
+
+        float[,] roads = new float[nodesNames.Length, nodesNames.Length];
+
+        graph.roadcosts = roads;
+        graph.roadTemporal = temporalRoad;
+
+        System.Random rnd = new System.Random();
+
+        for (int k = 0; k < timeSteps; k++)
+        {
+            int high = 100;//500;//0
+            int low = 0;
+
+            //temporalRoad[k][0, 13] = rnd.Next(low, high) + 40;//Line 1 (1<=>14) (40, 39)
+            
+            for (int i = 0; i < nodesNames.Length; i++)
+            {
+                for (int j = 0; j < nodesNames.Length; j++)
+                {
+                    if (t0Road[i, j] != 0)
+                        temporalRoad[k][i, j] = t0Road[i, j] + rnd.Next(low, high);
+                    roads[i, j] += temporalRoad[k][i, j];
+                }
+            }
+        }
+
+        for (int i = 0; i < roads.GetLength(0); i++)
+        {
+            for (int j = 0; j < roads.GetLength(1); j++)
+            {
+                roads[i, j] = roads[i, j] / timeSteps;
+                float weight = roads[i, j];
+                if (weight != 0)
+                {
+                    Node nodeX = graph.FindNode(i);
+                    if (nodeX != null)
+                    {
+                        nodeX.Neighbors.Add(graph.FindNode(j));
+                        nodeX.NeighborNames.Add(graph.FindNode(j).name);
+                        nodeX.Weights.Add(roads[i, j]);
+                    }
+                }
+            }
+        }
+
+
+
+
+        // set Brekke, Vegtun as the nodes of POI nodes
+        string[] strPOIs = { "7379970941", "7379971169", "8745416901" };
+        Color[] clrPOIs = { Color.blue, Color.red, Color.green };
+
+        //string[] strPOIs = { "7379970941", "8745416892" };
+        //Color[] clrPOIs = { Color.blue, Color.red };
 
         graph.CreatePOInodes(strPOIs, clrPOIs);
 
@@ -671,9 +847,9 @@ public class ShowMap : MonoBehaviour
         //                            {  0,  0, 7,  0, 7, 10},//C
         //                            {  0, 8,  0, 7,  0,  0},//D
         //                            {  0,  0,  0, 8,  0,  0}};//H2
-        int[][,] temporalRoad = Enumerable.Range(0, timeSteps).Select(_ => new int[nodesNames.Length, nodesNames.Length]).ToArray();
+        float[][,] temporalRoad = Enumerable.Range(0, timeSteps).Select(_ => new float[nodesNames.Length, nodesNames.Length]).ToArray();
 
-        int[,] roads = new int[nodesNames.Length, nodesNames.Length];
+        float[,] roads = new float[nodesNames.Length, nodesNames.Length];
 
         graph.roadcosts = roads;
         graph.roadTemporal = temporalRoad;
@@ -753,7 +929,7 @@ public class ShowMap : MonoBehaviour
             for (int j = 0; j < roads.GetLength(1); j++)
             {
                 roads[i, j] = roads[i, j] / timeSteps;
-                float weight = roads[i, j];
+                double weight = roads[i, j];
                 if (weight != 0)
                 {
                     Node nodeX = graph.FindNode(i);

@@ -56,8 +56,8 @@ public class points_Scene1 : MonoBehaviour
             nodeX.obj.GetComponent<Lines>().currentNode = graph.Nodes[i];
             nodeX.obj.GetComponent<Lines>().line = line;
         }
-                                     //H1,  A,  B,  C,  D, H2
-        int[,] roads = new int[,] { {  0,  6,  0,  0,  0,  0},//H1
+        //H1,  A,  B,  C,  D, H2
+        float[,] roads = new float[,] { {  0,  6,  0,  0,  0,  0},//H1
                                     {  5,  0,  8,  0,  0,  0},//A
                                     {  0, 5,  0, 6,  0,  0},//B
                                     {  0,  0, 7,  0, 7, 10},//C
@@ -288,9 +288,9 @@ public class points_Scene1 : MonoBehaviour
         timeSteps = 10;//200
         graph.timeSteps = timeSteps;
 
-        int[][,] temporalRoad = Enumerable.Range(0, timeSteps).Select(_ => new int[nodesNames.Length, nodesNames.Length]).ToArray();
+        float[][,] temporalRoad = Enumerable.Range(0, timeSteps).Select(_ => new float[nodesNames.Length, nodesNames.Length]).ToArray();
 
-        int[,] roads = new int[nodesNames.Length, nodesNames.Length];
+        float[,] roads = new float[nodesNames.Length, nodesNames.Length];
 
         graph.roadcosts = roads;
         graph.roadTemporal = temporalRoad;

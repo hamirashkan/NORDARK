@@ -8,9 +8,9 @@ public class Graph : ScriptableObject
 {
     private List<Node> POInodes;
     private List<GameObject> lines;
-    public int[,] roadcosts;
-    public int[][,] roadTemporal;
-    private int[] dist;
+    public float[,] roadcosts;//int
+    public float[][,] roadTemporal;//int
+    private float[] dist;//int
     public int timeSteps;
     public static int LinesNum;
 
@@ -117,7 +117,7 @@ public class Graph : ScriptableObject
 
 
 
-        dist = new int[Nodes.Count]; // The output array. dist[i]
+        dist = new float[Nodes.Count]; // The output array. dist[i]
                                      // will hold the shortest
                                      // distance from src to i
         if (name.Length > 0)
@@ -204,11 +204,12 @@ public class Graph : ScriptableObject
     // value, from the set of vertices
     // not yet included in shortest
     // path tree
-    int minDistance(int[] dist,
+    int minDistance(float[] dist,
                     bool[] sptSet)
     {
         // Initialize min value
-        int min = int.MaxValue, min_index = -1;
+        float min = float.MaxValue;
+        int min_index = -1;
 
         for (int v = 0; v < Nodes.Count; v++)
             if (sptSet[v] == false && dist[v] <= min)
@@ -233,9 +234,9 @@ public class Graph : ScriptableObject
     // single source shortest path algorithm
     // for a graph represented using adjacency
     // matrix representation
-    void dijkstra(int[,] graph, int src)
+    void dijkstra(float[,] graph, int src)
     {
-        dist = new int[Nodes.Count]; // The output array. dist[i]
+        dist = new float[Nodes.Count]; // The output array. dist[i]
                                  // will hold the shortest
                                  // distance from src to i
 
@@ -302,7 +303,7 @@ public class Graph : ScriptableObject
     }
     
 
-    void risk(int[][,] temporalCost,List<int> rests,List<int> POIs)
+    void risk(float[][,] temporalCost,List<int> rests,List<int> POIs)
     {
         // calculate the minium distances to POIs for each rest node
         for (int i = 0; i < rests.Count; i++)
