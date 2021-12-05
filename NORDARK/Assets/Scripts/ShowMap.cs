@@ -53,6 +53,10 @@ public class ShowMap : MonoBehaviour
     public int tileIndex;
     public Slider slrTimeLine;
 
+    private AbstractMap bg_Mapbox;
+    private Dropdown dropdown_graphop;
+    private bool c_flag_last = false;
+
     private GameObject Nodes;
     private GameObject Edges;
 
@@ -61,14 +65,29 @@ public class ShowMap : MonoBehaviour
 
     void Start()
     {
+        // gameObject.transform.childCount. 13 (static) or 14 (dynamic)
         Nodes = GameObject.Find("Nodes");
         Edges = GameObject.Find("Edges");
 
         slrTimeLine = GameObject.Find("SlrTimeLine").GetComponent<Slider>();
+        dropdown_graphop = GameObject.Find("Dropdown").GetComponent<Dropdown>();
+        bg_Mapbox = GameObject.Find("BG_Mapbox").GetComponent<AbstractMap>();
+        UIButton.bg = bg_Mapbox.gameObject;
+
+        // Build 0005
+        if (gameObject.transform.GetChild(12).name == "TileProvider")
+            c_flag_last = true;
+        else
+            c_flag_last = false;
+        //
 
         for (int c = 0; c < 12; c++)
         {
-            Transform tile = gameObject.transform.GetChild(c + 1);
+            Transform tile;
+            if (c_flag_last)
+                tile = gameObject.transform.GetChild(c);
+            else
+                tile = gameObject.transform.GetChild(c + 1); //ignoring first child that is not a tile
             ArrayV3[c] = new Vector3[tile.gameObject.GetComponent<MeshFilter>().mesh.vertices.Length];
             Array.Copy(tile.gameObject.GetComponent<MeshFilter>().mesh.vertices, ArrayV3[c], ArrayV3[c].Length);
             ArrayTriangles[c] = new int[tile.gameObject.GetComponent<MeshFilter>().mesh.triangles.Length];
@@ -83,23 +102,33 @@ public class ShowMap : MonoBehaviour
     {
         yield return new WaitForSeconds(time);
         map = gameObject.GetComponent<AbstractMap>();// GameObject.Find("Mapbox").GetComponent<AbstractMap>();
+        graph_op = dropdown_graphop.value;
         if (graph_op == 0)
             GraphSet1("RoadGraph1");
         else if (graph_op == 2)
         {
+            //map.ResetMap();           
             //map.SetZoom(17);
             //map.SetCenterLatitudeLongitude(new Mapbox.Utils.Vector2d(62.4750425, 6.1914948));
+            map.Initialize(new Mapbox.Utils.Vector2d(62.4750425, 6.1914948), 17);
+            bg_Mapbox.Initialize(new Mapbox.Utils.Vector2d(62.4750425, 6.1914948), 17);
             //map.UpdateMap();
             GraphSet3("RoadGraph3");
         }
             
         else
         {
+            //map.ResetMap();
             //map.SetZoom(8);
             //map.SetCenterLatitudeLongitude(new Mapbox.Utils.Vector2d(62.7233, 7.51087));
+            map.Initialize(new Mapbox.Utils.Vector2d(62.7233, 7.51087), 8);
+            bg_Mapbox.Initialize(new Mapbox.Utils.Vector2d(62.7233, 7.51087), 8);
             //map.UpdateMap();
             GraphSet2("RoadGraph2");//GraphSet2
         }
+
+        bg_Mapbox.gameObject.SetActive(!UIButton.isOn);
+
         foreach (Node node in graph.Nodes)
         {
             Color AccessColor = GameObject.Find(node.MostAccessPOI.name).GetComponent<Renderer>().material.color;
@@ -110,6 +139,12 @@ public class ShowMap : MonoBehaviour
             node.objTransform.GetComponent<Lines>().dist = AccessDist;
             Debug.Log("Res: name=" + node.name + ",MostAccessPOI=" + node.MostAccessPOI);
         }
+        // Build 0005
+        if (gameObject.transform.GetChild(12).name == "TileProvider")
+            c_flag_last = true;
+        else
+            c_flag_last = false;
+        //
 
         minW = costs.Min();
         maxW = costs.Max();
@@ -119,9 +154,13 @@ public class ShowMap : MonoBehaviour
         colorMap = new List<Color>();
 
         //creating textures and colormap
-        for (int c = 0; c < gameObject.transform.childCount - 1; c++)
+        for (int c = 0; c < 12; c++)
         {
-            Transform tile = gameObject.transform.GetChild(c + 1); //ignoring first child that is not a tile
+            Transform tile;
+            if (c_flag_last)
+                tile = gameObject.transform.GetChild(c);
+            else
+                tile = gameObject.transform.GetChild(c + 1); //ignoring first child that is not a tile
             //Vector3 mapSize = tile.gameObject.GetComponent<Renderer>().bounds.size;
             //Texture2D texture = new Texture2D((int)mapSize.x, (int)mapSize.z);
             //textMap.Add(texture);
@@ -136,14 +175,19 @@ public class ShowMap : MonoBehaviour
             Node bestNode = null;
         }
         // TimeLine Initilization
-        NodeIndexArrayS = new List<int>[gameObject.transform.childCount - 1,timeSteps];
-        NodeArrayS = new List<Node>[gameObject.transform.childCount - 1, timeSteps];
+        NodeIndexArrayS = new List<int>[12,timeSteps];
+        NodeArrayS = new List<Node>[12, timeSteps];
         slrTimeLine.maxValue = timeSteps;
         slrTimeLine.minValue = 1;
         //
-        for (int c = 0; c < gameObject.transform.childCount - 1; c++)
+        for (int c = 0; c < 12; c++)
         {
-            Transform tile = gameObject.transform.GetChild(c + 1);
+            Transform tile;
+            if (c_flag_last)
+                tile = gameObject.transform.GetChild(c);
+            else
+                tile = gameObject.transform.GetChild(c + 1); //ignoring first child that is not a tile
+
             //Texture2D texture = textMap[c];
             float lambda;
 
@@ -346,9 +390,14 @@ public class ShowMap : MonoBehaviour
         float lMax = lambdaMap.Max();
         int iter = 0;
 
-        for (int c = 0; c < gameObject.transform.childCount - 1; c++)
+        for (int c = 0; c < 12; c++)
         {
-            Transform tile = gameObject.transform.GetChild(c + 1);
+            Transform tile;
+            if (c_flag_last)
+                tile = gameObject.transform.GetChild(c);
+            else
+                tile = gameObject.transform.GetChild(c + 1); //ignoring first child that is not a tile
+
             Mesh mesh = tile.gameObject.GetComponent<MeshFilter>().mesh;
             var vertices = mesh.vertices;
             Color[] colors = new Color[vertices.Length];
@@ -392,9 +441,14 @@ public class ShowMap : MonoBehaviour
         int iter = 0;
         if ((NodeArrayS != null) && (NodeArrayS[0,0]!=null))// Build 0004, null bug
         {
-            for (int c = 0; c < gameObject.transform.childCount - 1; c++)
+            for (int c = 0; c < 12; c++)
             {
-                Transform tile = gameObject.transform.GetChild(c + 1);
+                Transform tile;
+                if (c_flag_last)
+                    tile = gameObject.transform.GetChild(c);
+                else
+                    tile = gameObject.transform.GetChild(c + 1); //ignoring first child that is not a tile
+
                 Mesh mesh = tile.gameObject.GetComponent<MeshFilter>().mesh;
                 var vertices = mesh.vertices;
                 Color[] colors = new Color[vertices.Length];

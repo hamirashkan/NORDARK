@@ -10,6 +10,9 @@ public class UIButton : MonoBehaviour
 {
     public ShowMap other;
 
+    public static GameObject bg;
+    public static bool isOn = true;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -19,16 +22,21 @@ public class UIButton : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
     }
 
     public void OptionValueChange()
     {
-        int op = this.GetComponent<Dropdown>().value;
+        //int op = this.GetComponent<Dropdown>().value;
         other.DestroyChildren("Nodes");
         other.DestroyChildren("Edges");
         //other.DisplayMapbox = Instantiate(GameObject.Find("Mapbox"));
-        StartCoroutine(other.CreateMap(0.01f, op));
+        StartCoroutine(other.CreateMap(0.01f));
+    }
+
+    public void HideValueChange()
+    {
+        bg.SetActive(!this.GetComponent<Toggle>().isOn);
+        isOn = this.GetComponent<Toggle>().isOn;
     }
 
     public void test()
