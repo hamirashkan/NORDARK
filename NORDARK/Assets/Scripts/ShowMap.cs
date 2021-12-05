@@ -68,8 +68,11 @@ public class ShowMap : MonoBehaviour
     private Vector3[][] ArrayV3 = new Vector3[12][];
     private int[][] ArrayTriangles = new int[12][];
 
+    private bool bReadyForCFH = false;
+
     void Start()
     {
+        bReadyForCFH = false;
         // gameObject.transform.childCount. 13 (static) or 14 (dynamic)
         Nodes = GameObject.Find("Nodes");
         Edges = GameObject.Find("Edges");
@@ -77,14 +80,14 @@ public class ShowMap : MonoBehaviour
         slrTimeLine = GameObject.Find("SlrTimeLine").GetComponent<Slider>();
         dropdown_graphop = GameObject.Find("Dropdown").GetComponent<Dropdown>();
         bg_Mapbox = GameObject.Find("BG_Mapbox").GetComponent<AbstractMap>();
-        //slrStartTime = GameObject.Find("SlrStartTime").GetComponent<Slider>();
-        //slrStopTime = GameObject.Find("SlrStopTime").GetComponent<Slider>();
+        slrStartTime = GameObject.Find("SlrStartTime").GetComponent<Slider>();
+        slrStopTime = GameObject.Find("SlrStopTime").GetComponent<Slider>();
 
-        //slrStartTime.onValueChanged.AddListener(delegate {StartTimeValueChangeCheck();});
-        //txtStartTime = GameObject.Find("TxtStartTime").GetComponent<Text>();
+        slrStartTime.onValueChanged.AddListener(delegate { StartTimeValueChangeCheck(); });
+        txtStartTime = GameObject.Find("TxtStartTime").GetComponent<Text>();
 
-        //slrStopTime.onValueChanged.AddListener(delegate { StopTimeValueChangeCheck(); });
-        //txtStopTime = GameObject.Find("TxtStopTime").GetComponent<Text>();
+        slrStopTime.onValueChanged.AddListener(delegate { StopTimeValueChangeCheck(); });
+        txtStopTime = GameObject.Find("TxtStopTime").GetComponent<Text>();
 
         UIButton.bg = bg_Mapbox.gameObject;
 
@@ -117,17 +120,18 @@ public class ShowMap : MonoBehaviour
     public IEnumerator CreateMap(float time, int graph_op = 0)
     {
         yield return new WaitForSeconds(time);
+        bReadyForCFH = false;
         map = gameObject.GetComponent<AbstractMap>();// GameObject.Find("Mapbox").GetComponent<AbstractMap>();
         graph_op = dropdown_graphop.value;
         if (graph_op == 0)
         { 
             GraphSet1("RoadGraph1");
-            //slrStartTime.minValue = 1;
-            //slrStartTime.maxValue = 4;
-            //slrStartTime.value = slrStartTime.minValue;
-            //slrStopTime.minValue = slrStartTime.minValue;
-            //slrStopTime.maxValue = slrStartTime.maxValue;
-            //slrStopTime.value = slrStopTime.maxValue;
+            slrStartTime.minValue = 1;
+            slrStartTime.maxValue = 4;
+            slrStartTime.value = slrStartTime.minValue;
+            slrStopTime.minValue = slrStartTime.minValue;
+            slrStopTime.maxValue = slrStartTime.maxValue;
+            slrStopTime.value = slrStopTime.maxValue;
         }
         else if (graph_op == 2)
         {
@@ -138,12 +142,12 @@ public class ShowMap : MonoBehaviour
             bg_Mapbox.Initialize(new Mapbox.Utils.Vector2d(62.4750425, 6.1914948), 17);
             //map.UpdateMap();
             GraphSet3("RoadGraph3");
-            //slrStartTime.minValue = 1;
-            //slrStartTime.maxValue = 20;
-            //slrStartTime.value = slrStartTime.minValue;
-            //slrStopTime.minValue = slrStartTime.minValue;
-            //slrStopTime.maxValue = slrStartTime.maxValue;
-            //slrStopTime.value = slrStopTime.maxValue;
+            slrStartTime.minValue = 1;
+            slrStartTime.maxValue = 20;
+            slrStartTime.value = slrStartTime.minValue;
+            slrStopTime.minValue = slrStartTime.minValue;
+            slrStopTime.maxValue = slrStartTime.maxValue;
+            slrStopTime.value = slrStopTime.maxValue;
         }
             
         else
@@ -155,12 +159,12 @@ public class ShowMap : MonoBehaviour
             bg_Mapbox.Initialize(new Mapbox.Utils.Vector2d(62.7233, 7.51087), 8);
             //map.UpdateMap();
             GraphSet2("RoadGraph2");//GraphSet2
-            //slrStartTime.minValue = 1;
-            //slrStartTime.maxValue = 10;
-            //slrStartTime.value = slrStartTime.minValue;
-            //slrStopTime.minValue = slrStartTime.minValue;
-            //slrStopTime.maxValue = slrStartTime.maxValue;
-            //slrStopTime.value = slrStopTime.maxValue;
+            slrStartTime.minValue = 1;
+            slrStartTime.maxValue = 10;
+            slrStartTime.value = slrStartTime.minValue;
+            slrStopTime.minValue = slrStartTime.minValue;
+            slrStopTime.maxValue = slrStartTime.maxValue;
+            slrStopTime.value = slrStopTime.maxValue;
         }
 
         bg_Mapbox.gameObject.SetActive(!UIButton.isOn);
@@ -474,6 +478,9 @@ public class ShowMap : MonoBehaviour
 
         // Build 0003, timeline update issue
         UISlirTimeLine.label.text = timeIndex + "/" + timeSteps;
+        StartTimeValueChangeCheck();
+        StopTimeValueChangeCheck();
+        bReadyForCFH = true;
     }
 
     public void ComputeTDM()
@@ -1184,6 +1191,7 @@ public class ShowMap : MonoBehaviour
             tile.gameObject.GetComponent<Renderer>().material = SurfaceMat;
             mesh.colors = colors;
         }
+        Debug.Log("PatternMax = " + patternMax.ToString());
         return null;
     }
 
@@ -1252,10 +1260,10 @@ public class ShowMap : MonoBehaviour
         if (SliderStartTimeValue != (int)slrStartTime.value)
         {
             SliderStartTimeValue = (int)slrStartTime.value;
-            if ((NodeIndexArrayS != null) && (SliderStartTimeValue < SliderStopTimeValue))
+            if (bReadyForCFH && (SliderStartTimeValue < SliderStopTimeValue))
                 ComputeCFH(1, SliderStartTimeValue - 1, SliderStopTimeValue - 1);
         }
-        txtStartTime.text = SliderStartTimeValue + "/" + timeSteps;
+        txtStartTime.text = SliderStartTimeValue + "/" + slrStartTime.maxValue;
     }
 
     public void StopTimeValueChangeCheck()
@@ -1263,10 +1271,10 @@ public class ShowMap : MonoBehaviour
         if (SliderStopTimeValue != (int)slrStopTime.value)
         {
             SliderStopTimeValue = (int)slrStopTime.value;
-            if ((NodeIndexArrayS != null) && (SliderStartTimeValue < SliderStopTimeValue))
+            if (bReadyForCFH && (SliderStartTimeValue < SliderStopTimeValue))
                 ComputeCFH(1, SliderStartTimeValue - 1, SliderStopTimeValue - 1);
         }
-        txtStopTime.text = SliderStopTimeValue + "/" + timeSteps;
+        txtStopTime.text = SliderStopTimeValue + "/" + slrStopTime.maxValue;
     }
 }
 
