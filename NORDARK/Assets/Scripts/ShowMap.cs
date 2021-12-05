@@ -34,8 +34,6 @@ public class ShowMap : MonoBehaviour
     public float scale_risk = 10;
     // CFH
     public string FeatureString = "010";
-    private float ws = 1; // x
-    private float hs = 1; // z
 
     float scale = 1.0f;
     bool recalculateNormals = false;
@@ -49,13 +47,20 @@ public class ShowMap : MonoBehaviour
     public List<int>[,] NodeIndexArrayS;
     public List<Node> NodeArray;
     public List<Node>[,] NodeArrayS;
+    public List<int>[] CFHArrayS;
     public int timeIndex;
     public int tileIndex;
     public Slider slrTimeLine;
+    public int SliderStartTimeValue = 1; // current start value
+    public int SliderStopTimeValue = 10; // current stop value
 
     private AbstractMap bg_Mapbox;
     private Dropdown dropdown_graphop;
     private bool c_flag_last = false;
+    private Slider slrStartTime;
+    private Slider slrStopTime;
+    private Text txtStartTime;
+    private Text txtStopTime;
 
     private GameObject Nodes;
     private GameObject Edges;
@@ -72,6 +77,15 @@ public class ShowMap : MonoBehaviour
         slrTimeLine = GameObject.Find("SlrTimeLine").GetComponent<Slider>();
         dropdown_graphop = GameObject.Find("Dropdown").GetComponent<Dropdown>();
         bg_Mapbox = GameObject.Find("BG_Mapbox").GetComponent<AbstractMap>();
+        //slrStartTime = GameObject.Find("SlrStartTime").GetComponent<Slider>();
+        //slrStopTime = GameObject.Find("SlrStopTime").GetComponent<Slider>();
+
+        //slrStartTime.onValueChanged.AddListener(delegate {StartTimeValueChangeCheck();});
+        //txtStartTime = GameObject.Find("TxtStartTime").GetComponent<Text>();
+
+        //slrStopTime.onValueChanged.AddListener(delegate { StopTimeValueChangeCheck(); });
+        //txtStopTime = GameObject.Find("TxtStopTime").GetComponent<Text>();
+
         UIButton.bg = bg_Mapbox.gameObject;
 
         // Build 0005
@@ -95,7 +109,9 @@ public class ShowMap : MonoBehaviour
         }
 
         if (!IsBGMap)// if GraphSet1
-        StartCoroutine(CreateMap(0.01f, 1));
+        {
+            StartCoroutine(CreateMap(0.01f, 1));
+        }        
     }
 
     public IEnumerator CreateMap(float time, int graph_op = 0)
@@ -104,7 +120,15 @@ public class ShowMap : MonoBehaviour
         map = gameObject.GetComponent<AbstractMap>();// GameObject.Find("Mapbox").GetComponent<AbstractMap>();
         graph_op = dropdown_graphop.value;
         if (graph_op == 0)
+        { 
             GraphSet1("RoadGraph1");
+            //slrStartTime.minValue = 1;
+            //slrStartTime.maxValue = 4;
+            //slrStartTime.value = slrStartTime.minValue;
+            //slrStopTime.minValue = slrStartTime.minValue;
+            //slrStopTime.maxValue = slrStartTime.maxValue;
+            //slrStopTime.value = slrStopTime.maxValue;
+        }
         else if (graph_op == 2)
         {
             //map.ResetMap();           
@@ -114,6 +138,12 @@ public class ShowMap : MonoBehaviour
             bg_Mapbox.Initialize(new Mapbox.Utils.Vector2d(62.4750425, 6.1914948), 17);
             //map.UpdateMap();
             GraphSet3("RoadGraph3");
+            //slrStartTime.minValue = 1;
+            //slrStartTime.maxValue = 20;
+            //slrStartTime.value = slrStartTime.minValue;
+            //slrStopTime.minValue = slrStartTime.minValue;
+            //slrStopTime.maxValue = slrStartTime.maxValue;
+            //slrStopTime.value = slrStopTime.maxValue;
         }
             
         else
@@ -125,6 +155,12 @@ public class ShowMap : MonoBehaviour
             bg_Mapbox.Initialize(new Mapbox.Utils.Vector2d(62.7233, 7.51087), 8);
             //map.UpdateMap();
             GraphSet2("RoadGraph2");//GraphSet2
+            //slrStartTime.minValue = 1;
+            //slrStartTime.maxValue = 10;
+            //slrStartTime.value = slrStartTime.minValue;
+            //slrStopTime.minValue = slrStartTime.minValue;
+            //slrStopTime.maxValue = slrStartTime.maxValue;
+            //slrStopTime.value = slrStopTime.maxValue;
         }
 
         bg_Mapbox.gameObject.SetActive(!UIButton.isOn);
@@ -140,10 +176,10 @@ public class ShowMap : MonoBehaviour
             Debug.Log("Res: name=" + node.name + ",MostAccessPOI=" + node.MostAccessPOI);
         }
         // Build 0005
-        if (gameObject.transform.GetChild(12).name == "TileProvider")
-            c_flag_last = true;
-        else
+        if (gameObject.transform.GetChild(0).name == "TileProvider")
             c_flag_last = false;
+        else
+            c_flag_last = true;
         //
 
         minW = costs.Min();
@@ -203,6 +239,10 @@ public class ShowMap : MonoBehaviour
             int vertices_scale = 4;// scale parameters
             int vertices_max = 10;
             int vertices_scalemax = vertices_max + (vertices_scale - 1) * (vertices_max - 1);//vertices_max * vertices_scale; // max index for the row or column
+            // Build 0006
+            hs = vertices_scalemax;
+            ws = vertices_scalemax;
+            //
             int row = 0, column = 0;
             int p1_row = 0, p1_column = 0; // point 1
             int p2_row = 0, p2_column = 0; // point 2
@@ -436,6 +476,39 @@ public class ShowMap : MonoBehaviour
         UISlirTimeLine.label.text = timeIndex + "/" + timeSteps;
     }
 
+    public void ComputeTDM()
+    {
+        float lMin = lambdaMap.Min();
+        float lMax = lambdaMap.Max();
+        int iter = 0;
+
+        for (int c = 0; c < 12; c++)
+        {
+            Transform tile;
+            if (c_flag_last)
+                tile = gameObject.transform.GetChild(c);
+            else
+                tile = gameObject.transform.GetChild(c + 1); //ignoring first child that is not a tile
+
+            Mesh mesh = tile.gameObject.GetComponent<MeshFilter>().mesh;
+            var vertices = mesh.vertices;
+            Color[] colors = new Color[vertices.Length];
+
+            for (var i = 0; i < vertices.Length; i++)
+            {
+                colors[i] = colorMap[iter];
+                colors[i].a = 1 - (lambdaMap[iter] - lMin) / (lMax - lMin);
+                iter += 1;
+            }
+
+            Shader shader; shader = Shader.Find("Particles/Standard Unlit");
+
+            //tile.gameObject.GetComponent<Renderer>().material.shader = shader;
+            tile.gameObject.GetComponent<Renderer>().material = SurfaceMat;
+            mesh.colors = colors;
+        }
+    }
+
     public void UpdateTexture()
     {
         int iter = 0;
@@ -473,7 +546,7 @@ public class ShowMap : MonoBehaviour
                 GameObject.Find(node.name).GetComponent<Renderer>().material.SetColor("_Color", AccessColor);
                 node.objTransform.GetComponent<Lines>().nColor = AccessColor;
                 node.objTransform.GetComponent<Lines>().dist = AccessDist;
-                Debug.Log("Res: " + node.name + node.MostAccessPOI);
+                //Debug.Log("Res: " + node.name + node.MostAccessPOI);
             }
         }
     }
@@ -772,7 +845,7 @@ public class ShowMap : MonoBehaviour
             //Linename values[6]
         }
 
-        timeSteps = 10;
+        timeSteps = 20;
         graph.timeSteps = timeSteps;
 
         float[][,] temporalRoad = Enumerable.Range(0, timeSteps).Select(_ => new float[nodesNames.Length, nodesNames.Length]).ToArray();
@@ -1023,8 +1096,11 @@ public class ShowMap : MonoBehaviour
     public bool TestMode = false;
 
     private List<int> MatrixA_Array = new List<int>();
+    private List<int> tMatrixA_Array;
     private string strFeatureString;
     private int patternMax = 1;
+    private int hs;
+    private int ws;
 
     /// <summary>
     /// 
@@ -1035,67 +1111,87 @@ public class ShowMap : MonoBehaviour
     /// <returns></returns>
     public List<int> ComputeCFH(int stept, int start_time, int stop_time)
     {
-        MatrixA_Array = new List<int>();
-        int t_count = 0;
-        for (int i = start_time; i <= stop_time; i = i + stept)
-        {
-            t_count++;
-            List<int> tMatrixA_Array = ComputeMatrixA(i);
-            MatrixA_Array.AddRange(tMatrixA_Array);
-        }
+        CFHArrayS = new List<int>[12];
 
-        List<int> CountParkShadowsCFH = new List<int>();
-        if (t_count >= 1)
+        for (int c = 0; c < 12; c++)
         {
-            // t count = frame size of t
-            // ws = account size of width
-            // hs = account size of height
-            int[] sub;// = new int[] { 0, 1 };//{ 1, 1, 1 }
-            sub = Fun_FeatureStrToInt(FeatureString);
-            if (sub == null)
+            Transform tile;
+            if (c_flag_last)
+                tile = gameObject.transform.GetChild(c);
+            else
+                tile = gameObject.transform.GetChild(c + 1); //ignoring first child that is not a tile
+
+            tileIndex = c;
+
+            MatrixA_Array = new List<int>();
+            int t_count = 0;
+            for (int i = start_time; i <= stop_time; i = i + stept)
             {
-                FeatureString = "010";
-                strFeatureString = FeatureString;
-                sub = Fun_FeatureStrToInt(FeatureString);
+                t_count++;
+                tMatrixA_Array = ComputeMatrixA(i);
+                MatrixA_Array.AddRange(tMatrixA_Array);
             }
-            int i_count = (int)hs;
-            int j_count = (int)ws;
-            int[] data = new int[t_count - 1];
-            int max = 1;
-            if (t_count >= 2)
-                for (int i = 0; i < i_count; i++)
-                    for (int j = 0; j < j_count; j++)
+
+            Mesh mesh = tile.gameObject.GetComponent<MeshFilter>().mesh;
+            var vertices = mesh.vertices;
+            Color[] colors = new Color[vertices.Length];
+
+            CFHArrayS[c] = new List<int>();
+            for (var i = 0; i < vertices.Length; i++)
+            {
+                List<int> CountParkShadowsCFH = new List<int>();
+                if (t_count >= 1)
+                {
+                    // t count = frame size of t
+                    // ws = account size of width
+                    // hs = account size of height
+                    int[] sub;// = new int[] { 0, 1 };//{ 1, 1, 1 }
+                    sub = Fun_FeatureStrToInt(FeatureString);
+                    int i_count = hs;
+                    int j_count = ws;
+                    int[] data = new int[t_count - 1];
+                    int max = 1;
+                    if (t_count >= 2)
                     {
                         for (int t = 0; t < t_count - 1; t++)
                         {
                             // ComputeMatrixD, binary pattern
-                            int binaryMapData = MatrixA_Array[t * (j_count * i_count) + i * j_count + j] !=
-                                MatrixA_Array[(t + 1) * (j_count * i_count) + i * j_count + j] ? 1 : 0;
+                            int binaryMapData = MatrixA_Array[t * vertices.Length + i] !=
+                                MatrixA_Array[(t + 1) * vertices.Length + i] ? 1 : 0;
                             data[t] = binaryMapData;
                         }
                         List<int> a = Fun_SubFeatureForData(data, sub);
                         if (a.Count > max)
                             max = a.Count;
                         CountParkShadowsCFH.Add(a.Count);
+                        CFHArrayS[c].Add(a.Count);
                     }
+                    patternMax = max;
+                }
+                else
+                {
+                    patternMax = 0;
+                    CountParkShadowsCFH = null;
+                }
 
-            patternMax = max;
+                //new Color(resultCFM[y * ParkTexture.width + x] / (float)patternMax, 0, 1 - resultCFM[y * ParkTexture.width + x] / (float)patternMax)
+                colors[i] = new Color(CFHArrayS[c][i] / (float)patternMax, 0, 1 - CFHArrayS[c][i] / (float)patternMax);// CFHArrayS[i] ;//colorMap[iter];
+                colors[i].a = 0.5f;
+            }
+
+            Shader shader; shader = Shader.Find("Particles/Standard Unlit");
+
+            tile.gameObject.GetComponent<Renderer>().material = SurfaceMat;
+            mesh.colors = colors;
         }
-        else
-        {
-            patternMax = 0;
-            CountParkShadowsCFH = null;
-        }
-        if (TestMode)
-            Debug.Log("E004: feature (" + FeatureString + ") max value per minimum unit is " + patternMax.ToString() + ", marked as Red color in heatmap.");
-        return CountParkShadowsCFH;
+        return null;
     }
 
     //Function ComputeMatrixA
     public List<int> ComputeMatrixA(int i)
     {
-        MatrixA_Array = NodeIndexArrayS[tileIndex, i];
-        return MatrixA_Array;
+        tMatrixA_Array = NodeIndexArrayS[tileIndex, i];
+        return tMatrixA_Array;
     }
 
     public int[] Fun_FeatureStrToInt(string feature)
@@ -1149,6 +1245,28 @@ public class ShowMap : MonoBehaviour
         {
             Destroy(children[i].gameObject);
         }
+    }
+
+    public void StartTimeValueChangeCheck()
+    {
+        if (SliderStartTimeValue != (int)slrStartTime.value)
+        {
+            SliderStartTimeValue = (int)slrStartTime.value;
+            if ((NodeIndexArrayS != null) && (SliderStartTimeValue < SliderStopTimeValue))
+                ComputeCFH(1, SliderStartTimeValue - 1, SliderStopTimeValue - 1);
+        }
+        txtStartTime.text = SliderStartTimeValue + "/" + timeSteps;
+    }
+
+    public void StopTimeValueChangeCheck()
+    {
+        if (SliderStopTimeValue != (int)slrStopTime.value)
+        {
+            SliderStopTimeValue = (int)slrStopTime.value;
+            if ((NodeIndexArrayS != null) && (SliderStartTimeValue < SliderStopTimeValue))
+                ComputeCFH(1, SliderStartTimeValue - 1, SliderStopTimeValue - 1);
+        }
+        txtStopTime.text = SliderStopTimeValue + "/" + timeSteps;
     }
 }
 

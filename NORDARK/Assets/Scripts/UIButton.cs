@@ -60,6 +60,16 @@ public class UIButton : MonoBehaviour
         Debug.Log("timeIndex=" + other.timeIndex);
     }
 
+    public void ComputeCFH()
+    {
+        other.ComputeCFH(1, other.SliderStartTimeValue - 1, other.SliderStopTimeValue - 1);
+    }
+
+    public void ComputeTDM()
+    {
+        other.ComputeTDM();
+    }
+
     int long2tilex(double lon, int z)
     {
         return (int)(Math.Floor((lon + 180.0) / 360.0 * (1 << z)));
