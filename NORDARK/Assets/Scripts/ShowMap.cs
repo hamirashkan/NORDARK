@@ -61,6 +61,7 @@ public class ShowMap : MonoBehaviour
     private Slider slrStopTime;
     private Text txtStartTime;
     private Text txtStopTime;
+    private InputField IptFeatureString;
 
     private GameObject Nodes;
     private GameObject Edges;
@@ -82,12 +83,16 @@ public class ShowMap : MonoBehaviour
         bg_Mapbox = GameObject.Find("BG_Mapbox").GetComponent<AbstractMap>();
         slrStartTime = GameObject.Find("SlrStartTime").GetComponent<Slider>();
         slrStopTime = GameObject.Find("SlrStopTime").GetComponent<Slider>();
+        IptFeatureString = GameObject.Find("IptFeatureString").GetComponent<InputField>();
 
         slrStartTime.onValueChanged.AddListener(delegate { StartTimeValueChangeCheck(); });
         txtStartTime = GameObject.Find("TxtStartTime").GetComponent<Text>();
 
         slrStopTime.onValueChanged.AddListener(delegate { StopTimeValueChangeCheck(); });
         txtStopTime = GameObject.Find("TxtStopTime").GetComponent<Text>();
+
+        IptFeatureString.onValueChanged.AddListener(delegate { FeatureStringValueChangeCheck(); });
+
 
         UIButton.bg = bg_Mapbox.gameObject;
 
@@ -1275,6 +1280,13 @@ public class ShowMap : MonoBehaviour
                 ComputeCFH(1, SliderStartTimeValue - 1, SliderStopTimeValue - 1);
         }
         txtStopTime.text = SliderStopTimeValue + "/" + slrStopTime.maxValue;
+    }
+
+    public void FeatureStringValueChangeCheck()
+    {
+        FeatureString = IptFeatureString.text;
+        if (bReadyForCFH && (SliderStartTimeValue < SliderStopTimeValue))
+            ComputeCFH(1, SliderStartTimeValue - 1, SliderStopTimeValue - 1);
     }
 }
 
