@@ -1268,7 +1268,7 @@ public class ShowMap : MonoBehaviour
             if (bReadyForCFH && (SliderStartTimeValue < SliderStopTimeValue))
                 ComputeCFH(1, SliderStartTimeValue - 1, SliderStopTimeValue - 1);
         }
-        txtStartTime.text = SliderStartTimeValue + "/" + slrStartTime.maxValue;
+        txtStartTime.text = "Start Time:" + SliderStartTimeValue + "/" + slrStartTime.maxValue;
     }
 
     public void StopTimeValueChangeCheck()
@@ -1279,7 +1279,7 @@ public class ShowMap : MonoBehaviour
             if (bReadyForCFH && (SliderStartTimeValue < SliderStopTimeValue))
                 ComputeCFH(1, SliderStartTimeValue - 1, SliderStopTimeValue - 1);
         }
-        txtStopTime.text = SliderStopTimeValue + "/" + slrStopTime.maxValue;
+        txtStopTime.text = "Stop Time:" + SliderStopTimeValue + "/" + slrStopTime.maxValue;
     }
 
     public void FeatureStringValueChangeCheck()

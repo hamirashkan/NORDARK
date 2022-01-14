@@ -26,7 +26,7 @@ public class UISlirTimeLine : MonoBehaviour
             other.UpdateTexture();
         }
         other.timeIndex = (int)slider.value;
-        label.text = other.timeIndex + "/" + other.timeSteps;
+        label.text = "Timeframe:" + other.timeIndex + "/" + other.timeSteps;
     }
 
     // Update is called once per frame
