@@ -3408,6 +3408,8 @@ MonoBehaviour:
       m_Image: {fileID: 0}
     - m_Text: Graph 3 (37 nodes)
       m_Image: {fileID: 0}
+    - m_Text: IFT_Graph 3
+      m_Image: {fileID: 0}
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
