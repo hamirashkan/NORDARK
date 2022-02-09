@@ -71,7 +71,11 @@ public class ShowMap : MonoBehaviour
     private int[][] ArrayTriangles = new int[12][];
 
     private bool bReadyForCFH = false;
-
+    // Build 0009, add IFT for Graph 1
+    IntPtr intPtrImage;
+    int nrows = 10*3, ncols = 10*4;
+    int[] testImage;
+    //
     void Start()
     {
         bReadyForCFH = false;
@@ -117,11 +121,29 @@ public class ShowMap : MonoBehaviour
             Array.Copy(tile.gameObject.GetComponent<MeshFilter>().mesh.triangles, ArrayTriangles[c], ArrayTriangles[c].Length);
         }
 
+        // Build 0009, add IFT for Graph 1
+        initImageArray(nrows * ncols);
+        //
+
         if (!IsBGMap)// if GraphSet1
         {
             StartCoroutine(CreateMap(0.01f, 1));
         }        
     }
+
+    // Build 0009, add IFT for graph 1 
+    public void initImageArray(int length)
+    {
+        testImage = new int[length];
+        unsafe
+        {
+            fixed (int* pArray = testImage)
+            {
+                intPtrImage = new IntPtr((void*)pArray);
+            }
+        }
+    }
+    //
 
     public IEnumerator CreateMap(float time, int graph_op = 0)
     {
@@ -257,7 +279,7 @@ public class ShowMap : MonoBehaviour
             //baseVertices = mesh.vertices;
             baseVertices = ArrayV3[c];//
             // high scale for the vertices interpolation
-            int vertices_scale = 4;// scale parameters
+            int vertices_scale = 1;// 4;// scale parameters
             int vertices_max = 10;
             int vertices_scalemax = vertices_max + (vertices_scale - 1) * (vertices_max - 1);//vertices_max * vertices_scale; // max index for the row or column
             // Build 0006
@@ -498,6 +520,111 @@ public class ShowMap : MonoBehaviour
         StartTimeValueChangeCheck();
         StopTimeValueChangeCheck();
         bReadyForCFH = true;
+        // Build 0009, add IFT for Graph 1
+        if (UIButton.isIFT) 
+        {
+            //pass C#'s delegate to C++
+            //DllInterface.InitCSharpDelegate(DllInterface.LogMessageFromCpp);
+
+            //IntPtr ptr = DllInterface.fnwrapper_intarr();
+            //int[] result = new int[3];
+            //Marshal.Copy(ptr, result, 0, 3);
+            //Debug.Log(result);
+
+            //IntPtr intPtr;
+            //unsafe
+            //{
+            //    fixed (int* pArray = result)
+            //    {
+            //        intPtr = new IntPtr((void*)pArray);
+            //    }
+            //}
+
+            //IntPtr ptr1 = DllInterface.add(intPtr);
+            //int[] result1 = new int[3];
+            //Marshal.Copy(ptr1, result1, 0, 3);
+            //Debug.Log(result1);
+
+
+            //IFT
+            // Prepare the position for the top left tile. top right is the minimum for graph, top left is the start for image
+            float x_min = float.MaxValue;
+            float z_max = float.MinValue;
+            int x_index = 0;
+            int z_index = 0;
+            int adj_type = 2;// 1;
+            for (int c = 0; c < 12; c++)
+            {
+                Transform tile;
+                if (c_flag_last)
+                    tile = gameObject.transform.GetChild(c);
+                else
+                    tile = gameObject.transform.GetChild(c + 1); //ignoring first child that is not a tile
+
+                Vector3 center = tile.position;
+                if (center.x < x_min)
+                    x_min = center.x;
+                if (center.z > z_max)
+                    z_max = center.z;
+            }
+            x_min = x_min - 50;
+            z_max = z_max + 50;
+            // Step 1, set pixel value to 1 if POI nodes belongs to this pixel
+            Array.Clear(testImage, 0, testImage.Length);
+            // Adjacent region 1, 4 or more points
+            foreach (Node node in graph.POInodes)
+            {
+                //node.vec
+                x_index = (int)((node.vec.x - x_min) / (100 / (10 - 1)));
+                z_index = (int)((z_max - node.vec.z) / (100 / (10 - 1)));
+                if (adj_type == 1)
+                { 
+                    // set test Image pixel as 1
+                    // Adjacent region 1, top left point
+                    SetImageValue(x_index, z_index);
+                }
+                else
+                {
+                    // Adjacent region 4 points
+                    SetImageValue(x_index, z_index);
+                    SetImageValue(x_index + 1, z_index);
+                    SetImageValue(x_index, z_index + 1);
+                    SetImageValue(x_index + 1, z_index + 1);
+                }
+            }
+            //testImage[0] = 1;
+            //testImage[ncols * 10 + 20] = 1;
+            //testImage[ncols * 10 + 21] = 1;
+            //testImage[ncols * 15 + 20] = 1;
+            //testImage[ncols * 15 + 21] = 1;
+
+            DateTime dateTime1 = DateTime.Now;
+            IntPtr intPtrEdt = DllInterface.IFT(intPtrImage, nrows, ncols);
+            DateTime dateTime2 = DateTime.Now;
+            var diffInSeconds = (dateTime2 - dateTime1).TotalMilliseconds;
+            Debug.Log("IFT:" + diffInSeconds + " millisec");
+
+            int[] edtImage = new int[nrows * ncols];
+            Marshal.Copy(intPtrEdt, edtImage, 0, nrows * ncols);
+            Debug.Log(edtImage);
+
+            DllInterface.ExportFile(intPtrImage, nrows, ncols, Marshal.StringToHGlobalAnsi("raw.pgm"));
+            DllInterface.ExportFile(intPtrEdt, nrows, ncols, Marshal.StringToHGlobalAnsi("edit.pgm"));
+
+        }
+    }
+
+    public void SetImageValue(int x = 0, int z = 0, int value = 1)
+    {
+        if ((x >= 0) && (x < ncols) && (z >= 0) && (z < nrows))
+        {
+            // set test Image pixel as 1
+            // Adjacent region 1, top left point
+            testImage[ncols * z + x] = value;
+            Debug.Log("M0001:set x_index =" + x.ToString() + ", z_index = " + z.ToString() + " is value 1");
+        }
+        else
+            Debug.Log("E0001:x_index =" + x.ToString() + ", z_index = " + z.ToString() + " are out of the bound");
     }
 
     public void ComputeTDM()
@@ -948,56 +1075,56 @@ public class ShowMap : MonoBehaviour
     public void GraphSet4(string graphName)
     {
         //pass C#'s delegate to C++
-        DllInterface.InitCSharpDelegate(DllInterface.LogMessageFromCpp);
+        //DllInterface.InitCSharpDelegate(DllInterface.LogMessageFromCpp);
 
-        IntPtr ptr = DllInterface.fnwrapper_intarr();
-        int[] result = new int[3];
-        Marshal.Copy(ptr, result, 0, 3);
-        Debug.Log(result);
+        //IntPtr ptr = DllInterface.fnwrapper_intarr();
+        //int[] result = new int[3];
+        //Marshal.Copy(ptr, result, 0, 3);
+        //Debug.Log(result);
 
-        IntPtr intPtr;
-        unsafe
-        {
-            fixed (int* pArray = result)
-            {
-                intPtr = new IntPtr((void*)pArray);
-            }
-        }
+        //IntPtr intPtr;
+        //unsafe
+        //{
+        //    fixed (int* pArray = result)
+        //    {
+        //        intPtr = new IntPtr((void*)pArray);
+        //    }
+        //}
 
-        IntPtr ptr1 = DllInterface.add(intPtr);
-        int[] result1 = new int[3];
-        Marshal.Copy(ptr1, result1, 0, 3);
-        Debug.Log(result1);
+        //IntPtr ptr1 = DllInterface.add(intPtr);
+        //int[] result1 = new int[3];
+        //Marshal.Copy(ptr1, result1, 0, 3);
+        //Debug.Log(result1);
 
-        //IFT
-        int nrows = 50, ncols = 50;
-        int[] testImage = new int[nrows * ncols];
-        testImage[0] = 1;
-        testImage[ncols * 20 + 20] = 1;
-        testImage[ncols * 20 + 21] = 1;
-        testImage[ncols * 30 + 20] = 1;
-        testImage[ncols * 30 + 21] = 1;
-        IntPtr intPtrImage;
-        unsafe
-        {
-            fixed (int* pArray = testImage)
-            {
-                intPtrImage = new IntPtr((void*)pArray);
-            }
-        }
+        ////IFT
+        //int nrows = 50, ncols = 50;
+        //int[] testImage = new int[nrows * ncols];
+        //testImage[0] = 1;
+        //testImage[ncols * 20 + 20] = 1;
+        //testImage[ncols * 20 + 21] = 1;
+        //testImage[ncols * 30 + 20] = 1;
+        //testImage[ncols * 30 + 21] = 1;
+        //IntPtr intPtrImage;
+        //unsafe
+        //{
+        //    fixed (int* pArray = testImage)
+        //    {
+        //        intPtrImage = new IntPtr((void*)pArray);
+        //    }
+        //}
 
-        DateTime dateTime1 = DateTime.Now;
-        IntPtr intPtrEdt = DllInterface.IFT(intPtrImage, nrows, ncols);
-        DateTime dateTime2 = DateTime.Now;
-        var diffInSeconds = (dateTime2 - dateTime1).TotalMilliseconds;
-        Debug.Log("IFT:" + diffInSeconds + " millisec");
+        //DateTime dateTime1 = DateTime.Now;
+        //IntPtr intPtrEdt = DllInterface.IFT(intPtrImage, nrows, ncols);
+        //DateTime dateTime2 = DateTime.Now;
+        //var diffInSeconds = (dateTime2 - dateTime1).TotalMilliseconds;
+        //Debug.Log("IFT:" + diffInSeconds + " millisec");
 
-        int[] edtImage = new int[nrows * ncols];
-        Marshal.Copy(intPtrEdt, edtImage, 0, nrows * ncols);
-        Debug.Log(edtImage);
+        //int[] edtImage = new int[nrows * ncols];
+        //Marshal.Copy(intPtrEdt, edtImage, 0, nrows * ncols);
+        //Debug.Log(edtImage);
 
-        DllInterface.ExportFile(intPtrImage, nrows, ncols, Marshal.StringToHGlobalAnsi("raw.pgm"));
-        DllInterface.ExportFile(intPtrEdt, nrows, ncols, Marshal.StringToHGlobalAnsi("edit.pgm"));
+        //DllInterface.ExportFile(intPtrImage, nrows, ncols, Marshal.StringToHGlobalAnsi("raw.pgm"));
+        //DllInterface.ExportFile(intPtrEdt, nrows, ncols, Marshal.StringToHGlobalAnsi("edit.pgm"));
 
         //
 

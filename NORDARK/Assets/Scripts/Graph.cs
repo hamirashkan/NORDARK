@@ -6,7 +6,22 @@ using System;
 
 public class Graph : ScriptableObject
 {
-    private List<Node> POInodes;
+    // Build 0009, add IFT for Graph 1
+    [SerializeField]
+    public List<Node> pOInodes;
+    public List<Node> POInodes
+    {
+        get
+        {
+            if (pOInodes == null)
+            {
+                pOInodes = new List<Node>();
+            }
+
+            return pOInodes;
+        }
+    }
+    //
     private List<GameObject> lines;
     public float[,] roadcosts;//int
     public float[][,] roadTemporal;//int
@@ -148,6 +163,7 @@ public class Graph : ScriptableObject
             for(int i =0; i < POINodes_list.Count; i++)
             {
                 Node nodeX = FindNode(POINodes_list[i]);
+                POInodes.Add(nodeX);// Build 0009, add IFT for Graph 1
                 if (nodeX != null)
                 {
                     if (dist[i] <= nodeX.LeastCost)

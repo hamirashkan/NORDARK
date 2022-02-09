@@ -12,6 +12,7 @@ public class UIButton : MonoBehaviour
 
     public static GameObject bg;
     public static bool isOn = true;
+    public static bool isIFT = true;
 
     // Start is called before the first frame update
     void Start()
@@ -37,6 +38,11 @@ public class UIButton : MonoBehaviour
     {
         bg.SetActive(!this.GetComponent<Toggle>().isOn);
         isOn = this.GetComponent<Toggle>().isOn;
+    }
+
+    public void UseIFTChange()
+    {
+        isIFT = this.GetComponent<Toggle>().isOn;
     }
 
     public void test()
