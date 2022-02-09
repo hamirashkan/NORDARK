@@ -73,8 +73,13 @@ public class ShowMap : MonoBehaviour
     private bool bReadyForCFH = false;
     // Build 0009, add IFT for Graph 1
     IntPtr intPtrImage;
-    int nrows = 10*3, ncols = 10*4;
+    int nrows = 3, ncols = 4;
     int[] testImage;
+    //
+    // Build 0010, high scale for the vertices interpolation
+    int vertices_scale = 4;// 4;// scale parameters
+    const int vertices_max = 10;
+    int vmax;
     //
     void Start()
     {
@@ -122,6 +127,9 @@ public class ShowMap : MonoBehaviour
         }
 
         // Build 0009, add IFT for Graph 1
+        vmax = vertices_max + (vertices_scale - 1) * (vertices_max - 1);
+        nrows = vmax * nrows;
+        ncols = vmax * ncols;
         initImageArray(nrows * ncols);
         //
 
@@ -278,9 +286,6 @@ public class ShowMap : MonoBehaviour
 
             //baseVertices = mesh.vertices;
             baseVertices = ArrayV3[c];//
-            // high scale for the vertices interpolation
-            int vertices_scale = 1;// 4;// scale parameters
-            int vertices_max = 10;
             int vertices_scalemax = vertices_max + (vertices_scale - 1) * (vertices_max - 1);//vertices_max * vertices_scale; // max index for the row or column
             // Build 0006
             hs = vertices_scalemax;
@@ -575,8 +580,8 @@ public class ShowMap : MonoBehaviour
             foreach (Node node in graph.POInodes)
             {
                 //node.vec
-                x_index = (int)((node.vec.x - x_min) / (100 / (10 - 1)));
-                z_index = (int)((z_max - node.vec.z) / (100 / (10 - 1)));
+                x_index = (int)((node.vec.x - x_min) / (100.0 / (vmax - 1)));
+                z_index = (int)((z_max - node.vec.z) / (100.0 / (vmax - 1)));
                 if (adj_type == 1)
                 { 
                     // set test Image pixel as 1
