@@ -557,7 +557,7 @@ public class ShowMap : MonoBehaviour
             float z_max = float.MinValue;
             int x_index = 0;
             int z_index = 0;
-            int adj_type = 2;// 1;
+            int adj_type = 1;// 1;
             for (int c = 0; c < 12; c++)
             {
                 Transform tile;
@@ -611,10 +611,19 @@ public class ShowMap : MonoBehaviour
 
             int[] edtImage = new int[nrows * ncols];
             Marshal.Copy(intPtrEdt, edtImage, 0, nrows * ncols);
-            Debug.Log(edtImage);
+            //Debug.Log(edtImage);
 
             DllInterface.ExportFile(intPtrImage, nrows, ncols, Marshal.StringToHGlobalAnsi("raw.pgm"));
             DllInterface.ExportFile(intPtrEdt, nrows, ncols, Marshal.StringToHGlobalAnsi("edit.pgm"));
+            intPtrEdt = DllInterface.GetImage('P');
+            Marshal.Copy(intPtrEdt, edtImage, 0, nrows * ncols);
+            DllInterface.ExportFile(intPtrEdt, nrows, ncols, Marshal.StringToHGlobalAnsi("P.pgm"));
+            intPtrEdt = DllInterface.GetImage('V');
+            Marshal.Copy(intPtrEdt, edtImage, 0, nrows * ncols);
+            DllInterface.ExportFile(intPtrEdt, nrows, ncols, Marshal.StringToHGlobalAnsi("V.pgm"));
+            intPtrEdt = DllInterface.GetImage('R');
+            Marshal.Copy(intPtrEdt, edtImage, 0, nrows * ncols);
+            DllInterface.ExportFile(intPtrEdt, nrows, ncols, Marshal.StringToHGlobalAnsi("R.pgm"));
 
         }
     }

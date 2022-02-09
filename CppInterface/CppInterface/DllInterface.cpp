@@ -261,6 +261,9 @@ int* add(int* message)
     return test;
 }
 
+// Build 0011, globl Forest
+Forest* edt;
+
 int* IFT(int* rawdata, int nrows, int ncols)
 {
     int p;
@@ -268,8 +271,6 @@ int* IFT(int* rawdata, int nrows, int ncols)
     char* file_noext;
     timer* t1 = NULL, * t2 = NULL;
     Image* img, * aux, * sqrt_edt;
-    Forest* edt;
-
 
     /* The following block must the remarked when using non-linux machines */
 
@@ -314,13 +315,26 @@ int* IFT(int* rawdata, int nrows, int ncols)
 
     sprintf_s(outfile, "%s_edt.pgm", "bicycle");// argv[1]);
 
-    WriteImage(sqrt_edt, outfile);
+    //WriteImage(sqrt_edt, outfile);
 
-    DestroyForest(&edt);
+    //DestroyForest(&edt);
     DestroyImage(&img);
     //DestroyImage(&sqrt_edt);
 
     return sqrt_edt->val;
+}
+
+// Build 0011, globl Forest
+int* GetImage(char x)
+{
+    if(x == 'P')
+        return edt->P->val;
+    else if (x == 'R')
+        return edt->R->val;
+    else if (x == 'V')
+        return edt->V->val;
+    else
+        return edt->V->val;
 }
 
 void Release(int* img)

@@ -29,6 +29,8 @@ extern "C"
 	_DllExport int* add(int* message);
 
 	_DllExport int* IFT(int* rawdata, int nrows, int ncols);
+	
+	_DllExport int* GetImage(char x);
 
 	_DllExport void ExportFile(int* imgdata, int nrows, int ncols, const char* filename);
 }

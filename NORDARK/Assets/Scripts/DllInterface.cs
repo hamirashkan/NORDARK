@@ -15,6 +15,9 @@ public class DllInterface {
     public static extern IntPtr IFT(IntPtr rawdata, int nrows, int ncols);
 
     [DllImport("CppInterface")]
+    public static extern IntPtr GetImage(char x);
+
+    [DllImport("CppInterface")]
     public static extern void ExportFile(IntPtr imgdata, int nrows, int ncols, IntPtr filename);
 
     [DllImport("CppInterface")]
