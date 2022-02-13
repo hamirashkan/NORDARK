@@ -56,7 +56,7 @@ public class ShowMap : MonoBehaviour
     public int SliderStopTimeValue = 10; // current stop value
 
     private AbstractMap bg_Mapbox;
-    private Dropdown dropdown_graphop;
+    public Dropdown dropdown_graphop;
     private bool c_flag_last = false;
     private Slider slrStartTime;
     private Slider slrStopTime;
@@ -77,10 +77,14 @@ public class ShowMap : MonoBehaviour
     int[] testImage;
     //
     // Build 0010, high scale for the vertices interpolation
-    int vertices_scale = 4;// 4;// scale parameters
+    int vertices_scale = 10;// 4;// scale parameters
     const int vertices_max = 10;
     int vmax;
     //
+    // Build 0012
+    public List<AuxLine> AuxLines;
+    //
+
     void Start()
     {
         bReadyForCFH = false;
@@ -1145,7 +1149,7 @@ public class ShowMap : MonoBehaviour
         graph = Graph.Create(graphName);
         float y = 0.25f;// xOz plane is the map 2D coordinates
 
-        string text = loadFile("Assets/Resources/nodes.csv");
+        string text = loadFile("Assets/Resources/NodeSet.csv");
         string[] lines = Regex.Split(text, "\n");
 
         int nodesNum = lines.Length - 2; //25;//lines.Length - 2;//nbStops
@@ -1205,7 +1209,9 @@ public class ShowMap : MonoBehaviour
 
         // Load raw edges
         float[,] t0Road = new float[nodesNames.Length, nodesNames.Length];
-        text = loadFile("Assets/Resources/edges.csv");
+        // Build 0012, more nodes for edges
+        AuxLines = new List<AuxLine>();
+        text = loadFile("Assets/Resources/EdgeSet.csv");
         string[] edges_data = Regex.Split(text, "\n");
 
         int edgesNum = edges_data.Length - 2;
@@ -1219,11 +1225,32 @@ public class ShowMap : MonoBehaviour
             //string id = values[0];
             int startindex = graph.FindFirstNode(values[1]).index;
             int stopindex = graph.FindFirstNode(values[2]).index;
-            if (values[6] == "nan")
+            if ((values[6] == "nan") || (values[6] == "nan\r"))
                 t0Road[startindex, stopindex] = 300 / 300;// 1e-4f;
             else
                 t0Road[startindex, stopindex] = 300 / float.Parse(values[6], System.Globalization.CultureInfo.InvariantCulture);
             //Linename values[6]
+            // Build 0012, more nodes for edges
+            // create list based on indexes
+
+            AuxLine AuxLineX = new AuxLine();
+            AuxLineX.LineName = startindex.ToString() + "_" + stopindex.ToString();
+            string[] lonSet= Regex.Split(values[7], "@");
+            string[] latSet = Regex.Split(values[8].Replace("\r", ""), "@");
+            if ((lonSet[0] != "") && (lonSet.Length == latSet.Length))
+            {
+                for (int j = 0; j < lonSet.Length; j++)
+                {
+                    float lon = float.Parse(lonSet[j], System.Globalization.CultureInfo.InvariantCulture);
+                    float lat = float.Parse(latSet[j], System.Globalization.CultureInfo.InvariantCulture);
+                    Vector2 latlong = new Vector2(lat, lon);
+                    Vector3 pos = latlong.AsUnityPosition(map.CenterMercator, map.WorldRelativeScale);
+                    AuxLineX.AuxNodes.Add(pos);
+                }
+            }
+            //AuxLineX.Add()
+            AuxLines.Add(AuxLineX);
+            //
         }
 
         timeSteps = 20;

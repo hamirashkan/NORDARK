@@ -14,6 +14,7 @@ public class Lines : MonoBehaviour
     public Node currentNode;
 
     public GameObject newline;
+    private ShowMap sm;
     void Start()
     {
 
@@ -21,6 +22,9 @@ public class Lines : MonoBehaviour
         //float maxW = GameObject.Find("Map").GetComponent<points_Scene1>().maxW;//points
         float minW = GameObject.Find("Mapbox").GetComponent<ShowMap>().minW;//points
         float maxW = GameObject.Find("Mapbox").GetComponent<ShowMap>().maxW;//points
+        // Build 0012
+        sm = GameObject.Find("Mapbox").GetComponent<ShowMap>();
+        //
 
         if (Neighbors.Count != 0)
         {
@@ -77,7 +81,7 @@ public class Lines : MonoBehaviour
                 List<Vector3> pos = new List<Vector3>();
                 pos.Add(transform.position + offset);
                 pos.Add(Neighbors[i].vec + offset);
-
+                
                 l.startWidth = sWidth;
                 l.endWidth = eWidth;
                 if (flag == 2)
@@ -90,8 +94,23 @@ public class Lines : MonoBehaviour
                 }
                 l.startColor = Nclr;
                 l.endColor = Nclr;
-
+                
                 l.SetPositions(pos.ToArray());
+                //Build 0012, more nodes for edges, search LinesNum
+                if (sm.dropdown_graphop.value == 3)
+                {
+                    foreach (AuxLine x in sm.AuxLines.FindAll(element => element.LineName == (currentNode.index + "_" + Neighbors[i].index)))
+                    {
+                        var posv = new Vector3[x.AuxNodes.Count + 2];
+                        posv[0] = transform.position + offset;
+                        //Debug.Log("Find nodes by index[" + nodeIndex.ToString() + "]: " + x.name);
+                        for (int j = 0; j < x.AuxNodes.Count; j++)
+                            posv[j + 1] = x.AuxNodes[j];
+                        posv[x.AuxNodes.Count + 1] = Neighbors[i].vec + offset;
+                        l.positionCount = posv.Length;
+                        l.SetPositions(posv);
+                    }
+                }
                 //l.useWorldSpace = true;
             }
         }

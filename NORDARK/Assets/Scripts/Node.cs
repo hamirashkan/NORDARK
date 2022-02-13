@@ -83,3 +83,23 @@ public class Node : ScriptableObject
         return node;
     }
 }
+
+public class AuxLine : ScriptableObject
+{
+    public string LineName;
+
+    [SerializeField]
+    private List<Vector3> auxNodes;
+    public List<Vector3> AuxNodes
+    {
+        get
+        {
+            if (auxNodes == null)
+            {
+                auxNodes = new List<Vector3>();
+            }
+
+            return auxNodes;
+        }
+    }
+}

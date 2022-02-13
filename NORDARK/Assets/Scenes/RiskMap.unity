@@ -1532,6 +1532,8 @@ MonoBehaviour:
   slrTimeLine: {fileID: 0}
   SliderStartTimeValue: 1
   SliderStopTimeValue: 10
+  dropdown_graphop: {fileID: 0}
+  AuxLines: []
   TestMode: 0
 --- !u!1 &509190219
 GameObject:
@@ -3484,7 +3486,7 @@ MonoBehaviour:
       m_Image: {fileID: 0}
     - m_Text: Graph 3 (37 nodes)
       m_Image: {fileID: 0}
-    - m_Text: IFT_Graph 3
+    - m_Text: Graph 3 (OSMnx)
       m_Image: {fileID: 0}
   m_OnValueChanged:
     m_PersistentCalls:
@@ -4600,6 +4602,8 @@ MonoBehaviour:
   slrTimeLine: {fileID: 0}
   SliderStartTimeValue: 0
   SliderStopTimeValue: 10
+  dropdown_graphop: {fileID: 0}
+  AuxLines: []
   TestMode: 0
 --- !u!4 &1551772468
 Transform:
