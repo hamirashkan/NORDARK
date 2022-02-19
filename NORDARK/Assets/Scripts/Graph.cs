@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEditor;
 using System;
 
-public class Graph : ScriptableObject
+public class Graph// : ScriptableObject
 {
     // Build 0009, add IFT for Graph 1
     [SerializeField]
@@ -60,12 +60,16 @@ public class Graph : ScriptableObject
         }
     }
 
-    public static Graph Create(string name)
+    public static Graph Create(string name, bool enableAsset = true)
     {
-        Graph graph = CreateInstance<Graph>();
+        Graph graph = new Graph();// CreateInstance<Graph>();
 
-        string path = string.Format("Assets/{0}.asset", name);
-        AssetDatabase.CreateAsset(graph, path);
+        //// Build 0013, alesund graph
+        //if(enableAsset)
+        //{ 
+        //    string path = string.Format("Assets/{0}.asset", name);
+        //    AssetDatabase.CreateAsset(graph, path);
+        //}
 
         LinesNum = 0;
         return graph;
@@ -81,8 +85,8 @@ public class Graph : ScriptableObject
     public void AddNode(Node node)
     {
         Nodes.Add(node);
-        AssetDatabase.AddObjectToAsset(node, this);
-        AssetDatabase.SaveAssets();
+        //AssetDatabase.AddObjectToAsset(node, this);
+        //AssetDatabase.SaveAssets();
     }
 
     public Node FindFirstNode(string nodeName)

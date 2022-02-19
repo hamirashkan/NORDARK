@@ -67,9 +67,9 @@ public class Node : ScriptableObject
 
     public static Node Create(string name, Vector3 pos)
     {
-        Node node = CreateInstance<Node>();
-        string path = string.Format("Assets/{0}.asset", name);
-        AssetDatabase.CreateAsset(node, path);
+        Node node = new Node();// CreateInstance<Node>();
+        //string path = string.Format("Assets/{0}.asset", name);
+        //AssetDatabase.CreateAsset(node, path);
 
         return node;
     }
@@ -84,7 +84,7 @@ public class Node : ScriptableObject
     }
 }
 
-public class AuxLine : ScriptableObject
+public class AuxLine //: ScriptableObject
 {
     public string LineName;
 

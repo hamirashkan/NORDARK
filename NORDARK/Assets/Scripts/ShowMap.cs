@@ -77,7 +77,7 @@ public class ShowMap : MonoBehaviour
     int[] testImage;
     //
     // Build 0010, high scale for the vertices interpolation
-    int vertices_scale = 10;// 4;// scale parameters
+    int vertices_scale = 1;// 4;// scale parameters
     const int vertices_max = 10;
     int vmax;
     //
@@ -201,6 +201,20 @@ public class ShowMap : MonoBehaviour
             slrStopTime.maxValue = slrStartTime.maxValue;
             slrStopTime.value = slrStopTime.maxValue;
         }
+        // Build 0013, alesund graph
+        else if (graph_op == 4)
+        {
+            map.Initialize(new Mapbox.Utils.Vector2d(62.49, 6.3), 12);
+            bg_Mapbox.Initialize(new Mapbox.Utils.Vector2d(62.49, 6.3), 12);
+            GraphSet5("RoadGraph5");
+            slrStartTime.minValue = 1;
+            slrStartTime.maxValue = 4;
+            slrStartTime.value = slrStartTime.minValue;
+            slrStopTime.minValue = slrStartTime.minValue;
+            slrStopTime.maxValue = slrStartTime.maxValue;
+            slrStopTime.value = slrStopTime.maxValue;
+        }
+        //
         else
         {
             //map.ResetMap();
@@ -220,187 +234,131 @@ public class ShowMap : MonoBehaviour
 
         bg_Mapbox.gameObject.SetActive(!UIButton.isOn);
 
-        foreach (Node node in graph.Nodes)
+        // Build 0013, alesund graph 
+        if (graph_op != 4)
         {
-            Color AccessColor = GameObject.Find(node.MostAccessPOI.name).GetComponent<Renderer>().material.color;
-            float AccessDist = node.LeastCost;
-            costs.Add(AccessDist);
-            GameObject.Find(node.name).GetComponent<Renderer>().material.SetColor("_Color", AccessColor);
-            node.objTransform.GetComponent<Lines>().nColor = AccessColor;
-            node.objTransform.GetComponent<Lines>().dist = AccessDist;
-            Debug.Log("Res: name=" + node.name + ",MostAccessPOI=" + node.MostAccessPOI);
-        }
-        // Build 0005
-        if (gameObject.transform.GetChild(0).name == "TileProvider")
-            c_flag_last = false;
-        else
-            c_flag_last = true;
-        //
-
-        minW = costs.Min();
-        maxW = costs.Max();
-
-        // Build 0004
-        lambdaMap = new List<float>();
-        colorMap = new List<Color>();
-
-        //creating textures and colormap
-        for (int c = 0; c < 12; c++)
-        {
-            Transform tile;
-            if (c_flag_last)
-                tile = gameObject.transform.GetChild(c);
+            foreach (Node node in graph.Nodes)
+            {
+                Color AccessColor = GameObject.Find(node.MostAccessPOI.name).GetComponent<Renderer>().material.color;
+                float AccessDist = node.LeastCost;
+                costs.Add(AccessDist);
+                GameObject.Find(node.name).GetComponent<Renderer>().material.SetColor("_Color", AccessColor);
+                node.objTransform.GetComponent<Lines>().nColor = AccessColor;
+                node.objTransform.GetComponent<Lines>().dist = AccessDist;
+                Debug.Log("Res: name=" + node.name + ",MostAccessPOI=" + node.MostAccessPOI);
+            }
+            // Build 0005
+            if (gameObject.transform.GetChild(0).name == "TileProvider")
+                c_flag_last = false;
             else
-                tile = gameObject.transform.GetChild(c + 1); //ignoring first child that is not a tile
-            //Vector3 mapSize = tile.gameObject.GetComponent<Renderer>().bounds.size;
-            //Texture2D texture = new Texture2D((int)mapSize.x, (int)mapSize.z);
-            //textMap.Add(texture);
-            //tile.gameObject.GetComponent<Renderer>().material.mainTexture = texture;
-            //tile.gameObject.GetComponent<Renderer>().material.mainTexture.filterMode = FilterMode.Trilinear;
-
-
-            float mindist;
-            float lambda;
-            float r = 0.005f;
-            float alpha = 2f;
-            Node bestNode = null;
-        }
-        // TimeLine Initilization
-        NodeIndexArrayS = new List<int>[12,timeSteps];
-        NodeArrayS = new List<Node>[12, timeSteps];
-        slrTimeLine.maxValue = timeSteps;
-        slrTimeLine.minValue = 1;
-        //
-        for (int c = 0; c < 12; c++)
-        {
-            Transform tile;
-            if (c_flag_last)
-                tile = gameObject.transform.GetChild(c);
-            else
-                tile = gameObject.transform.GetChild(c + 1); //ignoring first child that is not a tile
-
-            //Texture2D texture = textMap[c];
-            float lambda;
-
-            float mindist;
-            Node bestNode = null;
-            int step = 10;
-
-            Mesh mesh = tile.gameObject.GetComponent<MeshFilter>().mesh;
-
-            //baseVertices = mesh.vertices;
-            baseVertices = ArrayV3[c];//
-            int vertices_scalemax = vertices_max + (vertices_scale - 1) * (vertices_max - 1);//vertices_max * vertices_scale; // max index for the row or column
-            // Build 0006
-            hs = vertices_scalemax;
-            ws = vertices_scalemax;
+                c_flag_last = true;
             //
-            int row = 0, column = 0;
-            int p1_row = 0, p1_column = 0; // point 1
-            int p2_row = 0, p2_column = 0; // point 2
-            Vector3 p1 = Vector3.zero;
-            Vector3 p2 = Vector3.zero;
-            Vector3 p3 = Vector3.zero;
-            Vector3 p4 = Vector3.zero;
-            Vector3 newValue = Vector3.zero;
-            float k_row, k_column, k_height = 0;
-            // interpolation the vertices
-            var scale_vertices = new Vector3[vertices_scalemax * vertices_scalemax];
-            if (c == 0)
-                c = 0;
-            for (var i = 0; i < scale_vertices.Length; i++)
+
+            minW = costs.Min();
+            maxW = costs.Max();
+
+            // Build 0004
+            lambdaMap = new List<float>();
+            colorMap = new List<Color>();
+
+            //creating textures and colormap
+            for (int c = 0; c < 12; c++)
             {
-                row = (int)Math.Floor((double)i / vertices_scalemax);
-                column = i % vertices_scalemax;
-                p1_row = (int)Math.Floor((double)row / vertices_scale);
-                p2_row = (p1_row + 1) >= vertices_max ? p1_row : (p1_row + 1);
-                p1_column = (int)Math.Floor((double)column / vertices_scale);
-                p2_column = (p1_column + 1) >= vertices_max ? p1_column : (p1_column + 1);
-                p1 = baseVertices[p1_row * vertices_max + p1_column];
-                //p1,  p2
-                //   p
-                //p4,  p3
-                p2 = baseVertices[p1_row * vertices_max + p2_column];
-                p3 = baseVertices[p2_row * vertices_max + p2_column];
-                p4 = baseVertices[p2_row * vertices_max + p1_column];
-                k_row = (float)((row - p1_row * vertices_scale) / (float)vertices_scale);
-                k_column = (float)((column - p1_column * vertices_scale) / (float)vertices_scale);
-                k_height = (float)((Math.Sqrt((row - p1_row * vertices_scale) * (row - p1_row * vertices_scale)
-                    + (column - p1_column * vertices_scale) * (column - p1_column * vertices_scale)))
-                    / ((float)vertices_scale * Math.Sqrt(2)));
-                newValue.z = p1.z + (p4.z - p1.z) * k_row;
-                newValue.x = p1.x + (p2.x - p1.x) * k_column;
-                newValue.y = p1.y + (p3.y - p1.y) * k_height;
-                scale_vertices[i] = newValue;
-            }
-            baseVertices = scale_vertices;
-            mesh.vertices = baseVertices;// Build 0004
-
-            if (recalculateNormals)//felando
-                mesh.RecalculateNormals();
-            mesh.RecalculateBounds();
-
-            var vertices = new Vector3[baseVertices.Length];
-
-            for (var i = 0; i < vertices.Length; i++)
-            {
-                //int x = i % 10;
-                //int z = i / 10;
-                mindist = Mathf.Infinity;
-                bestNode = null;
-
-
-                var vertex = baseVertices[i];
-                vertex.x = vertex.x * scale;
-                vertex.z = vertex.z * scale;
-
-                foreach (Node node in graph.RestNodes)
-                {
-                    float posX = vertex.x;
-                    float posZ = vertex.z;
-                    Vector3 pos = new Vector3(posX + tile.position.x, node.vec.y, posZ + tile.position.z);
-
-                    float dist = (pos - node.vec).magnitude;
-
-                    if (dist < mindist)
-                    {
-                        mindist = dist;
-                        bestNode = node;
-                    }
-
-                }
-
-                float dis_new = bestNode.riskFactor * scale_dis / (1 + mindist);
-
-                vertex.y = dis_new;// vertex.y + i;
-                vertices[i] = vertex;
-
-                //Debug.Log(dis_new);
-
-
-                
-                //choice of kernel function for density estimation
-                if (Kernel == "G")
-                {
-                    lambda = (1 / (r * Mathf.Sqrt(2 * Mathf.PI))) * Mathf.Exp(-0.5f * Mathf.Pow((Mathf.Pow((mindist + bestNode.LeastCost), -alpha) / r), 2));  //Gaussian
-                }
+                Transform tile;
+                if (c_flag_last)
+                    tile = gameObject.transform.GetChild(c);
                 else
-                {
-                    lambda = (1 / r) * 1 / (1 + Mathf.Exp(Mathf.Pow((mindist + bestNode.LeastCost), -alpha) / r));  //Sigmoid
-                }
+                    tile = gameObject.transform.GetChild(c + 1); //ignoring first child that is not a tile
+                                                                 //Vector3 mapSize = tile.gameObject.GetComponent<Renderer>().bounds.size;
+                                                                 //Texture2D texture = new Texture2D((int)mapSize.x, (int)mapSize.z);
+                                                                 //textMap.Add(texture);
+                                                                 //tile.gameObject.GetComponent<Renderer>().material.mainTexture = texture;
+                                                                 //tile.gameObject.GetComponent<Renderer>().material.mainTexture.filterMode = FilterMode.Trilinear;
 
-                    
-                lambdaMap.Add(lambda);//Felando   
-                Color col = bestNode.clr;
-                colorMap.Add(col);//felando
+
+                float mindist;
+                float lambda;
+                float r = 0.005f;
+                float alpha = 2f;
+                Node bestNode = null;
             }
-
-            // TimeLine 
-            // calculate the POI value array for every points/vertics
-            for (int k = 0; k < timeSteps; k++)
+            // TimeLine Initilization
+            NodeIndexArrayS = new List<int>[12, timeSteps];
+            NodeArrayS = new List<Node>[12, timeSteps];
+            slrTimeLine.maxValue = timeSteps;
+            slrTimeLine.minValue = 1;
+            //
+            for (int c = 0; c < 12; c++)
             {
-                NodeIndexArray = new List<int>();
-                NodeArray = new List<Node>();
+                Transform tile;
+                if (c_flag_last)
+                    tile = gameObject.transform.GetChild(c);
+                else
+                    tile = gameObject.transform.GetChild(c + 1); //ignoring first child that is not a tile
+
+                //Texture2D texture = textMap[c];
+                float lambda;
+
+                float mindist;
+                Node bestNode = null;
+                int step = 10;
+
+                Mesh mesh = tile.gameObject.GetComponent<MeshFilter>().mesh;
+
+                //baseVertices = mesh.vertices;
+                baseVertices = ArrayV3[c];//
+                int vertices_scalemax = vertices_max + (vertices_scale - 1) * (vertices_max - 1);//vertices_max * vertices_scale; // max index for the row or column
+                                                                                                 // Build 0006
+                hs = vertices_scalemax;
+                ws = vertices_scalemax;
+                //
+                int row = 0, column = 0;
+                int p1_row = 0, p1_column = 0; // point 1
+                int p2_row = 0, p2_column = 0; // point 2
+                Vector3 p1 = Vector3.zero;
+                Vector3 p2 = Vector3.zero;
+                Vector3 p3 = Vector3.zero;
+                Vector3 p4 = Vector3.zero;
+                Vector3 newValue = Vector3.zero;
+                float k_row, k_column, k_height = 0;
+                // interpolation the vertices
+                var scale_vertices = new Vector3[vertices_scalemax * vertices_scalemax];
+                if (c == 0)
+                    c = 0;
+                for (var i = 0; i < scale_vertices.Length; i++)
+                {
+                    row = (int)Math.Floor((double)i / vertices_scalemax);
+                    column = i % vertices_scalemax;
+                    p1_row = (int)Math.Floor((double)row / vertices_scale);
+                    p2_row = (p1_row + 1) >= vertices_max ? p1_row : (p1_row + 1);
+                    p1_column = (int)Math.Floor((double)column / vertices_scale);
+                    p2_column = (p1_column + 1) >= vertices_max ? p1_column : (p1_column + 1);
+                    p1 = baseVertices[p1_row * vertices_max + p1_column];
+                    //p1,  p2
+                    //   p
+                    //p4,  p3
+                    p2 = baseVertices[p1_row * vertices_max + p2_column];
+                    p3 = baseVertices[p2_row * vertices_max + p2_column];
+                    p4 = baseVertices[p2_row * vertices_max + p1_column];
+                    k_row = (float)((row - p1_row * vertices_scale) / (float)vertices_scale);
+                    k_column = (float)((column - p1_column * vertices_scale) / (float)vertices_scale);
+                    k_height = (float)((Math.Sqrt((row - p1_row * vertices_scale) * (row - p1_row * vertices_scale)
+                        + (column - p1_column * vertices_scale) * (column - p1_column * vertices_scale)))
+                        / ((float)vertices_scale * Math.Sqrt(2)));
+                    newValue.z = p1.z + (p4.z - p1.z) * k_row;
+                    newValue.x = p1.x + (p2.x - p1.x) * k_column;
+                    newValue.y = p1.y + (p3.y - p1.y) * k_height;
+                    scale_vertices[i] = newValue;
+                }
+                baseVertices = scale_vertices;
+                mesh.vertices = baseVertices;// Build 0004
+
+                if (recalculateNormals)//felando
+                    mesh.RecalculateNormals();
+                mesh.RecalculateBounds();
+
+                var vertices = new Vector3[baseVertices.Length];
+
                 for (var i = 0; i < vertices.Length; i++)
                 {
                     //int x = i % 10;
@@ -412,6 +370,7 @@ public class ShowMap : MonoBehaviour
                     var vertex = baseVertices[i];
                     vertex.x = vertex.x * scale;
                     vertex.z = vertex.z * scale;
+
                     foreach (Node node in graph.RestNodes)
                     {
                         float posX = vertex.x;
@@ -427,141 +386,119 @@ public class ShowMap : MonoBehaviour
                         }
 
                     }
-                    NodeIndexArray.Add(bestNode.POIList[k].index);
-                    NodeArray.Add(bestNode.POIList[k]);
+
+                    float dis_new = bestNode.riskFactor * scale_dis / (1 + mindist);
+
+                    vertex.y = dis_new;// vertex.y + i;
+                    vertices[i] = vertex;
+
+                    //Debug.Log(dis_new);
+
+
+
+                    //choice of kernel function for density estimation
+                    if (Kernel == "G")
+                    {
+                        lambda = (1 / (r * Mathf.Sqrt(2 * Mathf.PI))) * Mathf.Exp(-0.5f * Mathf.Pow((Mathf.Pow((mindist + bestNode.LeastCost), -alpha) / r), 2));  //Gaussian
+                    }
+                    else
+                    {
+                        lambda = (1 / r) * 1 / (1 + Mathf.Exp(Mathf.Pow((mindist + bestNode.LeastCost), -alpha) / r));  //Sigmoid
+                    }
+
+
+                    lambdaMap.Add(lambda);//Felando   
+                    Color col = bestNode.clr;
+                    colorMap.Add(col);//felando
                 }
-                NodeIndexArrayS[c,k] = NodeIndexArray;
-                NodeArrayS[c, k] = NodeArray;
-            }
 
-            //Debug.Log(baseVertices.Length);
+                // TimeLine 
+                // calculate the POI value array for every points/vertics
+                for (int k = 0; k < timeSteps; k++)
+                {
+                    NodeIndexArray = new List<int>();
+                    NodeArray = new List<Node>();
+                    for (var i = 0; i < vertices.Length; i++)
+                    {
+                        //int x = i % 10;
+                        //int z = i / 10;
+                        mindist = Mathf.Infinity;
+                        bestNode = null;
 
-            mesh.vertices = vertices;//felando, decrease the mesh vertices size to normal 100
+
+                        var vertex = baseVertices[i];
+                        vertex.x = vertex.x * scale;
+                        vertex.z = vertex.z * scale;
+                        foreach (Node node in graph.RestNodes)
+                        {
+                            float posX = vertex.x;
+                            float posZ = vertex.z;
+                            Vector3 pos = new Vector3(posX + tile.position.x, node.vec.y, posZ + tile.position.z);
+
+                            float dist = (pos - node.vec).magnitude;
+
+                            if (dist < mindist)
+                            {
+                                mindist = dist;
+                                bestNode = node;
+                            }
+
+                        }
+                        NodeIndexArray.Add(bestNode.POIList[k].index);
+                        NodeArray.Add(bestNode.POIList[k]);
+                    }
+                    NodeIndexArrayS[c, k] = NodeIndexArray;
+                    NodeArrayS[c, k] = NodeArray;
+                }
+
+                //Debug.Log(baseVertices.Length);
+
+                mesh.vertices = vertices;//felando, decrease the mesh vertices size to normal 100
 
                 // set triangles
-            //int[] baseTriangles = mesh.triangles;
-            int[] baseTriangles = ArrayTriangles[c];// Build 0004
-            int[] triangles = new int[(vertices_scalemax - 1) * (vertices_scalemax - 1) * 6];
-            int index = 0;
-            for (int row_i = 0; row_i < vertices_scalemax - 1; row_i++)
-            {
-                for (int column_j = 0; column_j < vertices_scalemax - 1; column_j++)
+                //int[] baseTriangles = mesh.triangles;
+                int[] baseTriangles = ArrayTriangles[c];// Build 0004
+                int[] triangles = new int[(vertices_scalemax - 1) * (vertices_scalemax - 1) * 6];
+                int index = 0;
+                for (int row_i = 0; row_i < vertices_scalemax - 1; row_i++)
                 {
-                    triangles[index] = row_i * vertices_scalemax + column_j;
-                    triangles[index + 1] = (row_i + 1) * vertices_scalemax + column_j + 1;
-                    triangles[index + 2] = (row_i + 1) * vertices_scalemax + column_j;
-                    triangles[index + 3] = row_i * vertices_scalemax + column_j;
-                    triangles[index + 4] = row_i * vertices_scalemax + column_j + 1;
-                    triangles[index + 5] = (row_i + 1) * vertices_scalemax + column_j + 1;
-                    index += 6;
-                    //Debug.Log(index);
+                    for (int column_j = 0; column_j < vertices_scalemax - 1; column_j++)
+                    {
+                        triangles[index] = row_i * vertices_scalemax + column_j;
+                        triangles[index + 1] = (row_i + 1) * vertices_scalemax + column_j + 1;
+                        triangles[index + 2] = (row_i + 1) * vertices_scalemax + column_j;
+                        triangles[index + 3] = row_i * vertices_scalemax + column_j;
+                        triangles[index + 4] = row_i * vertices_scalemax + column_j + 1;
+                        triangles[index + 5] = (row_i + 1) * vertices_scalemax + column_j + 1;
+                        index += 6;
+                        //Debug.Log(index);
+                    }
                 }
-            }
-            mesh.triangles = triangles;
-            //
+                mesh.triangles = triangles;
+                //
 
-            /*tile.gameObject.GetComponent<Renderer>().material.mainTexture = texture;
-            tile.gameObject.GetComponent<Renderer>().material.mainTexture.filterMode = FilterMode.Trilinear;
-            Shader shader; shader = Shader.Find("Legacy Shaders/Transparent/Diffuse");
-            tile.gameObject.GetComponent<Renderer>().material.shader = shader;
-            for (int z = 0; z < texture.height; z++)
-            {
-                for (int x = 0; x < texture.width; x++)
+                /*tile.gameObject.GetComponent<Renderer>().material.mainTexture = texture;
+                tile.gameObject.GetComponent<Renderer>().material.mainTexture.filterMode = FilterMode.Trilinear;
+                Shader shader; shader = Shader.Find("Legacy Shaders/Transparent/Diffuse");
+                tile.gameObject.GetComponent<Renderer>().material.shader = shader;
+                for (int z = 0; z < texture.height; z++)
                 {
-                    Color col = colorMap[iter];
-                    col.a = 1 - (lambdaMap[iter] - lMin) / (lMax - lMin);
-                    texture.SetPixel(x, z, col);
-                    iter += 1;
+                    for (int x = 0; x < texture.width; x++)
+                    {
+                        Color col = colorMap[iter];
+                        col.a = 1 - (lambdaMap[iter] - lMin) / (lMax - lMin);
+                        texture.SetPixel(x, z, col);
+                        iter += 1;
+                    }
                 }
+
+                texture.Apply();*/
             }
 
-            texture.Apply();*/
-        }
-        
-        float lMin = lambdaMap.Min();
-        float lMax = lambdaMap.Max();
-        int iter = 0;
+            float lMin = lambdaMap.Min();
+            float lMax = lambdaMap.Max();
+            int iter = 0;
 
-        for (int c = 0; c < 12; c++)
-        {
-            Transform tile;
-            if (c_flag_last)
-                tile = gameObject.transform.GetChild(c);
-            else
-                tile = gameObject.transform.GetChild(c + 1); //ignoring first child that is not a tile
-
-            Mesh mesh = tile.gameObject.GetComponent<MeshFilter>().mesh;
-            var vertices = mesh.vertices;
-            Color[] colors = new Color[vertices.Length];
-
-            for (var i = 0; i < vertices.Length; i++)
-            {
-                colors[i] = colorMap[iter];
-                colors[i].a = 1 - (lambdaMap[iter] - lMin) / (lMax - lMin);
-                iter += 1;
-            }
-
-            Shader shader; shader = Shader.Find("Particles/Standard Unlit");
-
-            //tile.gameObject.GetComponent<Renderer>().material.shader = shader;
-            tile.gameObject.GetComponent<Renderer>().material = SurfaceMat;
-            mesh.colors = colors;
-        }
-
-
-        //Transform tile1 = transform.GetChild(2);
-        //Mesh mesh1 = tile1.gameObject.GetComponent<MeshFilter>().mesh;
-        //baseVertices = mesh1.vertices;
-        //for (var i = 0; i < baseVertices.Length; i++)
-        //{
-        //    Transform objectX;
-        //    objectX = Instantiate(point);
-        //    objectX.position = baseVertices[i];
-        //    objectX.name = "node_" + i;
-        //}
-        //string tileName = map.AbsoluteZoom + "/133/70";
-        //UnityTile tilex = GameObject.Find(tileName).GetComponent<UnityTile>();
-        //tilex.HeightData[0] = 100000;
-        //map.TileProvider.UpdateTileProvider(); 
-
-        // Build 0003, timeline update issue
-        UISlirTimeLine.label.text = timeIndex + "/" + timeSteps;
-        StartTimeValueChangeCheck();
-        StopTimeValueChangeCheck();
-        bReadyForCFH = true;
-        // Build 0009, add IFT for Graph 1
-        if (UIButton.isIFT) 
-        {
-            //pass C#'s delegate to C++
-            //DllInterface.InitCSharpDelegate(DllInterface.LogMessageFromCpp);
-
-            //IntPtr ptr = DllInterface.fnwrapper_intarr();
-            //int[] result = new int[3];
-            //Marshal.Copy(ptr, result, 0, 3);
-            //Debug.Log(result);
-
-            //IntPtr intPtr;
-            //unsafe
-            //{
-            //    fixed (int* pArray = result)
-            //    {
-            //        intPtr = new IntPtr((void*)pArray);
-            //    }
-            //}
-
-            //IntPtr ptr1 = DllInterface.add(intPtr);
-            //int[] result1 = new int[3];
-            //Marshal.Copy(ptr1, result1, 0, 3);
-            //Debug.Log(result1);
-
-
-            //IFT
-            // Prepare the position for the top left tile. top right is the minimum for graph, top left is the start for image
-            float x_min = float.MaxValue;
-            float z_max = float.MinValue;
-            int x_index = 0;
-            int z_index = 0;
-            int adj_type = 1;// 1;
             for (int c = 0; c < 12; c++)
             {
                 Transform tile;
@@ -570,66 +507,196 @@ public class ShowMap : MonoBehaviour
                 else
                     tile = gameObject.transform.GetChild(c + 1); //ignoring first child that is not a tile
 
-                Vector3 center = tile.position;
-                if (center.x < x_min)
-                    x_min = center.x;
-                if (center.z > z_max)
-                    z_max = center.z;
-            }
-            x_min = x_min - 50;
-            z_max = z_max + 50;
-            // Step 1, set pixel value to 1 if POI nodes belongs to this pixel
-            Array.Clear(testImage, 0, testImage.Length);
-            // Adjacent region 1, 4 or more points
-            foreach (Node node in graph.POInodes)
-            {
-                //node.vec
-                x_index = (int)((node.vec.x - x_min) / (100.0 / (vmax - 1)));
-                z_index = (int)((z_max - node.vec.z) / (100.0 / (vmax - 1)));
-                if (adj_type == 1)
-                { 
-                    // set test Image pixel as 1
-                    // Adjacent region 1, top left point
-                    SetImageValue(x_index, z_index);
-                }
-                else
+                Mesh mesh = tile.gameObject.GetComponent<MeshFilter>().mesh;
+                var vertices = mesh.vertices;
+                Color[] colors = new Color[vertices.Length];
+
+                for (var i = 0; i < vertices.Length; i++)
                 {
-                    // Adjacent region 4 points
-                    SetImageValue(x_index, z_index);
-                    SetImageValue(x_index + 1, z_index);
-                    SetImageValue(x_index, z_index + 1);
-                    SetImageValue(x_index + 1, z_index + 1);
+                    colors[i] = colorMap[iter];
+                    colors[i].a = 1 - (lambdaMap[iter] - lMin) / (lMax - lMin);
+                    iter += 1;
+                }
+
+                Shader shader; shader = Shader.Find("Particles/Standard Unlit");
+
+                //tile.gameObject.GetComponent<Renderer>().material.shader = shader;
+                tile.gameObject.GetComponent<Renderer>().material = SurfaceMat;
+                mesh.colors = colors;
+            }
+
+
+            //Transform tile1 = transform.GetChild(2);
+            //Mesh mesh1 = tile1.gameObject.GetComponent<MeshFilter>().mesh;
+            //baseVertices = mesh1.vertices;
+            //for (var i = 0; i < baseVertices.Length; i++)
+            //{
+            //    Transform objectX;
+            //    objectX = Instantiate(point);
+            //    objectX.position = baseVertices[i];
+            //    objectX.name = "node_" + i;
+            //}
+            //string tileName = map.AbsoluteZoom + "/133/70";
+            //UnityTile tilex = GameObject.Find(tileName).GetComponent<UnityTile>();
+            //tilex.HeightData[0] = 100000;
+            //map.TileProvider.UpdateTileProvider(); 
+
+            // Build 0003, timeline update issue
+            UISlirTimeLine.label.text = timeIndex + "/" + timeSteps;
+            StartTimeValueChangeCheck();
+            StopTimeValueChangeCheck();
+            bReadyForCFH = true;
+            // Build 0009, add IFT for Graph 1
+            if (UIButton.isIFT)
+            {
+                //pass C#'s delegate to C++
+                //DllInterface.InitCSharpDelegate(DllInterface.LogMessageFromCpp);
+
+                //IntPtr ptr = DllInterface.fnwrapper_intarr();
+                //int[] result = new int[3];
+                //Marshal.Copy(ptr, result, 0, 3);
+                //Debug.Log(result);
+
+                //IntPtr intPtr;
+                //unsafe
+                //{
+                //    fixed (int* pArray = result)
+                //    {
+                //        intPtr = new IntPtr((void*)pArray);
+                //    }
+                //}
+
+                //IntPtr ptr1 = DllInterface.add(intPtr);
+                //int[] result1 = new int[3];
+                //Marshal.Copy(ptr1, result1, 0, 3);
+                //Debug.Log(result1);
+
+
+                //IFT
+                // Prepare the position for the top left tile. top right is the minimum for graph, top left is the start for image
+                float x_min = float.MaxValue;
+                float z_max = float.MinValue;
+                int x_index = 0;
+                int z_index = 0;
+                int adj_type = 1;// 1;
+                for (int c = 0; c < 12; c++)
+                {
+                    Transform tile;
+                    if (c_flag_last)
+                        tile = gameObject.transform.GetChild(c);
+                    else
+                        tile = gameObject.transform.GetChild(c + 1); //ignoring first child that is not a tile
+
+                    Vector3 center = tile.position;
+                    if (center.x < x_min)
+                        x_min = center.x;
+                    if (center.z > z_max)
+                        z_max = center.z;
+                }
+                x_min = x_min - 50;
+                z_max = z_max + 50;
+                // Step 1, set pixel value to 1 if POI nodes belongs to this pixel
+                Array.Clear(testImage, 0, testImage.Length);
+                // Adjacent region 1, 4 or more points
+                foreach (Node node in graph.POInodes)
+                {
+                    //node.vec
+                    x_index = (int)((node.vec.x - x_min) / (100.0 / (vmax - 1)));
+                    z_index = (int)((z_max - node.vec.z) / (100.0 / (vmax - 1)));
+                    if (adj_type == 1)
+                    {
+                        // set test Image pixel as 1
+                        // Adjacent region 1, top left point
+                        SetImageValue(x_index, z_index);
+                    }
+                    else
+                    {
+                        // Adjacent region 4 points
+                        SetImageValue(x_index, z_index);
+                        SetImageValue(x_index + 1, z_index);
+                        SetImageValue(x_index, z_index + 1);
+                        SetImageValue(x_index + 1, z_index + 1);
+                    }
+                }
+                //testImage[0] = 1;
+                //testImage[ncols * 10 + 20] = 1;
+                //testImage[ncols * 10 + 21] = 1;
+                //testImage[ncols * 15 + 20] = 1;
+                //testImage[ncols * 15 + 21] = 1;
+
+                DateTime dateTime1 = DateTime.Now;
+                IntPtr intPtrEdt = DllInterface.IFT(intPtrImage, nrows, ncols);
+                DateTime dateTime2 = DateTime.Now;
+                var diffInSeconds = (dateTime2 - dateTime1).TotalMilliseconds;
+                Debug.Log("IFT:" + diffInSeconds + " millisec");
+
+                int[] edtImage = new int[nrows * ncols];
+                Marshal.Copy(intPtrEdt, edtImage, 0, nrows * ncols);
+                //Debug.Log(edtImage);
+
+                DllInterface.ExportFile(intPtrImage, nrows, ncols, Marshal.StringToHGlobalAnsi("raw.pgm"));
+                DllInterface.ExportFile(intPtrEdt, nrows, ncols, Marshal.StringToHGlobalAnsi("edit.pgm"));
+                intPtrEdt = DllInterface.GetImage('P');
+                Marshal.Copy(intPtrEdt, edtImage, 0, nrows * ncols);
+                DllInterface.ExportFile(intPtrEdt, nrows, ncols, Marshal.StringToHGlobalAnsi("P.pgm"));
+                intPtrEdt = DllInterface.GetImage('V');
+                Marshal.Copy(intPtrEdt, edtImage, 0, nrows * ncols);
+                DllInterface.ExportFile(intPtrEdt, nrows, ncols, Marshal.StringToHGlobalAnsi("V.pgm"));
+                intPtrEdt = DllInterface.GetImage('R');
+                Marshal.Copy(intPtrEdt, edtImage, 0, nrows * ncols);
+                DllInterface.ExportFile(intPtrEdt, nrows, ncols, Marshal.StringToHGlobalAnsi("R.pgm"));
+
+            }
+        }
+        else
+        {
+            // Build 0013, alesund graph
+            foreach (Node node in graph.Nodes)
+            {
+                try
+                {
+                    Color AccessColor = Color.blue;// GameObject.Find(node.MostAccessPOI.name).GetComponent<Renderer>().material.color;
+                    float AccessDist = node.LeastCost;
+                    costs.Add(AccessDist);
+                    //GameObject.Find(node.name).GetComponent<Renderer>().material.SetColor("_Color", AccessColor);
+                    node.objTransform.GetComponent<Renderer>().material.SetColor("_Color", AccessColor);
+                    node.objTransform.localScale = node.objTransform.localScale / 10f;
+                    node.objTransform.GetComponent<Lines>().nColor = Color.blue;
+                    node.objTransform.GetComponent<Lines>().dist = AccessDist;
+                    Debug.Log("Res: name=" + node.name + ",MostAccessPOI=" + node.MostAccessPOI);
+                }
+                catch (Exception e)
+                {
+                    Debug.Log(e);
                 }
             }
-            //testImage[0] = 1;
-            //testImage[ncols * 10 + 20] = 1;
-            //testImage[ncols * 10 + 21] = 1;
-            //testImage[ncols * 15 + 20] = 1;
-            //testImage[ncols * 15 + 21] = 1;
+            c_flag_last = true;
+            for (int c = 0; c < 12; c++)
+            {
+                Transform tile;
+                if (c_flag_last)
+                    tile = gameObject.transform.GetChild(c);
+                else
+                    tile = gameObject.transform.GetChild(c + 1); //ignoring first child that is not a tile
 
-            DateTime dateTime1 = DateTime.Now;
-            IntPtr intPtrEdt = DllInterface.IFT(intPtrImage, nrows, ncols);
-            DateTime dateTime2 = DateTime.Now;
-            var diffInSeconds = (dateTime2 - dateTime1).TotalMilliseconds;
-            Debug.Log("IFT:" + diffInSeconds + " millisec");
+                Mesh mesh = tile.gameObject.GetComponent<MeshFilter>().mesh;
+                var vertices = mesh.vertices;
+                Color[] colors = new Color[vertices.Length];
 
-            int[] edtImage = new int[nrows * ncols];
-            Marshal.Copy(intPtrEdt, edtImage, 0, nrows * ncols);
-            //Debug.Log(edtImage);
+                for (var i = 0; i < vertices.Length; i++)
+                {
+                    colors[i] = Color.black;
+                    colors[i].a = 0;
+                }
 
-            DllInterface.ExportFile(intPtrImage, nrows, ncols, Marshal.StringToHGlobalAnsi("raw.pgm"));
-            DllInterface.ExportFile(intPtrEdt, nrows, ncols, Marshal.StringToHGlobalAnsi("edit.pgm"));
-            intPtrEdt = DllInterface.GetImage('P');
-            Marshal.Copy(intPtrEdt, edtImage, 0, nrows * ncols);
-            DllInterface.ExportFile(intPtrEdt, nrows, ncols, Marshal.StringToHGlobalAnsi("P.pgm"));
-            intPtrEdt = DllInterface.GetImage('V');
-            Marshal.Copy(intPtrEdt, edtImage, 0, nrows * ncols);
-            DllInterface.ExportFile(intPtrEdt, nrows, ncols, Marshal.StringToHGlobalAnsi("V.pgm"));
-            intPtrEdt = DllInterface.GetImage('R');
-            Marshal.Copy(intPtrEdt, edtImage, 0, nrows * ncols);
-            DllInterface.ExportFile(intPtrEdt, nrows, ncols, Marshal.StringToHGlobalAnsi("R.pgm"));
+                Shader shader; shader = Shader.Find("Particles/Standard Unlit");
 
+                //tile.gameObject.GetComponent<Renderer>().material.shader = shader;
+                tile.gameObject.GetComponent<Renderer>().material = SurfaceMat;
+                mesh.colors = colors;
+            }
         }
+        //
     }
 
     public void SetImageValue(int x = 0, int z = 0, int value = 1)
@@ -930,7 +997,7 @@ public class ShowMap : MonoBehaviour
 
     public void GraphSet3(string graphName)
     {
-        graph = Graph.Create(graphName);
+        graph = Graph.Create(graphName, false);
         float y = 0.25f;// xOz plane is the map 2D coordinates
 
         string text = loadFile("Assets/Resources/nodes.csv");
@@ -1327,6 +1394,198 @@ public class ShowMap : MonoBehaviour
         }
 
         graph.printNodes();
+    }
+
+    public void GraphSet5(string graphName)
+    {
+        graph = Graph.Create(graphName);
+        float y = 0.25f;// xOz plane is the map 2D coordinates
+
+        string text = loadFile("Assets/Resources/Graph5/NodeSet.csv");
+        string[] lines = Regex.Split(text, "\n");
+
+        int nodesNum = lines.Length - 2; //25;//lines.Length - 2;//nbStops
+        nodesNames = new string[nodesNum];
+        coords = new Vector3[nodesNum];
+
+        Debug.Log(DateTime.Now.ToString() + ", init started");
+        //float center_lat = 62f;
+        //float center_lon = 6f;
+        //float scale = 100f;
+        // test1. very fast, 1 sec could do 5K times or more
+        //for (int i = 0; i < nodesNames.Length*100; i++)
+        //{
+        //    Instantiate(point);
+        //    if (i % 5000 == 0)
+        //        Debug.Log(DateTime.Now.ToString() + ", inited " + i + "_th nodes");
+        //}
+        for (int i = 0; i < nodesNames.Length; i++)
+        {
+            string rowdata = lines[i + 1];
+
+            //if (!rowdata.Contains("NSR:Quay"))
+            //{
+            //    continue;
+            //}
+
+            string[] values = Regex.Split(rowdata, ",");
+            //string id = values[0];
+            float lat = float.Parse(values[1], System.Globalization.CultureInfo.InvariantCulture);
+            float lon = float.Parse(values[2], System.Globalization.CultureInfo.InvariantCulture);
+
+            nodesNames[i] = values[0];
+            Vector2 latlong = new Vector2(lat, lon);
+            Vector3 pos = latlong.AsUnityPosition(map.CenterMercator, map.WorldRelativeScale);
+            //coords[i] = new Vector3((lat - center_lat) * scale, y, (lon - center_lon) * scale);
+            coords[i] = pos;
+
+            Node nodeX = Node.Create<Node>(nodesNames[i], coords[i]);
+            nodeX.index = i;
+            nodeX.stop_id = values[0];
+            graph.AddNode(nodeX);
+            nodeX.objTransform = Instantiate(point);
+            nodeX.obj = nodeX.objTransform.gameObject;
+            nodeX.objTransform.name = nodeX.name;
+            nodeX.objTransform.position = nodeX.vec;
+            nodeX.objTransform.parent = Nodes.transform;
+
+            nodeX.obj.GetComponent<Lines>().index = i;
+            nodeX.obj.GetComponent<Lines>().Neighbors = graph.Nodes[i].Neighbors;
+            nodeX.obj.GetComponent<Lines>().Weights = graph.Nodes[i].Weights;
+            nodeX.obj.GetComponent<Lines>().currentNode = graph.Nodes[i];
+            nodeX.obj.GetComponent<Lines>().line = line;
+
+            if (i % 50 == 0)
+                Debug.Log(DateTime.Now.ToString() + ", inited " + i + "_th nodes");
+        }
+
+        // Load raw edges
+        float[,] t0Road = new float[nodesNames.Length, nodesNames.Length];
+        // Build 0012, more nodes for edges
+        AuxLines = new List<AuxLine>();
+        text = loadFile("Assets/Resources/Graph5/EdgeSet.csv");
+        string[] edges_data = Regex.Split(text, "\n");
+
+        int edgesNum = edges_data.Length - 2;
+        edgesNames = new string[edgesNum];
+
+        for (int i = 0; i < edgesNames.Length; i++)
+        {
+            try
+            {
+                string rowdata = edges_data[i + 1];
+
+                string[] values = Regex.Split(rowdata, ",");
+                //string id = values[0];
+                int startindex = graph.FindFirstNode(values[1]).index;
+                int stopindex = graph.FindFirstNode(values[2]).index;
+                if ((values[6] == "nan") || (values[6] == "nan\r"))
+                    t0Road[startindex, stopindex] = 300 / 300;// 1e-4f;
+                else
+                    t0Road[startindex, stopindex] = 300 / float.Parse(values[6], System.Globalization.CultureInfo.InvariantCulture);
+                //Linename values[6]
+                // Build 0012, more nodes for edges
+                // create list based on indexes
+
+                AuxLine AuxLineX = new AuxLine();
+                AuxLineX.LineName = startindex.ToString() + "_" + stopindex.ToString();
+                string[] lonSet = Regex.Split(values[7], "@");
+                string[] latSet = Regex.Split(values[8].Replace("\r", ""), "@");
+                if ((lonSet[0] != "") && (lonSet.Length == latSet.Length))
+                {
+                    for (int j = 0; j < lonSet.Length; j++)
+                    {
+                        float lon = float.Parse(lonSet[j], System.Globalization.CultureInfo.InvariantCulture);
+                        float lat = float.Parse(latSet[j], System.Globalization.CultureInfo.InvariantCulture);
+                        Vector2 latlong = new Vector2(lat, lon);
+                        Vector3 pos = latlong.AsUnityPosition(map.CenterMercator, map.WorldRelativeScale);
+                        AuxLineX.AuxNodes.Add(pos);
+                    }
+                }
+                //AuxLineX.Add()
+                AuxLines.Add(AuxLineX);
+                //
+            }
+            catch (Exception e)
+            {
+                Debug.Log(i);
+            }
+        }
+
+        timeSteps = 4;
+        graph.timeSteps = timeSteps;
+
+        float[][,] temporalRoad = Enumerable.Range(0, timeSteps).Select(_ => new float[nodesNames.Length, nodesNames.Length]).ToArray();
+
+        float[,] roads = new float[nodesNames.Length, nodesNames.Length];
+
+        graph.roadcosts = roads;
+        graph.roadTemporal = temporalRoad;
+
+        System.Random rnd = new System.Random();
+
+        for (int k = 0; k < timeSteps; k++)
+        {
+            int high = 100;//500;//0
+            int low = 0;
+
+            //temporalRoad[k][0, 13] = rnd.Next(low, high) + 40;//Line 1 (1<=>14) (40, 39)
+
+            for (int i = 0; i < nodesNames.Length; i++)
+            {
+                for (int j = 0; j < nodesNames.Length; j++)
+                {
+                    if (t0Road[i, j] != 0)
+                        temporalRoad[k][i, j] = t0Road[i, j] + rnd.Next(low, high);
+                    roads[i, j] += temporalRoad[k][i, j];
+                }
+            }
+        }
+
+        for (int i = 0; i < roads.GetLength(0); i++)
+        {
+            for (int j = 0; j < roads.GetLength(1); j++)
+            {
+                roads[i, j] = roads[i, j] / timeSteps;
+                float weight = roads[i, j];
+                if (weight != 0)
+                {
+                    Node nodeX = graph.FindNode(i);
+                    if (nodeX != null)
+                    {
+                        nodeX.Neighbors.Add(graph.FindNode(j));
+                        nodeX.NeighborNames.Add(graph.FindNode(j).name);
+                        nodeX.Weights.Add(roads[i, j]);
+                    }
+                }
+            }
+        }
+
+
+
+
+        //// set Brekke, Vegtun as the nodes of POI nodes
+        //string[] strPOIs = { "277918686", "7389961142", "5086249142" };
+        //Color[] clrPOIs = { Color.blue, Color.red, Color.green };
+
+        ////string[] strPOIs = { "7379970941", "8745416892" };
+        ////Color[] clrPOIs = { Color.blue, Color.red };
+
+        //graph.CreatePOInodes(strPOIs, clrPOIs);
+
+        //for (int i = 0; i < strPOIs.Length; i++)
+        //{
+        //    GameObject.Find(strPOIs[i]).GetComponent<Renderer>().material.SetColor("_Color", clrPOIs[i]);
+
+        //}
+
+        //for (int i = 0; i < strPOIs.Length; i++)
+        //{
+        //    Color AccessColor = GameObject.Find(strPOIs[i]).GetComponent<Renderer>().material.color;
+        //    GameObject.Find(strPOIs[i]).GetComponent<Lines>().nColor = AccessColor;
+        //}
+
+        //graph.printNodes();
     }
 
     private string loadFile(string filename)

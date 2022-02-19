@@ -15,6 +15,11 @@ public class Lines : MonoBehaviour
 
     public GameObject newline;
     private ShowMap sm;
+
+    public void init()
+    {
+        Start();
+    }
     void Start()
     {
 
@@ -81,23 +86,38 @@ public class Lines : MonoBehaviour
                 List<Vector3> pos = new List<Vector3>();
                 pos.Add(transform.position + offset);
                 pos.Add(Neighbors[i].vec + offset);
-                
-                l.startWidth = sWidth;
-                l.endWidth = eWidth;
-                if (flag == 2)
+
+                // Build 0013, alesund graph
+                if (sm.dropdown_graphop.value != 4)
                 {
-                    if (nColor != Neighbors[i].clr)
+                    l.startWidth = sWidth;
+                    l.endWidth = eWidth;
+
+                    if (flag == 2)
                     {
-                        l.startWidth = eWidth;
-                        l.endWidth = sWidth;
+                        if (nColor != Neighbors[i].clr)
+                        {
+                            l.startWidth = eWidth;
+                            l.endWidth = sWidth;
+                        }
                     }
+                    l.startColor = Nclr;
+                    l.endColor = Nclr;
                 }
-                l.startColor = Nclr;
-                l.endColor = Nclr;
+                else
+                {
+                    l.startWidth = 0.3f;
+                    l.endWidth = 0.3f;
+
+                    l.startColor = Color.red;
+                    l.endColor = Color.red;
+                }   
+                //
+
                 
                 l.SetPositions(pos.ToArray());
                 //Build 0012, more nodes for edges, search LinesNum
-                if (sm.dropdown_graphop.value == 3)
+                if (sm.dropdown_graphop.value >= 3)
                 {
                     foreach (AuxLine x in sm.AuxLines.FindAll(element => element.LineName == (currentNode.index + "_" + Neighbors[i].index)))
                     {
