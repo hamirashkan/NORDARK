@@ -106,8 +106,8 @@ public class Lines : MonoBehaviour
                 }
                 else
                 {
-                    l.startWidth = 0.3f;
-                    l.endWidth = 0.3f;
+                    l.startWidth = 0.1f;
+                    l.endWidth = 0.1f;
 
                     l.startColor = Color.red;
                     l.endColor = Color.red;

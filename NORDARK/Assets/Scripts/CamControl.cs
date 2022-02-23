@@ -135,6 +135,7 @@ public class CamControl : MonoBehaviour
 
     void HandleMovementInput()
     {
+
         // Keyboard rotation (Using W A S D Keys)
 
         if(Input.GetKey(KeyCode.A))
@@ -176,6 +177,4 @@ public class CamControl : MonoBehaviour
     {
         Application.Quit();
     }
-
-
 }

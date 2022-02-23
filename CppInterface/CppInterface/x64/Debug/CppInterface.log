@@ -1,38 +1,36 @@
 ﻿  DllInterface.cpp
-D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(147,52): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(108,11): warning C4101: 'file_noext': unreferenced local variable
-D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(118,24): warning C4101: 'MemDinFinal': unreferenced local variable
-D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(118,9): warning C4101: 'MemDinInicial': unreferenced local variable
-D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(185,13): warning C4101: 'edt': unreferenced local variable
-D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(184,26): warning C4101: 'sqrt_edt': unreferenced local variable
-D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(182,11): warning C4101: 'file_noext': unreferenced local variable
-D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(191,24): warning C4101: 'MemDinFinal': unreferenced local variable
-D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(180,9): warning C4101: 'p': unreferenced local variable
-D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(191,9): warning C4101: 'MemDinInicial': unreferenced local variable
-D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(181,10): warning C4101: 'outfile': unreferenced local variable
-D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(184,12): warning C4101: 'img': unreferenced local variable
-D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(314,52): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(271,11): warning C4101: 'file_noext': unreferenced local variable
-D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(279,24): warning C4101: 'MemDinFinal': unreferenced local variable
-D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(279,9): warning C4101: 'MemDinInicial': unreferenced local variable
-D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(347,2): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(356,2): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
-D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(417,22): warning C4477: 'fscanf_s' : format string '%s' requires an argument of type 'unsigned int', but variadic argument 2 has type 'size_t'
-D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(417,22): message : this argument is used as a buffer size
-D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(417,55): warning C4390: ';': empty controlled statement found; is this the intent?
-D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(429,65): warning C4390: ';': empty controlled statement found; is this the intent?
-D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(453,59): warning C4390: ';': empty controlled statement found; is this the intent?
-D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(403,13): warning C4101: 'err': unreferenced local variable
-D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(795,17): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(817,17): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(839,17): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(861,17): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(908,45): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(1160,22): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(1162,22): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(1223,21): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(1226,21): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(1229,21): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(1232,21): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
-D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(1743,11): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(215,52): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(176,11): warning C4101: 'file_noext': unreferenced local variable
+D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(186,24): warning C4101: 'MemDinFinal': unreferenced local variable
+D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(186,9): warning C4101: 'MemDinInicial': unreferenced local variable
+D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(317,52): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(274,11): warning C4101: 'file_noext': unreferenced local variable
+D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(282,24): warning C4101: 'MemDinFinal': unreferenced local variable
+D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(282,9): warning C4101: 'MemDinInicial': unreferenced local variable
+D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(361,52): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(334,11): warning C4101: 'file_noext': unreferenced local variable
+D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(342,24): warning C4101: 'MemDinFinal': unreferenced local variable
+D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(342,9): warning C4101: 'MemDinInicial': unreferenced local variable
+D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(333,10): warning C4101: 'outfile': unreferenced local variable
+D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(390,2): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(399,2): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(460,22): warning C4477: 'fscanf_s' : format string '%s' requires an argument of type 'unsigned int', but variadic argument 2 has type 'size_t'
+D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(460,22): message : this argument is used as a buffer size
+D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(460,55): warning C4390: ';': empty controlled statement found; is this the intent?
+D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(472,65): warning C4390: ';': empty controlled statement found; is this the intent?
+D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(496,59): warning C4390: ';': empty controlled statement found; is this the intent?
+D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(446,13): warning C4101: 'err': unreferenced local variable
+D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(838,17): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(860,17): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(882,17): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(904,17): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(951,45): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(1203,22): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(1205,22): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(1266,21): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(1269,21): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(1272,21): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(1275,21): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+D:\Documents\GitHub\Ashkan\NORDARK\CppInterface\CppInterface\DllInterface.cpp(1786,11): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+     Creating library ..\..\NORDARK\Assets\Plugins\x86_64\CppInterface.lib and object ..\..\NORDARK\Assets\Plugins\x86_64\CppInterface.exp
   CppInterface.vcxproj -> D:\Documents\GitHub\Ashkan\NORDARK\NORDARK\Assets\Plugins\x86_64\CppInterface.dll

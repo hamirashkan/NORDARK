@@ -157,6 +157,21 @@ public class ShowMap : MonoBehaviour
     }
     //
 
+    // Build 0014, IFT opt test
+    public IntPtr GetImagePtr(int[] imageIntArray,int length)
+    {
+        testImage = new int[length];
+        unsafe
+        {
+            fixed (int* pArray = imageIntArray)
+            {
+                intPtrImage = new IntPtr((void*)pArray);
+                return intPtrImage;
+            }
+        }
+    }
+    //
+
     public IEnumerator CreateMap(float time, int graph_op = 0)
     {
         yield return new WaitForSeconds(time);
@@ -646,6 +661,38 @@ public class ShowMap : MonoBehaviour
                 Marshal.Copy(intPtrEdt, edtImage, 0, nrows * ncols);
                 DllInterface.ExportFile(intPtrEdt, nrows, ncols, Marshal.StringToHGlobalAnsi("R.pgm"));
 
+                // Build 0014, IFT opt test
+                int tRows = 5;
+                int tCols = 5;
+                int tlen = tRows * tCols;
+                int[] rawImage = new int[tlen];
+                int[] rmImage = new int[tlen];
+                Array.Clear(rawImage, 0, rawImage.Length);
+                Array.Clear(rmImage, 0, rmImage.Length);
+                IntPtr ipRawImage = GetImagePtr(rawImage, tlen);
+                IntPtr ipRMImage = GetImagePtr(rmImage, tlen);
+                // init, set values
+                rawImage[6] = 1;
+                rawImage[18] = 2;
+                rmImage[6] = 10;
+                rmImage[18] = 12;//100;
+                // 
+                intPtrEdt = DllInterface.IFTopt(ipRawImage, ipRMImage, tRows, tCols);
+                edtImage = new int[tlen];
+                Marshal.Copy(intPtrEdt, edtImage, 0, tlen);
+                // 
+                DllInterface.ExportFile(ipRawImage, tRows, tCols, Marshal.StringToHGlobalAnsi("raw.pgm"));
+                DllInterface.ExportFile(ipRMImage, tRows, tCols, Marshal.StringToHGlobalAnsi("risk.pgm"));
+                DllInterface.ExportFile(intPtrEdt, tRows, tCols, Marshal.StringToHGlobalAnsi("edit.pgm"));
+                intPtrEdt = DllInterface.GetImage('P');
+                Marshal.Copy(intPtrEdt, edtImage, 0, tRows * tCols);
+                DllInterface.ExportFile(intPtrEdt, tRows, tCols, Marshal.StringToHGlobalAnsi("P.pgm"));
+                intPtrEdt = DllInterface.GetImage('V');
+                Marshal.Copy(intPtrEdt, edtImage, 0, tRows * tCols);
+                DllInterface.ExportFile(intPtrEdt, tRows, tCols, Marshal.StringToHGlobalAnsi("V.pgm"));
+                intPtrEdt = DllInterface.GetImage('R');
+                Marshal.Copy(intPtrEdt, edtImage, 0, tRows * tCols);
+                DllInterface.ExportFile(intPtrEdt, tRows, tCols, Marshal.StringToHGlobalAnsi("R.pgm"));
             }
         }
         else

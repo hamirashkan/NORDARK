@@ -1510,7 +1510,6 @@ MonoBehaviour:
   minW: 0
   maxW: 0
   line: {fileID: 2087877638388959860, guid: abb898cb41fec4d4aa382da43a4d304f, type: 3}
-  graph: {fileID: 11400000, guid: 6eb8f6d56895472408d536686a680487, type: 2}
   lambdaMap: []
   colorMap: []
   textMap: []
@@ -1533,7 +1532,6 @@ MonoBehaviour:
   SliderStartTimeValue: 1
   SliderStopTimeValue: 10
   dropdown_graphop: {fileID: 0}
-  AuxLines: []
   TestMode: 0
 --- !u!1 &509190219
 GameObject:
@@ -2508,6 +2506,8 @@ GameObject:
   - component: {fileID: 963194228}
   - component: {fileID: 963194227}
   - component: {fileID: 963194226}
+  - component: {fileID: 963194229}
+  - component: {fileID: 963194230}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -2580,6 +2580,38 @@ Transform:
   m_Father: {fileID: 526675605}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
+--- !u!114 &963194229
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 963194225}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ffe764dd883d5c43b75e324b49b4cbd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lookSpeedH: 0.5
+  lookSpeedV: 0.5
+  zoomSpeed: 100
+  dragSpeed: 100
+--- !u!114 &963194230
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 963194225}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 539a3a71268ebae40aa45afc871f60e2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lookSpeedH: 5
+  lookSpeedV: 5
+  zoomSpeed: 100
+  dragSpeed: 100
 --- !u!1 &968572981
 GameObject:
   m_ObjectHideFlags: 0
@@ -4582,7 +4614,6 @@ MonoBehaviour:
   minW: 0
   maxW: 0
   line: {fileID: 2087877638388959860, guid: abb898cb41fec4d4aa382da43a4d304f, type: 3}
-  graph: {fileID: 0}
   lambdaMap: []
   colorMap: []
   textMap: []
@@ -4605,7 +4636,6 @@ MonoBehaviour:
   SliderStartTimeValue: 0
   SliderStopTimeValue: 10
   dropdown_graphop: {fileID: 0}
-  AuxLines: []
   TestMode: 0
 --- !u!4 &1551772468
 Transform:
@@ -4768,6 +4798,11 @@ PrefabInstance:
       propertyPath: myCamera
       value: 
       objectReference: {fileID: 963194227}
+    - target: {fileID: 3147420436892032457, guid: 18e520b8b23d9fc4baf0e5f32c661112,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3147420436892032457, guid: 18e520b8b23d9fc4baf0e5f32c661112,
         type: 3}
       propertyPath: cameraTransform
@@ -5592,7 +5627,6 @@ MonoBehaviour:
   minW: 0
   maxW: 0
   line: {fileID: 2087877638388959860, guid: abb898cb41fec4d4aa382da43a4d304f, type: 3}
-  graph: {fileID: 0}
   lambdaMap: []
   colorMap: []
   costs: []
@@ -5690,7 +5724,6 @@ MonoBehaviour:
   minW: 0
   maxW: 0
   line: {fileID: 2087877638388959860, guid: abb898cb41fec4d4aa382da43a4d304f, type: 3}
-  graph: {fileID: 0}
   lambdaMap: []
   colorMap: []
   costs: []
