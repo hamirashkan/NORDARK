@@ -564,29 +564,6 @@ public class ShowMap : MonoBehaviour
             // Build 0009, add IFT for Graph 1
             if (UIButton.isIFT)
             {
-                //pass C#'s delegate to C++
-                //DllInterface.InitCSharpDelegate(DllInterface.LogMessageFromCpp);
-
-                //IntPtr ptr = DllInterface.fnwrapper_intarr();
-                //int[] result = new int[3];
-                //Marshal.Copy(ptr, result, 0, 3);
-                //Debug.Log(result);
-
-                //IntPtr intPtr;
-                //unsafe
-                //{
-                //    fixed (int* pArray = result)
-                //    {
-                //        intPtr = new IntPtr((void*)pArray);
-                //    }
-                //}
-
-                //IntPtr ptr1 = DllInterface.add(intPtr);
-                //int[] result1 = new int[3];
-                //Marshal.Copy(ptr1, result1, 0, 3);
-                //Debug.Log(result1);
-
-
                 //IFT
                 // Prepare the position for the top left tile. top right is the minimum for graph, top left is the start for image
                 float x_min = float.MaxValue;
@@ -662,37 +639,7 @@ public class ShowMap : MonoBehaviour
                 DllInterface.ExportFile(intPtrEdt, nrows, ncols, Marshal.StringToHGlobalAnsi("R.pgm"));
 
                 // Build 0014, IFT opt test
-                int tRows = 5;
-                int tCols = 5;
-                int tlen = tRows * tCols;
-                int[] rawImage = new int[tlen];
-                int[] rmImage = new int[tlen];
-                Array.Clear(rawImage, 0, rawImage.Length);
-                Array.Clear(rmImage, 0, rmImage.Length);
-                IntPtr ipRawImage = GetImagePtr(rawImage, tlen);
-                IntPtr ipRMImage = GetImagePtr(rmImage, tlen);
-                // init, set values
-                rawImage[6] = 1;
-                rawImage[18] = 2;
-                rmImage[6] = 10;
-                rmImage[18] = 12;//100;
-                // 
-                intPtrEdt = DllInterface.IFTopt(ipRawImage, ipRMImage, tRows, tCols);
-                edtImage = new int[tlen];
-                Marshal.Copy(intPtrEdt, edtImage, 0, tlen);
-                // 
-                DllInterface.ExportFile(ipRawImage, tRows, tCols, Marshal.StringToHGlobalAnsi("raw.pgm"));
-                DllInterface.ExportFile(ipRMImage, tRows, tCols, Marshal.StringToHGlobalAnsi("risk.pgm"));
-                DllInterface.ExportFile(intPtrEdt, tRows, tCols, Marshal.StringToHGlobalAnsi("edit.pgm"));
-                intPtrEdt = DllInterface.GetImage('P');
-                Marshal.Copy(intPtrEdt, edtImage, 0, tRows * tCols);
-                DllInterface.ExportFile(intPtrEdt, tRows, tCols, Marshal.StringToHGlobalAnsi("P.pgm"));
-                intPtrEdt = DllInterface.GetImage('V');
-                Marshal.Copy(intPtrEdt, edtImage, 0, tRows * tCols);
-                DllInterface.ExportFile(intPtrEdt, tRows, tCols, Marshal.StringToHGlobalAnsi("V.pgm"));
-                intPtrEdt = DllInterface.GetImage('R');
-                Marshal.Copy(intPtrEdt, edtImage, 0, tRows * tCols);
-                DllInterface.ExportFile(intPtrEdt, tRows, tCols, Marshal.StringToHGlobalAnsi("R.pgm"));
+                IFToptTest();
             }
         }
         else
@@ -744,6 +691,42 @@ public class ShowMap : MonoBehaviour
             }
         }
         //
+    }
+
+    // Build 0014, IFT opt test
+    public void IFToptTest()
+    {
+        int tRows = 5;
+        int tCols = 5;
+        int tlen = tRows * tCols;
+        int[] rawImage = new int[tlen];
+        int[] rmImage = new int[tlen];
+        Array.Clear(rawImage, 0, rawImage.Length);
+        Array.Clear(rmImage, 0, rmImage.Length);
+        IntPtr ipRawImage = GetImagePtr(rawImage, tlen);
+        IntPtr ipRMImage = GetImagePtr(rmImage, tlen);
+        // init, set values
+        rawImage[6] = 1;
+        rawImage[18] = 2;
+        rmImage[6] = 10;
+        rmImage[18] = 12;//100;
+                         // 
+        IntPtr intPtrEdt = DllInterface.IFTopt(ipRawImage, ipRMImage, tRows, tCols);
+        int[] edtImage = new int[tlen];
+        Marshal.Copy(intPtrEdt, edtImage, 0, tlen);
+        // 
+        DllInterface.ExportFile(ipRawImage, tRows, tCols, Marshal.StringToHGlobalAnsi("raw.pgm"));
+        DllInterface.ExportFile(ipRMImage, tRows, tCols, Marshal.StringToHGlobalAnsi("risk.pgm"));
+        DllInterface.ExportFile(intPtrEdt, tRows, tCols, Marshal.StringToHGlobalAnsi("edit.pgm"));
+        intPtrEdt = DllInterface.GetImage('P');
+        Marshal.Copy(intPtrEdt, edtImage, 0, tRows * tCols);
+        DllInterface.ExportFile(intPtrEdt, tRows, tCols, Marshal.StringToHGlobalAnsi("P.pgm"));
+        intPtrEdt = DllInterface.GetImage('V');
+        Marshal.Copy(intPtrEdt, edtImage, 0, tRows * tCols);
+        DllInterface.ExportFile(intPtrEdt, tRows, tCols, Marshal.StringToHGlobalAnsi("V.pgm"));
+        intPtrEdt = DllInterface.GetImage('R');
+        Marshal.Copy(intPtrEdt, edtImage, 0, tRows * tCols);
+        DllInterface.ExportFile(intPtrEdt, tRows, tCols, Marshal.StringToHGlobalAnsi("R.pgm"));
     }
 
     public void SetImageValue(int x = 0, int z = 0, int value = 1)

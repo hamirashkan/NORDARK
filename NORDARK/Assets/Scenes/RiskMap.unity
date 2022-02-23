@@ -1392,7 +1392,7 @@ MonoBehaviour:
   _initializeOnStart: 1
   _imagery:
     _layerProperty:
-      sourceType: 0
+      sourceType: 7
       sourceOptions:
         isActive: 1
         layerSource:
@@ -5602,8 +5602,6 @@ GameObject:
   - component: {fileID: 2138377067}
   - component: {fileID: 2138377066}
   - component: {fileID: 2138377065}
-  - component: {fileID: 2138377064}
-  - component: {fileID: 2138377069}
   m_Layer: 0
   m_Name: Map
   m_TagString: Untagged
@@ -5611,25 +5609,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
---- !u!114 &2138377064
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2138377063}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cb2fbc3c64350fe47a113a9a3827d652, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  point: {fileID: 4493896790940626323, guid: 33ec7da444dd1f348ad9850b5971eb35, type: 3}
-  minW: 0
-  maxW: 0
-  line: {fileID: 2087877638388959860, guid: abb898cb41fec4d4aa382da43a4d304f, type: 3}
-  lambdaMap: []
-  colorMap: []
-  costs: []
 --- !u!64 &2138377065
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -5707,24 +5686,3 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &2138377069
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2138377063}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5aca6dce4fe36e241b1d74257021f1ec, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  timeSteps: 0
-  point: {fileID: 4493896790940626323, guid: 33ec7da444dd1f348ad9850b5971eb35, type: 3}
-  minW: 0
-  maxW: 0
-  line: {fileID: 2087877638388959860, guid: abb898cb41fec4d4aa382da43a4d304f, type: 3}
-  lambdaMap: []
-  colorMap: []
-  costs: []
-  map: {fileID: 0}
