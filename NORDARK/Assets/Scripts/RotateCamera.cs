@@ -16,6 +16,9 @@ public class RotateCamera : MonoBehaviour
     [SerializeField]
     private float dragSpeed = 5f;
 
+    [SerializeField]
+    private float dragSpeedY = 5f;
+
     private float yaw = 0f;
     private float pitch = 0f;
 
@@ -52,27 +55,35 @@ public class RotateCamera : MonoBehaviour
             transform.Translate(new Vector3(0, 0, this.dragSpeed * Time.deltaTime));
 
         }
-
-        if (Input.GetKey(KeyCode.LeftAlt))
+        if (Input.GetKey(KeyCode.Q))
         {
-            //Look around with Left Mouse
-            if (Input.GetMouseButton(0))
-            {
-                this.yaw += this.lookSpeedH * Input.GetAxis("Mouse X");
-                this.pitch -= this.lookSpeedV * Input.GetAxis("Mouse Y");
-
-                this.transform.eulerAngles = new Vector3(this.pitch, this.yaw, 0f);
-            }
-
-            //drag camera around with Middle Mouse
-            if (Input.GetMouseButton(2))
-            {
-                transform.Translate(-Input.GetAxisRaw("Mouse X") * Time.deltaTime * dragSpeed, -Input.GetAxisRaw("Mouse Y") * Time.deltaTime * dragSpeed, 0);
-            }
-
-            this.transform.Translate(0, 0, Input.GetAxis("Mouse ScrollWheel") * this.zoomSpeed, Space.Self);
+            transform.Translate(new Vector3(0, -this.dragSpeedY * Time.deltaTime, 0));
         }
-        
+        if (Input.GetKey(KeyCode.E))
+        {
+            transform.Translate(new Vector3(0, this.dragSpeedY * Time.deltaTime, 0));
+
+        }
+
+        //if (Input.GetKey(KeyCode.LeftControl))
+        //{
+        //Look around with Left Mouse
+        if (Input.GetMouseButton(1))
+        {
+            this.yaw += this.lookSpeedH * Input.GetAxis("Mouse X");
+            this.pitch -= this.lookSpeedV * Input.GetAxis("Mouse Y");
+
+            this.transform.eulerAngles = new Vector3(this.pitch, this.yaw, 0f);
+        }
+
+        //drag camera around with Middle Mouse
+        if (Input.GetMouseButton(2))
+        {
+            transform.Translate(-Input.GetAxisRaw("Mouse X") * Time.deltaTime * dragSpeed, -Input.GetAxisRaw("Mouse Y") * Time.deltaTime * dragSpeed, 0);
+        }
+
+        this.transform.Translate(0, 0, Input.GetAxis("Mouse ScrollWheel") * this.zoomSpeed, Space.Self);
+        //}
+
     }
 }
-
