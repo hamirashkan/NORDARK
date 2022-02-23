@@ -102,4 +102,8 @@ public class AuxLine //: ScriptableObject
             return auxNodes;
         }
     }
+    public int startNodeIndex;
+    public Vector3 startNodePosition;
+    public int stopNodeIndex;
+    public Vector3 stopNodePosition;
 }

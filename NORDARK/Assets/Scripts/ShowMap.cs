@@ -78,7 +78,7 @@ public class ShowMap : MonoBehaviour
     int[] testRMImage;
     //
     // Build 0010, high scale for the vertices interpolation
-    int vertices_scale = 10;// 4;// scale parameters
+    int vertices_scale = 1;// 4;// scale parameters
     const int vertices_max = 10;
     int vmax;
     //
@@ -713,7 +713,10 @@ public class ShowMap : MonoBehaviour
         //IFT opt
         // Prepare the position for the top left tile. top right is the minimum for graph, top left is the start for image
         float x_min = float.MaxValue;
+        float x_max = float.MinValue;
+        float z_min = float.MaxValue; 
         float z_max = float.MinValue;
+        
         int x_index = 0;
         int z_index = 0;
         int adj_type = 1;// 1;
@@ -728,10 +731,16 @@ public class ShowMap : MonoBehaviour
             Vector3 center = tile.position;
             if (center.x < x_min)
                 x_min = center.x;
+            if (center.x > x_max)
+                x_max = center.x;
+            if (center.z < z_min)
+                z_min = center.z;
             if (center.z > z_max)
                 z_max = center.z;
         }
         x_min = x_min - 50;
+        x_max = x_max - 50;
+        z_min = z_min + 50;
         z_max = z_max + 50;
         // Step 1, set pixel value to 1 if POI nodes belongs to this pixel
         Array.Clear(testImage, 0, testImage.Length);
@@ -768,6 +777,69 @@ public class ShowMap : MonoBehaviour
                 SetRMImageValue(x_index + 1, z_index + 1, (int)(node.LeastCost));
             }
         }
+
+        // Build 0016, draw lines
+        int x1 = 0;
+        int y1 = 0;
+        int x2 = 0;
+        int y2 = 0;
+        float x, y;
+        float dy, dx, m, dy_inc;
+        foreach (AuxLine lineX in AuxLines)
+        {
+            //var posv = new Vector3[x.AuxNodes.Count + 2];
+            //posv[0] = transform.position + offset;
+            ////Debug.Log("Find nodes by index[" + nodeIndex.ToString() + "]: " + x.name);
+            //for (int j = 0; j < x.AuxNodes.Count; j++)
+            //    posv[j + 1] = x.AuxNodes[j];
+            //posv[x.AuxNodes.Count + 1] = Neighbors[i].vec + offset;
+            //l.positionCount = posv.Length;
+            //l.SetPositions(posv);
+
+            x1 = (int)((lineX.startNodePosition.x - x_min) / (100.0 / (vmax - 1)));
+            y1 = (int)((lineX.startNodePosition.z - z_max) / (100.0 / (vmax - 1)));
+            x2 = (int)((lineX.stopNodePosition.x - x_min) / (100.0 / (vmax - 1)));
+            y2 = (int)((lineX.stopNodePosition.z - z_max) / (100.0 / (vmax - 1)));
+
+            
+            dy = y2 - y1;
+            dx = x2 - x1;
+            m = dy / dx;
+            dy_inc = -1;
+
+            if (dy < 0)
+                dy = 1;
+
+            float dx_inc = 1;
+            if (dx < 0)
+                dx = -1;
+
+            if (Mathf.Abs(dy) > Mathf.Abs(dx))
+            {
+                if(x1 != x2)
+                for (y = y2; y < y1; y += dy_inc)
+                {
+                    x = x1 + (y - y1) * m;
+                    Debug.Log("Setting Pixel at: x=" + x + ", y=" + y);
+                    SetImageValue((int)(x), - (int)(y), 50);
+                    SetRMImageValue((int)(x),  - (int)(y), 2);
+                    //MyTexture.SetPixel((int)(x), (int)(y), Color.black);
+                }
+            }
+            else
+            {
+                if (y1 != y2)
+                for (x = x1; x < x2; x += dx_inc)
+                {
+                    y = y1 + (x - x1) * m;
+                    Debug.Log("Setting Pixel at: x=" + x + ", y=" + y);
+                    SetImageValue((int)(x),  - (int)(y), 50);
+                    SetRMImageValue((int)(x),  - (int)(y), 2);
+                }
+            }
+        }
+        //
+
         //testImage[0] = 1;
         //testImage[ncols * 10 + 20] = 1;
         //testImage[ncols * 10 + 21] = 1;
