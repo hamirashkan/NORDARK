@@ -795,52 +795,36 @@ public class ShowMap : MonoBehaviour
             //posv[x.AuxNodes.Count + 1] = Neighbors[i].vec + offset;
             //l.positionCount = posv.Length;
             //l.SetPositions(posv);
-
-            x1 = (int)((lineX.startNodePosition.x - x_min) / (100.0 / (vmax - 1)));
-            y1 = (int)((lineX.startNodePosition.z - z_max) / (100.0 / (vmax - 1)));
-            x2 = (int)((lineX.stopNodePosition.x - x_min) / (100.0 / (vmax - 1)));
-            y2 = (int)((lineX.stopNodePosition.z - z_max) / (100.0 / (vmax - 1)));
-
-            
-            dy = y2 - y1;
-            dx = x2 - x1;
-            m = dy / dx;
-            dy_inc = 1;
-
-            if (dy < 0)
-                dy = -1;
-
-            float dx_inc = 1;
-            if (dx < 0)
-                dx = -1;
-
-            if (Mathf.Abs(dy) > Mathf.Abs(dx))
+            if (lineX.AuxNodes.Count == 0)
             {
-                for (y = y1; y < y2; y += dy_inc)
-                {
-                    x = x1 + (y - y1) / m;
-                    if(x != x1)
-                    { 
-                        Debug.Log("Setting Pixel at: x=" + x + ", y=" + y);
-                        SetImageValue((int)(x), - (int)(y), 50);
-                        SetRMImageValue((int)(x),  - (int)(y), 2);
-                        //MyTexture.SetPixel((int)(x), (int)(y), Color.black);
-                    }
-                }
+                x1 = (int)((lineX.startNodePosition.x - x_min) / (100.0 / (vmax - 1)));
+                y1 = (int)((lineX.startNodePosition.z - z_max) / (100.0 / (vmax - 1)));
+                x2 = (int)((lineX.stopNodePosition.x - x_min) / (100.0 / (vmax - 1)));
+                y2 = (int)((lineX.stopNodePosition.z - z_max) / (100.0 / (vmax - 1)));
+                DrawLine(x1, y1, x2, y2);
             }
             else
             {
-                //if (y1 != y2)
-                for (x = x1; x < x2; x += dx_inc)
+                x1 = (int)((lineX.startNodePosition.x - x_min) / (100.0 / (vmax - 1)));
+                y1 = (int)((lineX.startNodePosition.z - z_max) / (100.0 / (vmax - 1)));
+                x2 = (int)((lineX.AuxNodes[0].x - x_min) / (100.0 / (vmax - 1)));
+                y2 = (int)((lineX.AuxNodes[0].z - z_max) / (100.0 / (vmax - 1)));
+                DrawLine(x1, y1, x2, y2); // don't draw start
+
+                for (int j = 1; j < lineX.AuxNodes.Count; j++)
                 {
-                    y = y1 + (x - x1) * m;
-                    if (y != y1)
-                    {
-                        Debug.Log("Setting Pixel at: x=" + x + ", y=" + y);
-                        SetImageValue((int)(x), -(int)(y), 50);
-                        SetRMImageValue((int)(x), -(int)(y), 2);
-                    }
+                    x1 = (int)((lineX.AuxNodes[j - 1].x - x_min) / (100.0 / (vmax - 1)));
+                    y1 = (int)((lineX.AuxNodes[j - 1].z - z_max) / (100.0 / (vmax - 1)));
+                    x2 = (int)((lineX.AuxNodes[j].x - x_min) / (100.0 / (vmax - 1)));
+                    y2 = (int)((lineX.AuxNodes[j].z - z_max) / (100.0 / (vmax - 1)));
+                    DrawLine(x1, y1, x2, y2, true); // draw start
                 }
+
+                x1 = (int)((lineX.AuxNodes[lineX.AuxNodes.Count - 1].x - x_min) / (100.0 / (vmax - 1)));
+                y1 = (int)((lineX.AuxNodes[lineX.AuxNodes.Count - 1].z - z_max) / (100.0 / (vmax - 1)));
+                x2 = (int)((lineX.stopNodePosition.x - x_min) / (100.0 / (vmax - 1)));
+                y2 = (int)((lineX.stopNodePosition.z - z_max) / (100.0 / (vmax - 1)));
+                DrawLine(x1, y1, x2, y2, true); //  draw start
             }
         }
         //
@@ -877,6 +861,54 @@ public class ShowMap : MonoBehaviour
         DllInterface.ExportFile(intPtrEdt, nrows, ncols, Marshal.StringToHGlobalAnsi("R.pgm"));
     }
     //
+
+    // Build 0017, draw auxlines
+    public void DrawLine(int x1, int y1, int x2, int y2, bool drawStart = false)
+    {
+        float x, y;
+        float dy, dx, m, dy_inc;
+
+        dy = y2 - y1;
+        dx = x2 - x1;
+        m = dy / dx;
+        dy_inc = 1;
+
+        if (dy < 0)
+            dy = -1;
+
+        float dx_inc = 1;
+        if (dx < 0)
+            dx = -1;
+
+        if (Mathf.Abs(dy) > Mathf.Abs(dx))
+        {
+            for (y = y1; y < y2; y += dy_inc)
+            {
+                x = x1 + (y - y1) / m;
+                if(drawStart || (x != x1))
+                {
+                    Debug.Log("Setting Pixel at: x=" + x + ", y=" + y);
+                    SetImageValue((int)(x), -(int)(y), 50);
+                    SetRMImageValue((int)(x), -(int)(y), 2);
+                    //MyTexture.SetPixel((int)(x), (int)(y), Color.black);
+                }
+            }
+        }
+        else
+        {
+            //if (y1 != y2)
+            for (x = x1; x < x2; x += dx_inc)
+            {
+                y = y1 + (x - x1) * m;
+                if (drawStart || (y != y1))
+                {
+                    Debug.Log("Setting Pixel at: x=" + x + ", y=" + y);
+                    SetImageValue((int)(x), -(int)(y), 50);
+                    SetRMImageValue((int)(x), -(int)(y), 2);
+                }
+            }
+        }
+    }
 
     // Build 0014, IFT opt test
     public void IFToptTest()
@@ -1543,6 +1575,12 @@ public class ShowMap : MonoBehaviour
                     AuxLineX.AuxNodes.Add(pos);
                 }
             }
+            // Build 0016, draw lines
+            AuxLineX.startNodeIndex = startindex;
+            AuxLineX.startNodePosition = graph.FindNode(startindex).vec;
+            AuxLineX.stopNodeIndex = stopindex;
+            AuxLineX.stopNodePosition = graph.FindNode(stopindex).vec;
+            //
             //AuxLineX.Add()
             AuxLines.Add(AuxLineX);
             //

@@ -129,12 +129,6 @@ public class Lines : MonoBehaviour
                         posv[x.AuxNodes.Count + 1] = Neighbors[i].vec + offset;
                         l.positionCount = posv.Length;
                         l.SetPositions(posv);
-                        // Build 0016, draw lines
-                        x.startNodeIndex = currentNode.index;
-                        x.startNodePosition = posv[0];
-                        x.stopNodeIndex = Neighbors[i].index;
-                        x.stopNodePosition = posv[x.AuxNodes.Count + 1];
-                        //
                     }
                 }
                 //l.useWorldSpace = true;

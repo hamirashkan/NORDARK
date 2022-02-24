@@ -3496,7 +3496,7 @@ MonoBehaviour:
       m_Image: {fileID: 0}
     - m_Text: Graph 3 (37 nodes)
       m_Image: {fileID: 0}
-    - m_Text: Graph 3 (OSMnx)
+    - m_Text: Graph 4 (OSMnx)
       m_Image: {fileID: 0}
     - m_Text: Graph 4 (Alesund)
       m_Image: {fileID: 0}
