@@ -78,7 +78,7 @@ public class ShowMap : MonoBehaviour
     int[] testRMImage;
     //
     // Build 0010, high scale for the vertices interpolation
-    int vertices_scale = 1;// 4;// scale parameters
+    int vertices_scale = 10;// 4;// scale parameters
     const int vertices_max = 10;
     int vmax;
     //
@@ -805,10 +805,10 @@ public class ShowMap : MonoBehaviour
             dy = y2 - y1;
             dx = x2 - x1;
             m = dy / dx;
-            dy_inc = -1;
+            dy_inc = 1;
 
             if (dy < 0)
-                dy = 1;
+                dy = -1;
 
             float dx_inc = 1;
             if (dx < 0)
@@ -816,25 +816,30 @@ public class ShowMap : MonoBehaviour
 
             if (Mathf.Abs(dy) > Mathf.Abs(dx))
             {
-                if(x1 != x2)
-                for (y = y2; y < y1; y += dy_inc)
+                for (y = y1; y < y2; y += dy_inc)
                 {
-                    x = x1 + (y - y1) * m;
-                    Debug.Log("Setting Pixel at: x=" + x + ", y=" + y);
-                    SetImageValue((int)(x), - (int)(y), 50);
-                    SetRMImageValue((int)(x),  - (int)(y), 2);
-                    //MyTexture.SetPixel((int)(x), (int)(y), Color.black);
+                    x = x1 + (y - y1) / m;
+                    if(x != x1)
+                    { 
+                        Debug.Log("Setting Pixel at: x=" + x + ", y=" + y);
+                        SetImageValue((int)(x), - (int)(y), 50);
+                        SetRMImageValue((int)(x),  - (int)(y), 2);
+                        //MyTexture.SetPixel((int)(x), (int)(y), Color.black);
+                    }
                 }
             }
             else
             {
-                if (y1 != y2)
+                //if (y1 != y2)
                 for (x = x1; x < x2; x += dx_inc)
                 {
                     y = y1 + (x - x1) * m;
-                    Debug.Log("Setting Pixel at: x=" + x + ", y=" + y);
-                    SetImageValue((int)(x),  - (int)(y), 50);
-                    SetRMImageValue((int)(x),  - (int)(y), 2);
+                    if (y != y1)
+                    {
+                        Debug.Log("Setting Pixel at: x=" + x + ", y=" + y);
+                        SetImageValue((int)(x), -(int)(y), 50);
+                        SetRMImageValue((int)(x), -(int)(y), 2);
+                    }
                 }
             }
         }
