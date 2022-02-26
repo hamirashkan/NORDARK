@@ -84,7 +84,7 @@ public class ShowMap : MonoBehaviour
     float tz_max = float.MinValue;
     //
     // Build 0010, high scale for the vertices interpolation
-    int vertices_scale = 4;// 4;// scale parameters
+    int vertices_scale = 10;// 4;// scale parameters
     const int vertices_max = 10;
     int vmax;
     //
@@ -1114,7 +1114,7 @@ public class ShowMap : MonoBehaviour
         // Step 1, set pixel value to 1 if POI nodes belongs to this pixel
         Array.Clear(testImage, 0, testImage.Length);
         // Adjacent region 1, 4 or more points
-        foreach (Node node in graph.Nodes)
+        foreach (Node node in graph.RestNodes)// Nodes)
         {
             //node.vec
             x_index = (int)((node.vec.x - x_min) / (100.0 / (vmax - 1)));
