@@ -188,6 +188,7 @@ public class ShowMap : MonoBehaviour
     public IEnumerator CreateMap(float time, int graph_op = 0)
     {
         yield return new WaitForSeconds(time);
+        DateTime dt1 = DateTime.Now;
         bReadyForCFH = false;
         map = gameObject.GetComponent<AbstractMap>();// GameObject.Find("Mapbox").GetComponent<AbstractMap>();
         graph_op = dropdown_graphop.value;
@@ -419,7 +420,7 @@ public class ShowMap : MonoBehaviour
                     vertex.x = vertex.x * scale;
                     vertex.z = vertex.z * scale;
 
-                    // Build 0018, change the mindist, bestNode to IFT calculation
+                    //// Build 0018, change the mindist, bestNode to IFT calculation
                     if (UIButton.isIFT)
                     {
                         // map to get the value of rootimage
@@ -487,6 +488,14 @@ public class ShowMap : MonoBehaviour
                 // calculate the POI value array for every points/vertics
                 for (int k = 0; k < timeSteps; k++)
                 {
+                    // test
+                    //if ((c == 0) && (UIButton.isIFT))
+                    //{
+                    //    CalculateMinMax();
+                    //    // Get the IFT result
+                    //    IFTindexImageTest();
+                    //}
+
                     NodeIndexArray = new List<int>();
                     NodeArray = new List<Node>();
                     for (var i = 0; i < vertices.Length; i++)
@@ -513,8 +522,7 @@ public class ShowMap : MonoBehaviour
 
                             try
                             {
-                                Node node = new Node();
-                                node = graph.FindNode(rootImage[i_new] - 1);
+                                Node node = graph.Nodes[rootImage[i_new] - 1];// FindNode(rootImage[i_new] - 1);
 
                                 float posX = vertex.x;
                                 float posZ = vertex.z;
@@ -729,6 +737,12 @@ public class ShowMap : MonoBehaviour
             }
         }
         //
+        DateTime dt2 = DateTime.Now;
+        var diffInSeconds = (dt2 - dt1).TotalMilliseconds;
+        if (UIButton.isIFT)
+            Debug.Log("IFT total cost:" + diffInSeconds + " millisec");
+        else
+            Debug.Log("TDM total cost:" + diffInSeconds + " millisec");
     }
 
     // Build 0015, IFT opt map
