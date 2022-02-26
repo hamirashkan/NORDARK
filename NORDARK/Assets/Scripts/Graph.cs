@@ -322,7 +322,7 @@ public class Graph// : ScriptableObject
         printSolution(dist, Nodes.Count); */
     }
     
-
+    // Calculate the risk for timeframes, save the result to POIList and LeastCostList
     void risk(float[][,] temporalCost,List<int> rests,List<int> POIs)
     {
         // calculate the minium distances to POIs for each rest node

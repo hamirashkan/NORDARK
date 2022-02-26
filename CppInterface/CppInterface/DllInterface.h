@@ -30,6 +30,8 @@ extern "C"
 
 	_DllExport int* IFT(int* rawdata, int nrows, int ncols);
 
+	_DllExport int* IFTindex(int* rawdata, int nrows, int ncols);
+
 	_DllExport int* IFTopt(int* rawdata, int* riskdata, int nrows, int ncols);
 	
 	_DllExport int* GetImage(char x);

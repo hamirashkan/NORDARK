@@ -15,6 +15,9 @@ public class DllInterface {
     public static extern IntPtr IFT(IntPtr rawdata, int nrows, int ncols);
 
     [DllImport("CppInterface")]
+    public static extern IntPtr IFTindex(IntPtr rawdata, int nrows, int ncols);
+
+    [DllImport("CppInterface")]
     public static extern IntPtr IFTopt(IntPtr rawdata, IntPtr riskdata, int nrows, int ncols);
 
     [DllImport("CppInterface")]

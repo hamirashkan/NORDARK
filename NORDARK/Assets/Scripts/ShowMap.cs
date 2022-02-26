@@ -76,9 +76,15 @@ public class ShowMap : MonoBehaviour
     int nrows = 3, ncols = 4;
     int[] testImage;
     int[] testRMImage;
+    // Build 0018, change the mindist, bestNode to IFT calculation
+    int[] rootImage;
+    float tx_min = float.MaxValue;
+    float tx_max = float.MinValue;
+    float tz_min = float.MaxValue;
+    float tz_max = float.MinValue;
     //
     // Build 0010, high scale for the vertices interpolation
-    int vertices_scale = 10;// 4;// scale parameters
+    int vertices_scale = 4;// 4;// scale parameters
     const int vertices_max = 10;
     int vmax;
     //
@@ -149,6 +155,7 @@ public class ShowMap : MonoBehaviour
     {
         testImage = new int[length];
         testRMImage = new int[length];
+        rootImage = new int[length];
         unsafe
         {
             fixed (int* pArray = testImage)
@@ -258,6 +265,7 @@ public class ShowMap : MonoBehaviour
         // Build 0013, alesund graph 
         if (graph_op != 4)
         {
+            // Get the MostAccessPOI and LeastCost for all nodes
             foreach (Node node in graph.Nodes)
             {
                 Color AccessColor = GameObject.Find(node.MostAccessPOI.name).GetComponent<Renderer>().material.color;
@@ -303,10 +311,19 @@ public class ShowMap : MonoBehaviour
                 float alpha = 2f;
                 Node bestNode = null;
             }
+
+            // Build 0018, change the mindist, bestNode to IFT calculation
+            if (UIButton.isIFT)
+            {
+                CalculateMinMax();
+                // Get the IFT result
+                IFTindexImageTest();
+            }
+
             // TimeLine Initilization
             NodeIndexArrayS = new List<int>[12, timeSteps];
             NodeArrayS = new List<Node>[12, timeSteps];
-            slrTimeLine.maxValue = timeSteps;
+            slrTimeLine.maxValue = timeSteps;// maybe put it to the end of the function
             slrTimeLine.minValue = 1;
             //
             for (int c = 0; c < 12; c++)
@@ -380,6 +397,16 @@ public class ShowMap : MonoBehaviour
 
                 var vertices = new Vector3[baseVertices.Length];
 
+                // Build 0018, change the mindist, bestNode to IFT calculation
+                int x_offset = 0;
+                int z_offset = 0;
+                if (UIButton.isIFT)
+                {
+                    // tile position to offset tile
+                    x_offset = (int)(Math.Round(tile.position.x - tx_min)) / 100;
+                    z_offset = (int)(Math.Round(tz_max - tile.position.z)) / 100;
+                }
+
                 for (var i = 0; i < vertices.Length; i++)
                 {
                     //int x = i % 10;
@@ -392,21 +419,44 @@ public class ShowMap : MonoBehaviour
                     vertex.x = vertex.x * scale;
                     vertex.z = vertex.z * scale;
 
-                    foreach (Node node in graph.RestNodes)
+                    // Build 0018, change the mindist, bestNode to IFT calculation
+                    if (UIButton.isIFT)
                     {
+                        // map to get the value of rootimage
+                        int x = i % vertices_scalemax;
+                        int z = i / vertices_scalemax;
+                        x = x + x_offset * vertices_scalemax;
+                        z = z + z_offset * vertices_scalemax;
+                        int i_new = z * ncols + x;
+                        Node node = graph.FindNode(rootImage[i_new] - 1);
+
                         float posX = vertex.x;
                         float posZ = vertex.z;
                         Vector3 pos = new Vector3(posX + tile.position.x, node.vec.y, posZ + tile.position.z);
-
                         float dist = (pos - node.vec).magnitude;
 
-                        if (dist < mindist)
-                        {
-                            mindist = dist;
-                            bestNode = node;
-                        }
-
+                        // method 1, return dist and node
+                        mindist = dist;// 10;// dist;
+                        bestNode = node; //graph.FindNode(2);// node;
+                        // method 2, directly use the the cost matrix to avoid calculate magnitude twice
                     }
+                    else
+                    {
+                        foreach (Node node in graph.RestNodes)
+                        {
+                            float posX = vertex.x;
+                            float posZ = vertex.z;
+                            Vector3 pos = new Vector3(posX + tile.position.x, node.vec.y, posZ + tile.position.z);
+
+                            float dist = (pos - node.vec).magnitude;
+
+                            if (dist < mindist)
+                            {
+                                mindist = dist;
+                                bestNode = node;
+                            }
+                        }
+                    }    
 
                     float dis_new = bestNode.riskFactor * scale_dis / (1 + mindist);
 
@@ -450,23 +500,74 @@ public class ShowMap : MonoBehaviour
                         var vertex = baseVertices[i];
                         vertex.x = vertex.x * scale;
                         vertex.z = vertex.z * scale;
-                        foreach (Node node in graph.RestNodes)
+
+                        // Build 0018, change the mindist, bestNode to IFT calculation
+                        if (UIButton.isIFT)
                         {
-                            float posX = vertex.x;
-                            float posZ = vertex.z;
-                            Vector3 pos = new Vector3(posX + tile.position.x, node.vec.y, posZ + tile.position.z);
+                            // map to get the value of rootimage
+                            int x = i % vertices_scalemax;
+                            int z = i / vertices_scalemax;
+                            x = x + x_offset * vertices_scalemax;
+                            z = z + z_offset * vertices_scalemax;
+                            int i_new = z * ncols + x;
 
-                            float dist = (pos - node.vec).magnitude;
-
-                            if (dist < mindist)
+                            try
                             {
-                                mindist = dist;
-                                bestNode = node;
-                            }
+                                Node node = new Node();
+                                node = graph.FindNode(rootImage[i_new] - 1);
 
+                                float posX = vertex.x;
+                                float posZ = vertex.z;
+                                Vector3 pos = new Vector3(posX + tile.position.x, node.vec.y, posZ + tile.position.z);
+                                float dist = (pos - node.vec).magnitude;
+
+                                // method 1, return dist and node
+                                mindist = dist; //10;// dist;
+                                bestNode = node; // graph.FindNode(3);// node;
+                                // method 2, directly use the the cost matrix to avoid calculate magnitude twice
+                            }
+                            catch (Exception e)
+                            {
+                                Debug.Log(rootImage[i_new]);
+                            }
                         }
-                        NodeIndexArray.Add(bestNode.POIList[k].index);
-                        NodeArray.Add(bestNode.POIList[k]);
+                        else
+                        {
+                            foreach (Node node in graph.RestNodes)
+                            {
+                                float posX = vertex.x;
+                                float posZ = vertex.z;
+                                Vector3 pos = new Vector3(posX + tile.position.x, node.vec.y, posZ + tile.position.z);
+
+                                float dist = (pos - node.vec).magnitude;
+
+                                if (dist < mindist)
+                                {
+                                    mindist = dist;
+                                    bestNode = node;
+                                }
+
+                            }
+                        }
+
+                        try 
+                        {
+                            // if it is POI node
+                            if (bestNode.POIList == null)
+                            {
+                                NodeIndexArray.Add(bestNode.index);
+                                NodeArray.Add(bestNode);
+                            }
+                            else
+                            {
+                                NodeIndexArray.Add(bestNode.POIList[k].index);
+                                NodeArray.Add(bestNode.POIList[k]);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Debug.Log(bestNode.POIList[k].index);
+                        }
                     }
                     NodeIndexArrayS[c, k] = NodeIndexArray;
                     NodeArrayS[c, k] = NodeArray;
@@ -572,9 +673,11 @@ public class ShowMap : MonoBehaviour
             {
                 // Build 0015, IFT opt map
                 //IFTImageTest();
-                IFToptImageTest();
+                //IFToptImageTest();
                 // Build 0014, IFT opt test
                 //IFToptTest();
+                // Build 0018, change the mindist, bestNode to IFT calculation
+                //IFTindexImageTest();
             }
         }
         else
@@ -864,6 +967,36 @@ public class ShowMap : MonoBehaviour
     }
     //
 
+    // Build 0018, change the mindist, bestNode to IFT calculation
+    public void CalculateMinMax()
+    {
+        tx_min = float.MaxValue;
+        tx_max = float.MinValue;
+        tz_min = float.MaxValue;
+        tz_max = float.MinValue;
+
+        int x_index = 0;
+        int z_index = 0;
+        for (int c = 0; c < 12; c++)
+        {
+            Transform tile;
+            if (c_flag_last)
+                tile = gameObject.transform.GetChild(c);
+            else
+                tile = gameObject.transform.GetChild(c + 1); //ignoring first child that is not a tile
+
+            Vector3 center = tile.position;
+            if (center.x < tx_min)
+                tx_min = center.x;
+            if (center.x > tx_max)
+                tx_max = center.x;
+            if (center.z < tz_min)
+                tz_min = center.z;
+            if (center.z > tz_max)
+                tz_max = center.z;
+        }
+    }
+
     // Build 0017, draw auxlines
     public void DrawLine(int x1, int y1, int x2, int y2, float r1, float r2, bool drawStart = false)
     {
@@ -951,6 +1084,88 @@ public class ShowMap : MonoBehaviour
         Marshal.Copy(intPtrEdt, edtImage, 0, tRows * tCols);
         DllInterface.ExportFile(intPtrEdt, tRows, tCols, Marshal.StringToHGlobalAnsi("R.pgm"));
     }
+
+    // Build 0018, change the mindist, bestNode to IFT calculation
+    public void IFTindexImageTest()
+    {
+        //IFT index
+        // Prepare the position for the top left tile. top right is the minimum for graph, top left is the start for image
+        float x_min = float.MaxValue;
+        float z_max = float.MinValue;
+        int x_index = 0;
+        int z_index = 0;
+        int adj_type = 1;// 1;
+        for (int c = 0; c < 12; c++)
+        {
+            Transform tile;
+            if (c_flag_last)
+                tile = gameObject.transform.GetChild(c);
+            else
+                tile = gameObject.transform.GetChild(c + 1); //ignoring first child that is not a tile
+
+            Vector3 center = tile.position;
+            if (center.x < x_min)
+                x_min = center.x;
+            if (center.z > z_max)
+                z_max = center.z;
+        }
+        x_min = x_min - 50;
+        z_max = z_max + 50;
+        // Step 1, set pixel value to 1 if POI nodes belongs to this pixel
+        Array.Clear(testImage, 0, testImage.Length);
+        // Adjacent region 1, 4 or more points
+        foreach (Node node in graph.Nodes)
+        {
+            //node.vec
+            x_index = (int)((node.vec.x - x_min) / (100.0 / (vmax - 1)));
+            z_index = (int)((z_max - node.vec.z) / (100.0 / (vmax - 1)));
+            if (adj_type == 1)
+            {
+                // set test Image pixel as 1
+                // Adjacent region 1, top left point
+                SetImageValue(x_index, z_index, node.index + 1);
+            }
+            else
+            {
+                // Adjacent region 4 points
+                SetImageValue(x_index, z_index, node.index + 1);
+                SetImageValue(x_index + 1, z_index, node.index + 1);
+                SetImageValue(x_index, z_index + 1, node.index + 1);
+                SetImageValue(x_index + 1, z_index + 1, node.index + 1);
+            }
+        }
+        //testImage[0] = 1;
+        //testImage[ncols * 10 + 20] = 1;
+        //testImage[ncols * 10 + 21] = 1;
+        //testImage[ncols * 15 + 20] = 1;
+        //testImage[ncols * 15 + 21] = 1;
+
+        DateTime dateTime1 = DateTime.Now;
+        IntPtr intPtrEdt = DllInterface.IFTindex(intPtrImage, nrows, ncols);
+        DateTime dateTime2 = DateTime.Now;
+        var diffInSeconds = (dateTime2 - dateTime1).TotalMilliseconds;
+        Debug.Log("IFT index:" + diffInSeconds + " millisec");
+
+        int[] edtImage = new int[nrows * ncols];
+        Marshal.Copy(intPtrEdt, edtImage, 0, nrows * ncols);
+        //Debug.Log(edtImage);
+
+        DllInterface.ExportFile(intPtrImage, nrows, ncols, Marshal.StringToHGlobalAnsi("raw.pgm"));
+        DllInterface.ExportFile(intPtrEdt, nrows, ncols, Marshal.StringToHGlobalAnsi("edit.pgm"));
+        intPtrEdt = DllInterface.GetImage('P');
+        Marshal.Copy(intPtrEdt, edtImage, 0, nrows * ncols);
+        DllInterface.ExportFile(intPtrEdt, nrows, ncols, Marshal.StringToHGlobalAnsi("P.pgm"));
+        intPtrEdt = DllInterface.GetImage('V');
+        Marshal.Copy(intPtrEdt, edtImage, 0, nrows * ncols);
+        DllInterface.ExportFile(intPtrEdt, nrows, ncols, Marshal.StringToHGlobalAnsi("V.pgm"));
+        intPtrEdt = DllInterface.GetImage('R');
+        Marshal.Copy(intPtrEdt, edtImage, 0, nrows * ncols);
+        DllInterface.ExportFile(intPtrEdt, nrows, ncols, Marshal.StringToHGlobalAnsi("R.pgm"));
+        // Build 0018, change the mindist, bestNode to IFT calculation
+        Marshal.Copy(intPtrEdt, rootImage, 0, nrows * ncols);
+        //
+    }
+    //
 
     public void SetImageValue(int x = 0, int z = 0, int value = 1)
     {
