@@ -83,6 +83,10 @@ public class ShowMap : MonoBehaviour
     float tz_min = float.MaxValue;
     float tz_max = float.MinValue;
     //
+    // Build 0019, cost image matrix
+    int[] costImage;
+    int[] edtcostImage;
+    float[] distImage;//sqrt(cost), sqrt(V)
     // Build 0010, high scale for the vertices interpolation
     int vertices_scale = 10;// 4;// scale parameters
     const int vertices_max = 10;
@@ -156,6 +160,9 @@ public class ShowMap : MonoBehaviour
         testImage = new int[length];
         testRMImage = new int[length];
         rootImage = new int[length];
+        costImage = new int[length];
+        distImage = new float[length];
+        edtcostImage = new int[length];
         unsafe
         {
             fixed (int* pArray = testImage)
@@ -429,15 +436,31 @@ public class ShowMap : MonoBehaviour
                         x = x + x_offset * vertices_scalemax;
                         z = z + z_offset * vertices_scalemax;
                         int i_new = z * ncols + x;
-                        Node node = graph.FindNode(rootImage[i_new] - 1);
+                        Node node = graph.Nodes[rootImage[i_new] - 1];
 
                         float posX = vertex.x;
                         float posZ = vertex.z;
                         Vector3 pos = new Vector3(posX + tile.position.x, node.vec.y, posZ + tile.position.z);
-                        float dist = (pos - node.vec).magnitude;
+
+                        //// Get the pos for node.vec
+                        //Vector3 nodeVec = node.vec;
+                        //int nx_i = (int)((node.vec.x - (tx_min - 50)) / (100.0 / (vmax - 1)));
+                        //int nz_i = (int)((node.vec.z - (tz_min - 50)) / (100.0 / (vmax - 1)));
+                        //float nx = (float)(nx_i * (100.0 / (vmax - 1)) + (tx_min - 50));
+                        //float nz = (float)(nz_i * (100.0 / (vmax - 1)) + (tz_min - 50));
+
+                        //int pnx_i = (int)((pos.x - (tx_min - 50)) / (100.0 / (vmax - 1)));
+                        //int pnz_i = (int)((pos.z - (tz_min - 50)) / (100.0 / (vmax - 1)));
+                        //float pnx = (float)(pnx_i * (100.0 / (vmax - 1)) + (tx_min - 50));
+                        //float pnz = (float)(pnz_i * (100.0 / (vmax - 1)) + (tz_min - 50));
+
+                        //float dist = (pos - node.vec).magnitude;
+                        //nodeVec = new Vector3(nx, node.vec.y, nz);
+                        //Vector3 posVec = new Vector3(pnx, pos.y, pnz);
+                        //float dist1 = (posVec - nodeVec).magnitude;
 
                         // method 1, return dist and node
-                        mindist = dist;// 10;// dist;
+                        mindist = distImage[i_new]; //dist;// 10;// dist;
                         bestNode = node; //graph.FindNode(2);// node;
                         // method 2, directly use the the cost matrix to avoid calculate magnitude twice
                     }
@@ -530,7 +553,7 @@ public class ShowMap : MonoBehaviour
                                 float dist = (pos - node.vec).magnitude;
 
                                 // method 1, return dist and node
-                                mindist = dist; //10;// dist;
+                                mindist = distImage[i_new]; //dist; //10;// dist;
                                 bestNode = node; // graph.FindNode(3);// node;
                                 // method 2, directly use the the cost matrix to avoid calculate magnitude twice
                             }
@@ -918,8 +941,8 @@ public class ShowMap : MonoBehaviour
                 y1 = (int)((lineX.startNodePosition.z - z_max) / (100.0 / (vmax - 1)));
                 x2 = (int)((lineX.stopNodePosition.x - x_min) / (100.0 / (vmax - 1)));
                 y2 = (int)((lineX.stopNodePosition.z - z_max) / (100.0 / (vmax - 1)));
-                r1 = graph.FindNode(lineX.startNodeIndex).LeastCost;
-                r2 = graph.FindNode(lineX.stopNodeIndex).LeastCost;
+                r1 = graph.Nodes[lineX.startNodeIndex].LeastCost;
+                r2 = graph.Nodes[lineX.stopNodeIndex].LeastCost;
                 DrawLine(x1, y1, x2, y2, r1, r2);
             }
             //else
@@ -1166,18 +1189,28 @@ public class ShowMap : MonoBehaviour
 
         DllInterface.ExportFile(intPtrImage, nrows, ncols, Marshal.StringToHGlobalAnsi("raw.pgm"));
         DllInterface.ExportFile(intPtrEdt, nrows, ncols, Marshal.StringToHGlobalAnsi("edit.pgm"));
+        // Build 0019, cost image matrix
+        Marshal.Copy(intPtrEdt, edtcostImage, 0, nrows * ncols);
+        //
+
         intPtrEdt = DllInterface.GetImage('P');
         Marshal.Copy(intPtrEdt, edtImage, 0, nrows * ncols);
         DllInterface.ExportFile(intPtrEdt, nrows, ncols, Marshal.StringToHGlobalAnsi("P.pgm"));
         intPtrEdt = DllInterface.GetImage('V');
         Marshal.Copy(intPtrEdt, edtImage, 0, nrows * ncols);
         DllInterface.ExportFile(intPtrEdt, nrows, ncols, Marshal.StringToHGlobalAnsi("V.pgm"));
+        // Build 0019, cost image matrix
+        Marshal.Copy(intPtrEdt, costImage, 0, nrows * ncols);
+        for (int i = 0; i < nrows * ncols; i++)
+            distImage[i] = (float)Math.Sqrt(costImage[i]);
+        //
         intPtrEdt = DllInterface.GetImage('R');
         Marshal.Copy(intPtrEdt, edtImage, 0, nrows * ncols);
         DllInterface.ExportFile(intPtrEdt, nrows, ncols, Marshal.StringToHGlobalAnsi("R.pgm"));
         // Build 0018, change the mindist, bestNode to IFT calculation
         Marshal.Copy(intPtrEdt, rootImage, 0, nrows * ncols);
         //
+
     }
     //
 
@@ -1455,11 +1488,11 @@ public class ShowMap : MonoBehaviour
                 double weight = roads[i, j];
                 if (weight != 0)
                 {
-                    Node nodeX = graph.FindNode(i);
+                    Node nodeX = graph.Nodes[i];
                     if (nodeX != null)
                     {
-                        nodeX.Neighbors.Add(graph.FindNode(j));
-                        nodeX.NeighborNames.Add(graph.FindNode(j).name);
+                        nodeX.Neighbors.Add(graph.Nodes[j]);
+                        nodeX.NeighborNames.Add(graph.Nodes[j].name);
                         nodeX.Weights.Add(roads[i, j]);
                     }
                 }
@@ -1614,11 +1647,11 @@ public class ShowMap : MonoBehaviour
                 float weight = roads[i, j];
                 if (weight != 0)
                 {
-                    Node nodeX = graph.FindNode(i);
+                    Node nodeX = graph.Nodes[i];
                     if (nodeX != null)
                     {
-                        nodeX.Neighbors.Add(graph.FindNode(j));
-                        nodeX.NeighborNames.Add(graph.FindNode(j).name);
+                        nodeX.Neighbors.Add(graph.Nodes[j]);
+                        nodeX.NeighborNames.Add(graph.Nodes[j].name);
                         nodeX.Weights.Add(roads[i, j]);
                     }
                 }
@@ -1812,9 +1845,9 @@ public class ShowMap : MonoBehaviour
             }
             // Build 0016, draw lines
             AuxLineX.startNodeIndex = startindex;
-            AuxLineX.startNodePosition = graph.FindNode(startindex).vec;
+            AuxLineX.startNodePosition = graph.Nodes[startindex].vec;
             AuxLineX.stopNodeIndex = stopindex;
-            AuxLineX.stopNodePosition = graph.FindNode(stopindex).vec;
+            AuxLineX.stopNodePosition = graph.Nodes[stopindex].vec;
             //
             //AuxLineX.Add()
             AuxLines.Add(AuxLineX);
@@ -1859,11 +1892,11 @@ public class ShowMap : MonoBehaviour
                 float weight = roads[i, j];
                 if (weight != 0)
                 {
-                    Node nodeX = graph.FindNode(i);
+                    Node nodeX = graph.Nodes[i];
                     if (nodeX != null)
                     {
-                        nodeX.Neighbors.Add(graph.FindNode(j));
-                        nodeX.NeighborNames.Add(graph.FindNode(j).name);
+                        nodeX.Neighbors.Add(graph.Nodes[j]);
+                        nodeX.NeighborNames.Add(graph.Nodes[j].name);
                         nodeX.Weights.Add(roads[i, j]);
                     }
                 }
@@ -2051,11 +2084,11 @@ public class ShowMap : MonoBehaviour
                 float weight = roads[i, j];
                 if (weight != 0)
                 {
-                    Node nodeX = graph.FindNode(i);
+                    Node nodeX = graph.Nodes[i];
                     if (nodeX != null)
                     {
-                        nodeX.Neighbors.Add(graph.FindNode(j));
-                        nodeX.NeighborNames.Add(graph.FindNode(j).name);
+                        nodeX.Neighbors.Add(graph.Nodes[j]);
+                        nodeX.NeighborNames.Add(graph.Nodes[j].name);
                         nodeX.Weights.Add(roads[i, j]);
                     }
                 }
@@ -2227,11 +2260,11 @@ public class ShowMap : MonoBehaviour
                 double weight = roads[i, j];
                 if (weight != 0)
                 {
-                    Node nodeX = graph.FindNode(i);
+                    Node nodeX = graph.Nodes[i];
                     if (nodeX != null)
                     {
-                        nodeX.Neighbors.Add(graph.FindNode(j));
-                        nodeX.NeighborNames.Add(graph.FindNode(j).name);
+                        nodeX.Neighbors.Add(graph.Nodes[j]);
+                        nodeX.NeighborNames.Add(graph.Nodes[j].name);
                         nodeX.Weights.Add(roads[i, j]);
                     }
                 }
