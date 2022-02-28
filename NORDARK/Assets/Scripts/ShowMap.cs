@@ -460,7 +460,13 @@ public class ShowMap : MonoBehaviour
                         //float dist1 = (posVec - nodeVec).magnitude;
 
                         // method 1, return dist and node
-                        mindist = distImage[i_new]; //dist;// 10;// dist;
+                        if (UIButton.isIFTCost)
+                            mindist = distImage[i_new]; //dist;// 10;// dist;
+                        else
+                        {
+                            float dist = (pos - node.vec).magnitude;
+                            mindist = dist;
+                        }
                         bestNode = node; //graph.FindNode(2);// node;
                         // method 2, directly use the the cost matrix to avoid calculate magnitude twice
                     }
@@ -550,12 +556,18 @@ public class ShowMap : MonoBehaviour
                                 float posX = vertex.x;
                                 float posZ = vertex.z;
                                 Vector3 pos = new Vector3(posX + tile.position.x, node.vec.y, posZ + tile.position.z);
-                                float dist = (pos - node.vec).magnitude;
 
-                                // method 1, return dist and node
-                                mindist = distImage[i_new]; //dist; //10;// dist;
-                                bestNode = node; // graph.FindNode(3);// node;
                                 // method 2, directly use the the cost matrix to avoid calculate magnitude twice
+                                if (UIButton.isIFTCost)
+                                    mindist = distImage[i_new]; //dist;// 10;// dist;
+                                else
+                                {
+                                    // method 1, return dist and node
+                                    float dist = (pos - node.vec).magnitude;
+                                    mindist = dist;
+                                }
+
+                                bestNode = node; // graph.FindNode(3);// node;
                             }
                             catch (Exception e)
                             {
