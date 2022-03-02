@@ -14,6 +14,7 @@ public class UIButton : MonoBehaviour
     public static bool isOn = true;
     public static bool isIFT = true;
     public static bool isIFTCost = true;
+    public static bool isCostDiff = false;
 
     // Start is called before the first frame update
     void Start()
@@ -50,6 +51,12 @@ public class UIButton : MonoBehaviour
     public void UseIFTCostChange()
     {
         isIFTCost = this.GetComponent<Toggle>().isOn;
+        OptionValueChange();
+    }
+
+    public void UseCostDiffChange()
+    {
+        isCostDiff = this.GetComponent<Toggle>().isOn;
         OptionValueChange();
     }
 
