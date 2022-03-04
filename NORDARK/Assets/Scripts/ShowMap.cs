@@ -1534,7 +1534,7 @@ public class ShowMap : MonoBehaviour
         graph.roadTemporal = temporalRoad;
 
         // Build 0020, save ST data to csv file
-        var defaultfile = "Graph2_Sample1";
+        var defaultfile = "Graph2_Sample1.csv";
         if (File.Exists(defaultfile))
         {
             loadCSVtoSTdata(defaultfile, ref temporalRoad);
@@ -1779,7 +1779,7 @@ public class ShowMap : MonoBehaviour
         graph.roadTemporal = temporalRoad;
 
         // Build 0020, save ST data to csv file
-        var defaultfile = "Graph3_Sample1";
+        var defaultfile = "Graph3_Sample1.csv";
         if (File.Exists(defaultfile))
         {
             loadCSVtoSTdata(defaultfile, ref temporalRoad);
@@ -2362,78 +2362,99 @@ public class ShowMap : MonoBehaviour
         graph.roadcosts = roads;
         graph.roadTemporal = temporalRoad;
 
-        System.Random rnd = new System.Random();
-
-        for (int k = 0; k < timeSteps; k++)
+        // Build 0020, save ST data to csv file
+        var defaultfile = "Graph1_Sample1.csv";
+        if (File.Exists(defaultfile))
         {
-            // T=4 test demo
-            if (k == 0)
+            loadCSVtoSTdata(defaultfile, ref temporalRoad);
+
+            for (int k = 0; k < timeSteps; k++)
             {
-                temporalRoad[k][0, 1] = 6;//Line 1 (H1<=>A) (6, 5)
-                temporalRoad[k][1, 0] = 5;
-                temporalRoad[k][1, 2] = 8;//Line 2 (A<=>B) (8, 10)
-                temporalRoad[k][2, 1] = 10;
-                temporalRoad[k][2, 3] = 21;//Line 3 (B<=>C) (21, 25)
-                temporalRoad[k][3, 2] = 25;
-                temporalRoad[k][3, 4] = 15;//Line 4 (C<=>D) (15, 14)
-                temporalRoad[k][4, 3] = 14;
-                temporalRoad[k][3, 5] = 12;//Line 5 (C<=>H2) (12, 11)
-                temporalRoad[k][5, 3] = 11;
-                temporalRoad[k][4, 1] = 20;//Line 6 (D=>A) (20, 0)
-            }
-            else if (k == 1)
-            {
-                temporalRoad[k][0, 1] = 6;//Line 1 (H1<=>A) (6, 5)
-                temporalRoad[k][1, 0] = 5;
-                temporalRoad[k][1, 2] = 8;//Line 2 (A<=>B) (8, 30)
-                temporalRoad[k][2, 1] = 30;
-                temporalRoad[k][2, 3] = 21;//Line 3 (B<=>C) (21, 10)
-                temporalRoad[k][3, 2] = 10;
-                temporalRoad[k][3, 4] = 15;//Line 4 (C<=>D) (15, 14)
-                temporalRoad[k][4, 3] = 14;
-                temporalRoad[k][3, 5] = 12;//Line 5 (C<=>H2) (12, 11)
-                temporalRoad[k][5, 3] = 11;
-                temporalRoad[k][4, 1] = 20;//Line 6 (D=>A) (20, 0)
-            }
-            else if (k == 2)
-            {
-                temporalRoad[k][0, 1] = 6;//Line 1 (H1<=>A) (6, 5)
-                temporalRoad[k][1, 0] = 5;
-                temporalRoad[k][1, 2] = 8;//Line 2 (A<=>B) (8, 10)
-                temporalRoad[k][2, 1] = 10;
-                temporalRoad[k][2, 3] = 21;//Line 3 (B<=>C) (21, 24)
-                temporalRoad[k][3, 2] = 24;
-                temporalRoad[k][3, 4] = 15;//Line 4 (C<=>D) (15, 14)
-                temporalRoad[k][4, 3] = 14;
-                temporalRoad[k][3, 5] = 12;//Line 5 (C<=>H2) (12, 11)
-                temporalRoad[k][5, 3] = 11;
-                temporalRoad[k][4, 1] = 20;//Line 6 (D=>A) (20, 0)
-            }
-            else if (k == 3)
-            {
-                temporalRoad[k][0, 1] = 6;//Line 1 (H1<=>A) (6, 5)
-                temporalRoad[k][1, 0] = 5;
-                temporalRoad[k][1, 2] = 15;//Line 2 (A<=>B) (15, 10)
-                temporalRoad[k][2, 1] = 10;
-                temporalRoad[k][2, 3] = 21;//Line 3 (B<=>C) (21, 25)
-                temporalRoad[k][3, 2] = 25;
-                temporalRoad[k][3, 4] = 20;//Line 4 (C<=>D) (20, 14)
-                temporalRoad[k][4, 3] = 14;
-                temporalRoad[k][3, 5] = 12;//Line 5 (C<=>H2) (12, 11)
-                temporalRoad[k][5, 3] = 11;
-                temporalRoad[k][4, 1] = 30;//Line 6 (D=>A) (30, 0)
-            }
-            for (int i = 0; i < nodesNames.Length; i++)
-            {
-                for (int j = 0; j < nodesNames.Length; j++)
+                for (int i = 0; i < nodesNames.Length; i++)
                 {
-                    roads[i, j] += temporalRoad[k][i, j];
+                    for (int j = 0; j < nodesNames.Length; j++)
+                    {
+                        roads[i, j] += temporalRoad[k][i, j];
+                    }
                 }
             }
         }
+        else
+        {
 
-        // Build 0020, save ST data to csv file
-        saveSTdataToCSV("Graph1.csv", temporalRoad);
+            System.Random rnd = new System.Random();
+
+            for (int k = 0; k < timeSteps; k++)
+            {
+                // T=4 test demo
+                if (k == 0)
+                {
+                    temporalRoad[k][0, 1] = 6;//Line 1 (H1<=>A) (6, 5)
+                    temporalRoad[k][1, 0] = 5;
+                    temporalRoad[k][1, 2] = 8;//Line 2 (A<=>B) (8, 10)
+                    temporalRoad[k][2, 1] = 10;
+                    temporalRoad[k][2, 3] = 21;//Line 3 (B<=>C) (21, 25)
+                    temporalRoad[k][3, 2] = 25;
+                    temporalRoad[k][3, 4] = 15;//Line 4 (C<=>D) (15, 14)
+                    temporalRoad[k][4, 3] = 14;
+                    temporalRoad[k][3, 5] = 12;//Line 5 (C<=>H2) (12, 11)
+                    temporalRoad[k][5, 3] = 11;
+                    temporalRoad[k][4, 1] = 20;//Line 6 (D=>A) (20, 0)
+                }
+                else if (k == 1)
+                {
+                    temporalRoad[k][0, 1] = 6;//Line 1 (H1<=>A) (6, 5)
+                    temporalRoad[k][1, 0] = 5;
+                    temporalRoad[k][1, 2] = 8;//Line 2 (A<=>B) (8, 30)
+                    temporalRoad[k][2, 1] = 30;
+                    temporalRoad[k][2, 3] = 21;//Line 3 (B<=>C) (21, 10)
+                    temporalRoad[k][3, 2] = 10;
+                    temporalRoad[k][3, 4] = 15;//Line 4 (C<=>D) (15, 14)
+                    temporalRoad[k][4, 3] = 14;
+                    temporalRoad[k][3, 5] = 12;//Line 5 (C<=>H2) (12, 11)
+                    temporalRoad[k][5, 3] = 11;
+                    temporalRoad[k][4, 1] = 20;//Line 6 (D=>A) (20, 0)
+                }
+                else if (k == 2)
+                {
+                    temporalRoad[k][0, 1] = 6;//Line 1 (H1<=>A) (6, 5)
+                    temporalRoad[k][1, 0] = 5;
+                    temporalRoad[k][1, 2] = 8;//Line 2 (A<=>B) (8, 10)
+                    temporalRoad[k][2, 1] = 10;
+                    temporalRoad[k][2, 3] = 21;//Line 3 (B<=>C) (21, 24)
+                    temporalRoad[k][3, 2] = 24;
+                    temporalRoad[k][3, 4] = 15;//Line 4 (C<=>D) (15, 14)
+                    temporalRoad[k][4, 3] = 14;
+                    temporalRoad[k][3, 5] = 12;//Line 5 (C<=>H2) (12, 11)
+                    temporalRoad[k][5, 3] = 11;
+                    temporalRoad[k][4, 1] = 20;//Line 6 (D=>A) (20, 0)
+                }
+                else if (k == 3)
+                {
+                    temporalRoad[k][0, 1] = 6;//Line 1 (H1<=>A) (6, 5)
+                    temporalRoad[k][1, 0] = 5;
+                    temporalRoad[k][1, 2] = 15;//Line 2 (A<=>B) (15, 10)
+                    temporalRoad[k][2, 1] = 10;
+                    temporalRoad[k][2, 3] = 21;//Line 3 (B<=>C) (21, 25)
+                    temporalRoad[k][3, 2] = 25;
+                    temporalRoad[k][3, 4] = 20;//Line 4 (C<=>D) (20, 14)
+                    temporalRoad[k][4, 3] = 14;
+                    temporalRoad[k][3, 5] = 12;//Line 5 (C<=>H2) (12, 11)
+                    temporalRoad[k][5, 3] = 11;
+                    temporalRoad[k][4, 1] = 30;//Line 6 (D=>A) (30, 0)
+                }
+                for (int i = 0; i < nodesNames.Length; i++)
+                {
+                    for (int j = 0; j < nodesNames.Length; j++)
+                    {
+                        roads[i, j] += temporalRoad[k][i, j];
+                    }
+                }
+            }
+
+            // Build 0020, save ST data to csv file
+            saveSTdataToCSV("Graph1.csv", temporalRoad);
+        }
 
         for (int i = 0; i < roads.GetLength(0); i++)
         {
