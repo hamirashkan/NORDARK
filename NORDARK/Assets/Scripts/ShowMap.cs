@@ -89,8 +89,10 @@ public class ShowMap : MonoBehaviour
     int[] costImage;
     int[] edtcostImage;
     float[] distImage;//sqrt(cost), sqrt(V)
+    // Build 0021, align the nodes coordinates
+    bool alignNodes = true;
     // Build 0010, high scale for the vertices interpolation
-    int vertices_scale = 10;// 4;// scale parameters
+    int vertices_scale = 10;//25;// 4;// scale parameters
     const int vertices_max = 10;
     int vmax;
     //
@@ -204,6 +206,12 @@ public class ShowMap : MonoBehaviour
     {
         yield return new WaitForSeconds(time);
         DateTime dt1 = DateTime.Now;
+        // Build 0021
+        if (UIButton.isIFT)
+        {
+            CalculateMinMax();
+        }
+
         bReadyForCFH = false;
         map = gameObject.GetComponent<AbstractMap>();// GameObject.Find("Mapbox").GetComponent<AbstractMap>();
         graph_op = dropdown_graphop.value;
@@ -331,7 +339,6 @@ public class ShowMap : MonoBehaviour
             // Build 0018, change the mindist, bestNode to IFT calculation
             if (UIButton.isIFT)
             {
-                CalculateMinMax();
                 // Get the IFT result
                 IFTindexImageTest();
             }
@@ -537,11 +544,20 @@ public class ShowMap : MonoBehaviour
                     lambdaMap.Add(lambda);//Felando
 
                     Color col = Color.black;
+                    col.b = 0;
+                    col.g = 0;
                     // Build 0020, save ST data to csv file
                     if (UIButton.isCostDiff)
                     {
                         if (distTDM != 0)
-                            col.a = Clamp(0, Math.Abs((distIFT - distTDM) / distTDM), 1);
+                        {
+                            float height_IFT = bestNode.riskFactor * scale_dis / (1 + distIFT);
+                            float height_TDM = bestNode.riskFactor * scale_dis / (1 + distTDM);
+                            //col.r = Clamp(0, Math.Abs((height_IFT - height_TDM) / height_TDM), 1);
+                            col.r = Clamp(0, Math.Abs((distIFT - distTDM) / distTDM), 1);
+                            //col.a = Clamp(0, Math.Abs((height_IFT - height_TDM) / height_TDM), 1);
+                        }
+                        //col.a = Clamp(0, Math.Abs((distIFT - distTDM) / distTDM), 1);
                     }
                     else
                         col = bestNode.clr;
@@ -1501,7 +1517,17 @@ public class ShowMap : MonoBehaviour
             Vector2 latlong = new Vector2(lat, lon);
             Vector3 pos = latlong.AsUnityPosition(map.CenterMercator, map.WorldRelativeScale);
             //coords[i] = new Vector3((lat - center_lat) * scale, y, (lon - center_lon) * scale);
-            coords[i] = pos;
+            // Build 0021, align the nodes coordinates
+            if (alignNodes)
+            {
+                int nx_i = (int)((pos.x - (tx_min - 50)) / (100.0 / (vmax - 1)));
+                int nz_i = (int)(((tz_max + 50) - pos.z) / (100.0 / (vmax - 1)));
+                float nx = (float)(nx_i * (100.0 / (vmax - 1)) + (tx_min - 50));
+                float nz = (tz_max + 50) - (float)(nz_i * (100.0 / (vmax - 1)));
+                coords[i] = new Vector3(nx, pos.y, nz);
+            }
+            else
+                coords[i] = pos;
 
             Node nodeX = Node.Create<Node>(nodesNames[i], coords[i]);
             nodeX.index = i;
