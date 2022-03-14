@@ -84,11 +84,11 @@ public class Lines : MonoBehaviour
                 newline.transform.name = "Line" + Graph.LinesNum.ToString() + "(" + currentNode.name + "," + Neighbors[i].name + ")";
 
                 List<Vector3> pos = new List<Vector3>();
-                pos.Add(transform.position + offset);
+                pos.Add(currentNode.vec + offset); // Build 0021, transform.position 
                 pos.Add(Neighbors[i].vec + offset);
 
                 // Build 0013, alesund graph
-                if (sm.dropdown_graphop.value != 4)
+                if (sm.dropdown_graphop.value < 4)
                 {
                     l.startWidth = sWidth;
                     l.endWidth = eWidth;
@@ -122,7 +122,7 @@ public class Lines : MonoBehaviour
                     foreach (AuxLine x in sm.AuxLines.FindAll(element => element.LineName == (currentNode.index + "_" + Neighbors[i].index)))
                     {
                         var posv = new Vector3[x.AuxNodes.Count + 2];
-                        posv[0] = transform.position + offset;
+                        posv[0] = currentNode.vec + offset; // Build 0021, transform.position
                         //Debug.Log("Find nodes by index[" + nodeIndex.ToString() + "]: " + x.name);
                         for (int j = 0; j < x.AuxNodes.Count; j++)
                             posv[j + 1] = x.AuxNodes[j];
