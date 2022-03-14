@@ -87,6 +87,8 @@ public class ShowMap : MonoBehaviour
     float tz_min = float.MaxValue;
     float tz_max = float.MinValue;
     //
+    // Build 0022, node merge by image mapping
+    float ttx_min, ttx_max, ttz_min, ttz_max;
     // Build 0019, cost image matrix
     int[] costImage;
     int[] edtcostImage;
@@ -1098,6 +1100,13 @@ public class ShowMap : MonoBehaviour
             if (center.z > tz_max)
                 tz_max = center.z;
         }
+
+        // Build 0022, node merge by image mapping
+        ttx_min = tx_min - 50;
+        ttx_max = tx_max - 50;
+        ttz_min = tz_min + 50;
+        ttz_max = tz_max + 50;
+        //
     }
 
     // Build 0017, draw auxlines
@@ -1279,6 +1288,30 @@ public class ShowMap : MonoBehaviour
 
     }
     //
+
+    // Build 0022, node merge by image mapping
+    public void SetImageMappingValue(int x = 0, int z = 0, int value = 1)
+    {
+        if ((x >= 0) && (x < ncols) && (z >= 0) && (z < nrows))
+        {
+            // set test Image pixel as 1
+            // Adjacent region 1, top left point
+            testImage[ncols * z + x] = value;
+            Debug.Log("M0003:set rawdata x_index =" + x.ToString() + ", z_index = " + z.ToString() + " is value " + value.ToString());
+        }
+        else
+            Debug.Log("E0003:x_index =" + x.ToString() + ", z_index = " + z.ToString() + " are out of the bound");
+    }
+
+    public int GetImageMappingValue(int x = 0, int z = 0)
+    {
+        int val = -1;
+        if ((x >= 0) && (x < ncols) && (z >= 0) && (z < nrows))
+            // set test Image pixel as 1
+            // Adjacent region 1, top left point
+            val = testImage[ncols * z + x];
+        return val;
+    }
 
     public void SetImageValue(int x = 0, int z = 0, int value = 1)
     {
@@ -2329,6 +2362,31 @@ public class ShowMap : MonoBehaviour
         return featureCollection;
     }
 
+    // Build 0022, node merge by image mapping
+    public void ImageMapping(ref Vector3 position, ref int index)
+    {
+        try 
+        {
+            //node.vec
+            int x_index = (int)((position.x - ttx_min) / (100.0 / (vmax - 1)));
+            int z_index = (int)((ttz_max - position.z) / (100.0 / (vmax - 1)));
+
+            int node_index = GetImageMappingValue(x_index, z_index);
+            if (node_index <= 0)
+            {
+                node_index = graph.Nodes.Count + 1;
+                SetImageMappingValue(x_index, z_index, node_index);
+            }
+            // Calculate the position
+            position.x = (float)((x_index + 0.5f) * (100.0 / (vmax - 1)) + ttx_min);
+            position.z = (float)(ttz_max - (z_index + 0.5f) * (100.0 / (vmax - 1)));
+            // return the position and index
+            index = node_index - 1;
+        }
+        catch (Exception e) 
+        { }
+    }
+
     public void GraphSet6(string graphName)
     {
         FeatureCollection fCollection = Can_Deserialize();
@@ -2339,8 +2397,12 @@ public class ShowMap : MonoBehaviour
         //List<Vector3> nodesT = new List<Vector3>();
         AuxLines = new List<AuxLine>();
 
+        // Build 0022, node merge by image mapping
+        bool bImageMapping = true;
         int node_i = 0;
-        int i;
+        int i, ii;
+        if (bImageMapping)
+            Array.Clear(testImage, 0, testImage.Length);
         // Create nodes if not exist
         for (i = 0; i < fCollection.Features.Count; i++)
         {
@@ -2360,49 +2422,61 @@ public class ShowMap : MonoBehaviour
                 latlong = new Vector2((float)(coords[index].Latitude), (float)(coords[index].Longitude));
                 pos = latlong.AsUnityPosition(map.CenterMercator, map.WorldRelativeScale);
                 //coords[i] = pos;
+                if (bImageMapping)
+                    ImageMapping(ref pos, ref node_i);
+                // 1 0
+                if(node_i > graph.Nodes.Count - 1)
+                { 
+                    nodeX = Node.Create<Node>(node_i.ToString(), pos);
+                    nodeX.index = node_i;
+                    nodeX.stop_id = node_i.ToString();
+                    graph.AddNode(nodeX);
+                    nodeX.objTransform = Instantiate(point);
+                    nodeX.obj = nodeX.objTransform.gameObject;
+                    nodeX.objTransform.name = nodeX.name;
+                    nodeX.objTransform.position = nodeX.vec;
+                    nodeX.objTransform.parent = Nodes.transform;
 
-                nodeX = Node.Create<Node>(node_i.ToString(), pos);
-                nodeX.index = node_i;
-                nodeX.stop_id = node_i.ToString();
-                graph.AddNode(nodeX);
-                nodeX.objTransform = Instantiate(point);
-                nodeX.obj = nodeX.objTransform.gameObject;
-                nodeX.objTransform.name = nodeX.name;
-                nodeX.objTransform.position = nodeX.vec;
-                nodeX.objTransform.parent = Nodes.transform;
-
-                nodeX.obj.GetComponent<Lines>().index = i;
-                nodeX.obj.GetComponent<Lines>().Neighbors = graph.Nodes[i].Neighbors;
-                nodeX.obj.GetComponent<Lines>().Weights = graph.Nodes[i].Weights;
-                nodeX.obj.GetComponent<Lines>().currentNode = graph.Nodes[i];
-                nodeX.obj.GetComponent<Lines>().line = line;
+                    ii = graph.Nodes.Count - 1;
+                    nodeX.obj.GetComponent<Lines>().index = ii;
+                    nodeX.obj.GetComponent<Lines>().Neighbors = graph.Nodes[ii].Neighbors;
+                    nodeX.obj.GetComponent<Lines>().Weights = graph.Nodes[ii].Weights;
+                    nodeX.obj.GetComponent<Lines>().currentNode = graph.Nodes[ii];
+                    nodeX.obj.GetComponent<Lines>().line = line;
+                }
                 start_i = node_i;
-                start_pos = nodeX.vec;
-                node_i++;
+                start_pos = pos;// nodeX.vec;
+                //node_i++;
 
                 // Search and Add stop node, return stop index
                 latlong = new Vector2((float)(coords[coords.Count - 1].Latitude), (float)(coords[coords.Count - 1].Longitude));
                 pos = latlong.AsUnityPosition(map.CenterMercator, map.WorldRelativeScale);
                 //coords[i] = pos;
+                if (bImageMapping)
+                    ImageMapping(ref pos, ref node_i);
+                // 1 0
+                if (node_i > graph.Nodes.Count - 1)
+                {
+                    nodeX = Node.Create<Node>(node_i.ToString(), pos);
+                    nodeX.index = node_i;
+                    nodeX.stop_id = node_i.ToString();
+                    graph.AddNode(nodeX);
+                    nodeX.objTransform = Instantiate(point);
+                    nodeX.obj = nodeX.objTransform.gameObject;
+                    nodeX.objTransform.name = nodeX.name;
+                    nodeX.objTransform.position = nodeX.vec;
+                    nodeX.objTransform.parent = Nodes.transform;
 
-                nodeX = Node.Create<Node>(node_i.ToString(), pos);
-                nodeX.index = node_i;
-                nodeX.stop_id = node_i.ToString();
-                graph.AddNode(nodeX);
-                nodeX.objTransform = Instantiate(point);
-                nodeX.obj = nodeX.objTransform.gameObject;
-                nodeX.objTransform.name = nodeX.name;
-                nodeX.objTransform.position = nodeX.vec;
-                nodeX.objTransform.parent = Nodes.transform;
-
-                nodeX.obj.GetComponent<Lines>().index = i;
-                nodeX.obj.GetComponent<Lines>().Neighbors = graph.Nodes[i].Neighbors;
-                nodeX.obj.GetComponent<Lines>().Weights = graph.Nodes[i].Weights;
-                nodeX.obj.GetComponent<Lines>().currentNode = graph.Nodes[i];
-                nodeX.obj.GetComponent<Lines>().line = line;
+                    ii = graph.Nodes.Count - 1;
+                    nodeX.obj.GetComponent<Lines>().index = ii;
+                    nodeX.obj.GetComponent<Lines>().Neighbors = graph.Nodes[ii].Neighbors;
+                    nodeX.obj.GetComponent<Lines>().Weights = graph.Nodes[ii].Weights;
+                    nodeX.obj.GetComponent<Lines>().currentNode = graph.Nodes[ii];
+                    nodeX.obj.GetComponent<Lines>().line = line;
+                }
                 stop_i = node_i;
-                stop_pos = nodeX.vec;
-                node_i++;
+                stop_pos = pos;// nodeX.vec;
+                //node_i++;
 
                 // AuxLines
                 try
@@ -2442,8 +2516,9 @@ public class ShowMap : MonoBehaviour
             //var coords = fCollection.Features[i].Geometry.Coordinates[0].Coordinates;
         }
 
+
         // Load raw edges
-        float[,] t0Road = new float[node_i, node_i];
+        float[,] t0Road = new float[graph.Nodes.Count, graph.Nodes.Count];
 
         for (i = 0; i < fCollection.Features.Count; i++)
         {
@@ -2453,9 +2528,9 @@ public class ShowMap : MonoBehaviour
         timeSteps = 4;
         graph.timeSteps = timeSteps;
 
-        float[][,] temporalRoad = Enumerable.Range(0, timeSteps).Select(_ => new float[node_i, node_i]).ToArray();
+        float[][,] temporalRoad = Enumerable.Range(0, timeSteps).Select(_ => new float[graph.Nodes.Count, graph.Nodes.Count]).ToArray();
 
-        float[,] roads = new float[node_i, node_i];
+        float[,] roads = new float[graph.Nodes.Count, graph.Nodes.Count];
 
         graph.roadcosts = roads;
         graph.roadTemporal = temporalRoad;
@@ -2469,9 +2544,9 @@ public class ShowMap : MonoBehaviour
 
             //temporalRoad[k][0, 13] = rnd.Next(low, high) + 40;//Line 1 (1<=>14) (40, 39)
 
-            for (i = 0; i < node_i; i++)
+            for (i = 0; i < roads.GetLength(0); i++)
             {
-                for (int j = 0; j < node_i; j++)
+                for (int j = 0; j < roads.GetLength(1); j++)
                 {
                     if (t0Road[i, j] != 0)
                         temporalRoad[k][i, j] = t0Road[i, j] + rnd.Next(low, high);
@@ -2498,158 +2573,6 @@ public class ShowMap : MonoBehaviour
                 }
             }
         }
-
-        //    // Create lines if not exist, add auxlines
-        //string text = loadFile("Assets/Resources/Graph5/NodeSet.csv");
-        //string[] lines = Regex.Split(text, "\n");
-
-        //int nodesNum = lines.Length - 2; //25;//lines.Length - 2;//nbStops
-        //nodesNames = new string[nodesNum];
-        //coords = new Vector3[nodesNum];
-
-        //Debug.Log(DateTime.Now.ToString() + ", init started");
-
-        //for (int i = 0; i < nodesNames.Length; i++)
-        //{
-        //    string rowdata = lines[i + 1];
-
-        //    //if (!rowdata.Contains("NSR:Quay"))
-        //    //{
-        //    //    continue;
-        //    //}
-
-        //    string[] values = Regex.Split(rowdata, ",");
-        //    //string id = values[0];
-        //    float lat = float.Parse(values[1], System.Globalization.CultureInfo.InvariantCulture);
-        //    float lon = float.Parse(values[2], System.Globalization.CultureInfo.InvariantCulture);
-
-        //    nodesNames[i] = values[0];
-        //    Vector2 latlong = new Vector2(lat, lon);
-        //    Vector3 pos = latlong.AsUnityPosition(map.CenterMercator, map.WorldRelativeScale);
-        //    //coords[i] = new Vector3((lat - center_lat) * scale, y, (lon - center_lon) * scale);
-        //    coords[i] = pos;
-
-        //    Node nodeX = Node.Create<Node>(nodesNames[i], coords[i]);
-        //    nodeX.index = i;
-        //    nodeX.stop_id = values[0];
-        //    graph.AddNode(nodeX);
-        //    nodeX.objTransform = Instantiate(point);
-        //    nodeX.obj = nodeX.objTransform.gameObject;
-        //    nodeX.objTransform.name = nodeX.name;
-        //    nodeX.objTransform.position = nodeX.vec;
-        //    nodeX.objTransform.parent = Nodes.transform;
-
-        //    nodeX.obj.GetComponent<Lines>().index = i;
-        //    nodeX.obj.GetComponent<Lines>().Neighbors = graph.Nodes[i].Neighbors;
-        //    nodeX.obj.GetComponent<Lines>().Weights = graph.Nodes[i].Weights;
-        //    nodeX.obj.GetComponent<Lines>().currentNode = graph.Nodes[i];
-        //    nodeX.obj.GetComponent<Lines>().line = line;
-
-        //    if (i % 50 == 0)
-        //        Debug.Log(DateTime.Now.ToString() + ", inited " + i + "_th nodes");
-        //}
-
-        //// Load raw edges
-        //float[,] t0Road = new float[nodesNames.Length, nodesNames.Length];
-        //// Build 0012, more nodes for edges
-        //AuxLines = new List<AuxLine>();
-        //text = loadFile("Assets/Resources/Graph5/EdgeSet.csv");
-        //string[] edges_data = Regex.Split(text, "\n");
-
-        //int edgesNum = edges_data.Length - 2;
-        //edgesNames = new string[edgesNum];
-
-        //for (int i = 0; i < edgesNames.Length; i++)
-        //{
-        //    try
-        //    {
-        //        string rowdata = edges_data[i + 1];
-
-        //        string[] values = Regex.Split(rowdata, ",");
-        //        //string id = values[0];
-        //        int startindex = graph.FindFirstNode(values[1]).index;
-        //        int stopindex = graph.FindFirstNode(values[2]).index;
-        //        if ((values[6] == "nan") || (values[6] == "nan\r"))
-        //            t0Road[startindex, stopindex] = 300 / 300;// 1e-4f;
-        //        else
-        //            t0Road[startindex, stopindex] = 300 / float.Parse(values[6], System.Globalization.CultureInfo.InvariantCulture);
-        //        //Linename values[6]
-        //        // Build 0012, more nodes for edges
-        //        // create list based on indexes
-
-        //        AuxLine AuxLineX = new AuxLine();
-        //        AuxLineX.LineName = startindex.ToString() + "_" + stopindex.ToString();
-        //        string[] lonSet = Regex.Split(values[7], "@");
-        //        string[] latSet = Regex.Split(values[8].Replace("\r", ""), "@");
-        //        if ((lonSet[0] != "") && (lonSet.Length == latSet.Length))
-        //        {
-        //            for (int j = 0; j < lonSet.Length; j++)
-        //            {
-        //                float lon = float.Parse(lonSet[j], System.Globalization.CultureInfo.InvariantCulture);
-        //                float lat = float.Parse(latSet[j], System.Globalization.CultureInfo.InvariantCulture);
-        //                Vector2 latlong = new Vector2(lat, lon);
-        //                Vector3 pos = latlong.AsUnityPosition(map.CenterMercator, map.WorldRelativeScale);
-        //                AuxLineX.AuxNodes.Add(pos);
-        //            }
-        //        }
-        //        //AuxLineX.Add()
-        //        AuxLines.Add(AuxLineX);
-        //        //
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        Debug.Log(i);
-        //    }
-        //}
-
-        //timeSteps = 4;
-        //graph.timeSteps = timeSteps;
-
-        //float[][,] temporalRoad = Enumerable.Range(0, timeSteps).Select(_ => new float[nodesNames.Length, nodesNames.Length]).ToArray();
-
-        //float[,] roads = new float[nodesNames.Length, nodesNames.Length];
-
-        //graph.roadcosts = roads;
-        //graph.roadTemporal = temporalRoad;
-
-        //System.Random rnd = new System.Random();
-
-        //for (int k = 0; k < timeSteps; k++)
-        //{
-        //    int high = 100;//500;//0
-        //    int low = 0;
-
-        //    //temporalRoad[k][0, 13] = rnd.Next(low, high) + 40;//Line 1 (1<=>14) (40, 39)
-
-        //    for (int i = 0; i < nodesNames.Length; i++)
-        //    {
-        //        for (int j = 0; j < nodesNames.Length; j++)
-        //        {
-        //            if (t0Road[i, j] != 0)
-        //                temporalRoad[k][i, j] = t0Road[i, j] + rnd.Next(low, high);
-        //            roads[i, j] += temporalRoad[k][i, j];
-        //        }
-        //    }
-        //}
-
-        //for (int i = 0; i < roads.GetLength(0); i++)
-        //{
-        //    for (int j = 0; j < roads.GetLength(1); j++)
-        //    {
-        //        roads[i, j] = roads[i, j] / timeSteps;
-        //        float weight = roads[i, j];
-        //        if (weight != 0)
-        //        {
-        //            Node nodeX = graph.Nodes[i];
-        //            if (nodeX != null)
-        //            {
-        //                nodeX.Neighbors.Add(graph.Nodes[j]);
-        //                nodeX.NeighborNames.Add(graph.Nodes[j].name);
-        //                nodeX.Weights.Add(roads[i, j]);
-        //            }
-        //        }
-        //    }
-        //}
     }
 
     private string loadFile(string filename)

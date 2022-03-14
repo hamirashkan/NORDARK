@@ -67,6 +67,10 @@ public class Lines : MonoBehaviour
                     flag = 2;
                 }
 
+                // Build 0022, node merge by image mapping
+                //if (sm.dropdown_graphop.value >= 4)
+                    offset = new Vector3(0, 0, 0);
+
                 float sWidth = 1 - (dist - minW) / (maxW - minW);
                 float eWidth = 1 - (Neighbors[i].LeastCost - minW) / (maxW - minW);
 
