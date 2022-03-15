@@ -270,7 +270,7 @@ public class ShowMap : MonoBehaviour
             bg_Mapbox.Initialize(new Mapbox.Utils.Vector2d(62.74, 6.4), 10);
             GraphSet6("RoadGraph6");
             slrStartTime.minValue = 1;
-            slrStartTime.maxValue = 20;
+            slrStartTime.maxValue = 4;// 20;
             slrStartTime.value = slrStartTime.minValue;
             slrStopTime.minValue = slrStartTime.minValue;
             slrStopTime.maxValue = slrStartTime.maxValue;
@@ -302,13 +302,22 @@ public class ShowMap : MonoBehaviour
             // Get the MostAccessPOI and LeastCost for all nodes
             foreach (Node node in graph.Nodes)
             {
-                Color AccessColor = GameObject.Find(node.MostAccessPOI.name).GetComponent<Renderer>().material.color;
-                float AccessDist = node.LeastCost;
-                costs.Add(AccessDist);
-                GameObject.Find(node.name).GetComponent<Renderer>().material.SetColor("_Color", AccessColor);
-                node.objTransform.GetComponent<Lines>().nColor = AccessColor;
-                node.objTransform.GetComponent<Lines>().dist = AccessDist;
-                Debug.Log("Res: name=" + node.name + ",MostAccessPOI=" + node.MostAccessPOI);
+                Color AccessColor;
+                float AccessDist;
+                try
+                {
+                    AccessColor = GameObject.Find(node.MostAccessPOI.name).GetComponent<Renderer>().material.color;
+                    AccessDist = node.LeastCost;
+                    costs.Add(AccessDist);
+                    GameObject.Find(node.name).GetComponent<Renderer>().material.SetColor("_Color", AccessColor);
+                    node.objTransform.GetComponent<Lines>().nColor = AccessColor;
+                    node.objTransform.GetComponent<Lines>().dist = AccessDist;
+                    Debug.Log("Res: name=" + node.name + ",MostAccessPOI=" + node.MostAccessPOI);
+                }
+                catch (Exception e)
+                {
+                    Debug.Log("E0005:" + node.name + ",MostAccessPOI error=");
+                }
             }
             // Build 0005
             if (gameObject.transform.GetChild(0).name == "TileProvider")
@@ -2172,8 +2181,8 @@ public class ShowMap : MonoBehaviour
         string[] lines = Regex.Split(text, "\n");
 
         int nodesNum = lines.Length - 2; //25;//lines.Length - 2;//nbStops
-        nodesNames = new string[nodesNum];
-        coords = new Vector3[nodesNum];
+        //nodesNames = new string[nodesNum];
+        //coords = new Vector3[nodesNum];
 
         Debug.Log(DateTime.Now.ToString() + ", init started");
         //float center_lat = 62f;
@@ -2186,7 +2195,12 @@ public class ShowMap : MonoBehaviour
         //    if (i % 5000 == 0)
         //        Debug.Log(DateTime.Now.ToString() + ", inited " + i + "_th nodes");
         //}
-        for (int i = 0; i < nodesNames.Length; i++)
+        int node_i = 0;
+        bool bImageMapping = true;
+        Dictionary<string, int> nodeDict = new Dictionary<string, int>();
+        if (bImageMapping)
+            Array.Clear(testImage, 0, testImage.Length);
+        for (int i = 0; i < nodesNum; i++)
         {
             string rowdata = lines[i + 1];
 
@@ -2200,34 +2214,42 @@ public class ShowMap : MonoBehaviour
             float lat = float.Parse(values[1], System.Globalization.CultureInfo.InvariantCulture);
             float lon = float.Parse(values[2], System.Globalization.CultureInfo.InvariantCulture);
 
-            nodesNames[i] = values[0];
+            //nodesNames[i] = values[0];
             Vector2 latlong = new Vector2(lat, lon);
             Vector3 pos = latlong.AsUnityPosition(map.CenterMercator, map.WorldRelativeScale);
-            //coords[i] = new Vector3((lat - center_lat) * scale, y, (lon - center_lon) * scale);
-            coords[i] = pos;
 
-            Node nodeX = Node.Create<Node>(nodesNames[i], coords[i]);
-            nodeX.index = i;
-            nodeX.stop_id = values[0];
-            graph.AddNode(nodeX);
-            nodeX.objTransform = Instantiate(point);
-            nodeX.obj = nodeX.objTransform.gameObject;
-            nodeX.objTransform.name = nodeX.name;
-            nodeX.objTransform.position = nodeX.vec;
-            nodeX.objTransform.parent = Nodes.transform;
+            if (bImageMapping)
+                ImageMapping(ref pos, ref node_i);
 
-            nodeX.obj.GetComponent<Lines>().index = i;
-            nodeX.obj.GetComponent<Lines>().Neighbors = graph.Nodes[i].Neighbors;
-            nodeX.obj.GetComponent<Lines>().Weights = graph.Nodes[i].Weights;
-            nodeX.obj.GetComponent<Lines>().currentNode = graph.Nodes[i];
-            nodeX.obj.GetComponent<Lines>().line = line;
+            nodeDict.Add(values[0], node_i);
 
-            if (i % 50 == 0)
-                Debug.Log(DateTime.Now.ToString() + ", inited " + i + "_th nodes");
+            // 1 0
+            if (node_i > graph.Nodes.Count - 1)
+            {
+                Node nodeX = Node.Create<Node>(values[0], pos);
+                nodeX.index = node_i;
+                nodeX.stop_id = node_i.ToString();
+                graph.AddNode(nodeX);
+                nodeX.objTransform = Instantiate(point);
+                nodeX.obj = nodeX.objTransform.gameObject;
+                nodeX.objTransform.name = nodeX.name;
+                nodeX.objTransform.position = nodeX.vec;
+                nodeX.objTransform.parent = Nodes.transform;
+
+                int ii = graph.Nodes.Count - 1;
+                nodeX.obj.GetComponent<Lines>().index = ii;
+                nodeX.obj.GetComponent<Lines>().Neighbors = graph.Nodes[ii].Neighbors;
+                nodeX.obj.GetComponent<Lines>().Weights = graph.Nodes[ii].Weights;
+                nodeX.obj.GetComponent<Lines>().currentNode = graph.Nodes[ii];
+                nodeX.obj.GetComponent<Lines>().line = line;
+            }
+
+            if (graph.Nodes.Count % 50 == 0)
+                Debug.Log(DateTime.Now.ToString() + ", inited " + graph.Nodes.Count + "_th nodes");
         }
 
         // Load raw edges
-        float[,] t0Road = new float[nodesNames.Length, nodesNames.Length];
+        float[,] t0Road = new float[graph.Nodes.Count, graph.Nodes.Count];
         // Build 0012, more nodes for edges
         AuxLines = new List<AuxLine>();
         text = loadFile("Assets/Resources/Graph5/EdgeSet.csv");
@@ -2244,34 +2266,37 @@ public class ShowMap : MonoBehaviour
 
                 string[] values = Regex.Split(rowdata, ",");
                 //string id = values[0];
-                int startindex = graph.FindFirstNode(values[1]).index;
-                int stopindex = graph.FindFirstNode(values[2]).index;
-                if ((values[6] == "nan") || (values[6] == "nan\r"))
-                    t0Road[startindex, stopindex] = 300 / 300;// 1e-4f;
-                else
-                    t0Road[startindex, stopindex] = 300 / float.Parse(values[6], System.Globalization.CultureInfo.InvariantCulture);
-                //Linename values[6]
-                // Build 0012, more nodes for edges
-                // create list based on indexes
+                int startindex = nodeDict[values[1]]; //graph.FindFirstNode(values[1]).index;
+                int stopindex = nodeDict[values[2]]; //graph.FindFirstNode(values[2]).index;
+                if(startindex != stopindex)
+                { 
+                    if ((values[6] == "nan") || (values[6] == "nan\r"))
+                        t0Road[startindex, stopindex] = 300 / 300;// 1e-4f;
+                    else
+                        t0Road[startindex, stopindex] = 300 / float.Parse(values[6], System.Globalization.CultureInfo.InvariantCulture);
+                    //Linename values[6]
+                    // Build 0012, more nodes for edges
+                    // create list based on indexes
 
-                AuxLine AuxLineX = new AuxLine();
-                AuxLineX.LineName = startindex.ToString() + "_" + stopindex.ToString();
-                string[] lonSet = Regex.Split(values[7], "@");
-                string[] latSet = Regex.Split(values[8].Replace("\r", ""), "@");
-                if ((lonSet[0] != "") && (lonSet.Length == latSet.Length))
-                {
-                    for (int j = 0; j < lonSet.Length; j++)
+                    AuxLine AuxLineX = new AuxLine();
+                    AuxLineX.LineName = startindex.ToString() + "_" + stopindex.ToString();
+                    string[] lonSet = Regex.Split(values[7], "@");
+                    string[] latSet = Regex.Split(values[8].Replace("\r", ""), "@");
+                    if ((lonSet[0] != "") && (lonSet.Length == latSet.Length))
                     {
-                        float lon = float.Parse(lonSet[j], System.Globalization.CultureInfo.InvariantCulture);
-                        float lat = float.Parse(latSet[j], System.Globalization.CultureInfo.InvariantCulture);
-                        Vector2 latlong = new Vector2(lat, lon);
-                        Vector3 pos = latlong.AsUnityPosition(map.CenterMercator, map.WorldRelativeScale);
-                        AuxLineX.AuxNodes.Add(pos);
+                        for (int j = 0; j < lonSet.Length; j++)
+                        {
+                            float lon = float.Parse(lonSet[j], System.Globalization.CultureInfo.InvariantCulture);
+                            float lat = float.Parse(latSet[j], System.Globalization.CultureInfo.InvariantCulture);
+                            Vector2 latlong = new Vector2(lat, lon);
+                            Vector3 pos = latlong.AsUnityPosition(map.CenterMercator, map.WorldRelativeScale);
+                            AuxLineX.AuxNodes.Add(pos);
+                        }
                     }
+                    //AuxLineX.Add()
+                    AuxLines.Add(AuxLineX);
+                    //
                 }
-                //AuxLineX.Add()
-                AuxLines.Add(AuxLineX);
-                //
             }
             catch (Exception e)
             {
@@ -2282,9 +2307,9 @@ public class ShowMap : MonoBehaviour
         timeSteps = 4;
         graph.timeSteps = timeSteps;
 
-        float[][,] temporalRoad = Enumerable.Range(0, timeSteps).Select(_ => new float[nodesNames.Length, nodesNames.Length]).ToArray();
+        float[][,] temporalRoad = Enumerable.Range(0, timeSteps).Select(_ => new float[graph.Nodes.Count, graph.Nodes.Count]).ToArray();
 
-        float[,] roads = new float[nodesNames.Length, nodesNames.Length];
+        float[,] roads = new float[graph.Nodes.Count, graph.Nodes.Count];
 
         graph.roadcosts = roads;
         graph.roadTemporal = temporalRoad;
@@ -2298,9 +2323,9 @@ public class ShowMap : MonoBehaviour
 
             //temporalRoad[k][0, 13] = rnd.Next(low, high) + 40;//Line 1 (1<=>14) (40, 39)
 
-            for (int i = 0; i < nodesNames.Length; i++)
+            for (int i = 0; i < roads.GetLength(0); i++)
             {
-                for (int j = 0; j < nodesNames.Length; j++)
+                for (int j = 0; j < roads.GetLength(1); j++)
                 {
                     if (t0Road[i, j] != 0)
                         temporalRoad[k][i, j] = t0Road[i, j] + rnd.Next(low, high);
@@ -2329,7 +2354,7 @@ public class ShowMap : MonoBehaviour
         }
 
         // set Brekke, Vegtun as the nodes of POI nodes
-        string[] strPOIs = { "278086299", "746318982", "2112534725" };
+        string[] strPOIs = { "2390101122", "847431215", "3966732182" };
         Color[] clrPOIs = { Color.blue, Color.red, Color.green };
 
         //string[] strPOIs = { "7379970941", "8745416892" };
