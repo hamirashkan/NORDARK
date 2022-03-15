@@ -106,4 +106,5 @@ public class AuxLine //: ScriptableObject
     public Vector3 startNodePosition;
     public int stopNodeIndex;
     public Vector3 stopNodePosition;
+    public Dictionary<string, object> properties;
 }
