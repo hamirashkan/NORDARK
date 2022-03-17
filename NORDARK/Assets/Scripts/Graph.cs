@@ -60,6 +60,57 @@ public class Graph// : ScriptableObject
         }
     }
 
+    // Build 0024
+    [SerializeField]
+    private List<Node> rawnodes;
+    public List<Node> RawNodes
+    {
+        get
+        {
+            if (rawnodes == null)
+            {
+                rawnodes = new List<Node>();
+            }
+
+            return rawnodes;
+        }
+    }
+
+    public void AddRawNode(Node node)
+    {
+        RawNodes.Add(node);
+    }
+
+    public Node FindFirstRawNode(string nodeName)
+    {
+        foreach (Node x in rawnodes.FindAll(element => element.name == nodeName))
+        {
+            Debug.Log("Find raw nodes: " + x.name);
+            return x;
+        }
+        return null;
+    }
+
+    public Node GetNearestNode(Node node)
+    {
+        Node nodeR = node;
+        float minDist = float.PositiveInfinity;
+        foreach (Node x in nodes)
+        {
+            float dist = (x.vec - nodeR.vec).magnitude;
+            if (dist < minDist)
+            {
+                minDist = dist;
+                nodeR = x;
+            }
+            
+        }
+        Debug.Log("E0006: Find closest nodes raw node: " + nodeR.name + ",pos=" + nodeR.vec.ToString()
+            + " request node:" + node.name + ",pos=" + node.vec.ToString());
+        return nodeR;
+    }
+    //
+
     public static Graph Create(string name, bool enableAsset = true)
     {
         Graph graph = new Graph();// CreateInstance<Graph>();
@@ -145,7 +196,18 @@ public class Graph// : ScriptableObject
             for (int i = 0; i < name.Length; i++)
             {
                 Node nodeX = FindFirstNode(name[i]);
+                // Build 0024, auto adjust to closest nodes
+                if (nodeX == null)
+                {
+                    nodeX = FindFirstRawNode(name[i]);
+                    nodeX = GetNearestNode(nodeX);
+                    name[i] = nodeX.name;
+                    Debug.Log("E0005:adjust POI name=" + name[i].ToString() + " to new name=" + nodeX.name);
+                }
                 nodeX.clr = colors[i];
+                // Build 0024, manually add risk to new lines
+                // TBD
+                //
             }
             // create two lists for index
             List<int> POINodes_list = new List<int>();

@@ -92,7 +92,7 @@ public class Lines : MonoBehaviour
                 pos.Add(Neighbors[i].vec + offset);
 
                 // Build 0013, alesund graph
-                if (sm.dropdown_graphop.value < 4)
+                if (sm.dropdown_graphop.value < 6)
                 {
                     l.startWidth = sWidth;
                     l.endWidth = eWidth;

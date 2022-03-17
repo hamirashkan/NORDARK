@@ -2244,6 +2244,11 @@ public class ShowMap : MonoBehaviour
                 nodeX.obj.GetComponent<Lines>().line = line;
             }
 
+            // Build 0024, auto adjust to closest nodes
+            Node nodeR = Node.Create<Node>(values[0], pos);
+            graph.AddRawNode(nodeR);
+            //
+
             if (graph.Nodes.Count % 50 == 0)
                 Debug.Log(DateTime.Now.ToString() + ", inited " + graph.Nodes.Count + "_th nodes");
         }
@@ -2355,6 +2360,7 @@ public class ShowMap : MonoBehaviour
 
         // set Brekke, Vegtun as the nodes of POI nodes
         string[] strPOIs = { "2390101122", "847431215", "3966732182" };
+        //string[] strPOIs = { graph.RawNodes[10].name, graph.RawNodes[40].name, "7389961142" };
         Color[] clrPOIs = { Color.blue, Color.red, Color.green };
 
         //string[] strPOIs = { "7379970941", "8745416892" };
@@ -2447,13 +2453,17 @@ public class ShowMap : MonoBehaviour
                 // Search and Add start node, return start index
                 latlong = new Vector2((float)(coords[index].Latitude), (float)(coords[index].Longitude));
                 pos = latlong.AsUnityPosition(map.CenterMercator, map.WorldRelativeScale);
+                // Build 0024, auto adjust to closest nodes
+                Node nodeR = Node.Create<Node>("node" + graph.RawNodes.Count.ToString(), pos);
+                graph.AddRawNode(nodeR);
+                //
                 //coords[i] = pos;
                 if (bImageMapping)
                     ImageMapping(ref pos, ref node_i);
                 // 1 0
                 if(node_i > graph.Nodes.Count - 1)
                 { 
-                    nodeX = Node.Create<Node>(node_i.ToString(), pos);
+                    nodeX = Node.Create<Node>(nodeR.name, pos);
                     nodeX.index = node_i;
                     nodeX.stop_id = node_i.ToString();
                     graph.AddNode(nodeX);
@@ -2477,13 +2487,17 @@ public class ShowMap : MonoBehaviour
                 // Search and Add stop node, return stop index
                 latlong = new Vector2((float)(coords[coords.Count - 1].Latitude), (float)(coords[coords.Count - 1].Longitude));
                 pos = latlong.AsUnityPosition(map.CenterMercator, map.WorldRelativeScale);
+                // Build 0024, auto adjust to closest nodes
+                nodeR = Node.Create<Node>("node" + graph.RawNodes.Count.ToString(), pos);
+                graph.AddRawNode(nodeR);
+                //
                 //coords[i] = pos;
                 if (bImageMapping)
                     ImageMapping(ref pos, ref node_i);
                 // 1 0
                 if (node_i > graph.Nodes.Count - 1)
                 {
-                    nodeX = Node.Create<Node>(node_i.ToString(), pos);
+                    nodeX = Node.Create<Node>(nodeR.name, pos);
                     nodeX.index = node_i;
                     nodeX.stop_id = node_i.ToString();
                     graph.AddNode(nodeX);
@@ -2646,7 +2660,8 @@ public class ShowMap : MonoBehaviour
         }
 
         // set Brekke, Vegtun as the nodes of POI nodes
-        string[] strPOIs = { "3", "10", "20" };
+        //string[] strPOIs = { "3", "10", "20" };
+        string[] strPOIs = { graph.RawNodes[369].name, graph.RawNodes[544].name, graph.RawNodes[412].name };
         Color[] clrPOIs = { Color.blue, Color.red, Color.green };
 
         //string[] strPOIs = { "7379970941", "8745416892" };
