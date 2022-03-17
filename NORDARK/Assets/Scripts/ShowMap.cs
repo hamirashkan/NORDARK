@@ -266,8 +266,14 @@ public class ShowMap : MonoBehaviour
         // Build 0021, alesund road05 graph
         else if (graph_op == 5)
         {
-            map.Initialize(new Mapbox.Utils.Vector2d(62.74, 6.4), 10);//(62.64, 6.4), 10)
-            bg_Mapbox.Initialize(new Mapbox.Utils.Vector2d(62.74, 6.4), 10);
+            map.Initialize(new Mapbox.Utils.Vector2d(62.6340999, 6.5257562), 10);//(62.64, 6.4), 10)
+            //map.SetCenterLatitudeLongitude(new Mapbox.Utils.Vector2d(62.6138851, 6.5737325));
+            //map.SetZoom(10.7f);
+            //map.UpdateMap();
+            bg_Mapbox.Initialize(new Mapbox.Utils.Vector2d(62.6340999, 6.5257562), 10);
+            //bg_Mapbox.SetCenterLatitudeLongitude(new Mapbox.Utils.Vector2d(62.6138851, 6.5737325));
+            //bg_Mapbox.SetZoom(10.7f);
+            //bg_Mapbox.UpdateMap();
             GraphSet6("RoadGraph6");
             slrStartTime.minValue = 1;
             slrStartTime.maxValue = 4;// 20;
@@ -2106,24 +2112,45 @@ public class ShowMap : MonoBehaviour
         graph.roadcosts = roads;
         graph.roadTemporal = temporalRoad;
 
-        System.Random rnd = new System.Random();
-
-        for (int k = 0; k < timeSteps; k++)
+        var defaultfile = "Graph4_Sample1.csv";
+        if (File.Exists(defaultfile))
         {
-            int high = 100;//500;//0
-            int low = 0;
+            loadCSVtoSTdata(defaultfile, ref temporalRoad);
 
-            //temporalRoad[k][0, 13] = rnd.Next(low, high) + 40;//Line 1 (1<=>14) (40, 39)
-
-            for (int i = 0; i < nodesNames.Length; i++)
+            for (int k = 0; k < timeSteps; k++)
             {
-                for (int j = 0; j < nodesNames.Length; j++)
+                for (int i = 0; i < nodesNames.Length; i++)
                 {
-                    if (t0Road[i, j] != 0)
-                        temporalRoad[k][i, j] = t0Road[i, j] + rnd.Next(low, high);
-                    roads[i, j] += temporalRoad[k][i, j];
+                    for (int j = 0; j < nodesNames.Length; j++)
+                    {
+                        roads[i, j] += temporalRoad[k][i, j];
+                    }
                 }
             }
+        }
+        else
+        {
+
+            System.Random rnd = new System.Random();
+
+            for (int k = 0; k < timeSteps; k++)
+            {
+                int high = 100;//500;//0
+                int low = 0;
+
+                //temporalRoad[k][0, 13] = rnd.Next(low, high) + 40;//Line 1 (1<=>14) (40, 39)
+
+                for (int i = 0; i < nodesNames.Length; i++)
+                {
+                    for (int j = 0; j < nodesNames.Length; j++)
+                    {
+                        if (t0Road[i, j] != 0)
+                            temporalRoad[k][i, j] = t0Road[i, j] + rnd.Next(low, high);
+                        roads[i, j] += temporalRoad[k][i, j];
+                    }
+                }
+            }
+            saveSTdataToCSV("Graph4.csv", temporalRoad);
         }
 
         for (int i = 0; i < roads.GetLength(0); i++)
@@ -2319,43 +2346,65 @@ public class ShowMap : MonoBehaviour
         graph.roadcosts = roads;
         graph.roadTemporal = temporalRoad;
 
-        System.Random rnd = new System.Random();
-
-        for (int k = 0; k < timeSteps; k++)
+        var defaultfile = "Graph5_Sample1.csv";
+        if (File.Exists(defaultfile))
         {
-            int high = 100;//500;//0
-            int low = 0;
+            loadCSVtoSTdata(defaultfile, ref temporalRoad);
 
-            //temporalRoad[k][0, 13] = rnd.Next(low, high) + 40;//Line 1 (1<=>14) (40, 39)
+            for (int k = 0; k < timeSteps; k++)
+            {
+                for (int i = 0; i < nodesNames.Length; i++)
+                {
+                    for (int j = 0; j < nodesNames.Length; j++)
+                    {
+                        roads[i, j] += temporalRoad[k][i, j];
+                    }
+                }
+            }
+        }
+        else
+        {
+
+            System.Random rnd = new System.Random();
+
+            for (int k = 0; k < timeSteps; k++)
+            {
+                int high = 100;//500;//0
+                int low = 0;
+
+                //temporalRoad[k][0, 13] = rnd.Next(low, high) + 40;//Line 1 (1<=>14) (40, 39)
+
+                for (int i = 0; i < roads.GetLength(0); i++)
+                {
+                    for (int j = 0; j < roads.GetLength(1); j++)
+                    {
+                        if (t0Road[i, j] != 0)
+                            temporalRoad[k][i, j] = t0Road[i, j] + rnd.Next(low, high);
+                        roads[i, j] += temporalRoad[k][i, j];
+                    }
+                }
+            }
 
             for (int i = 0; i < roads.GetLength(0); i++)
             {
                 for (int j = 0; j < roads.GetLength(1); j++)
                 {
-                    if (t0Road[i, j] != 0)
-                        temporalRoad[k][i, j] = t0Road[i, j] + rnd.Next(low, high);
-                    roads[i, j] += temporalRoad[k][i, j];
-                }
-            }
-        }
-
-        for (int i = 0; i < roads.GetLength(0); i++)
-        {
-            for (int j = 0; j < roads.GetLength(1); j++)
-            {
-                roads[i, j] = roads[i, j] / timeSteps;
-                float weight = roads[i, j];
-                if (weight != 0)
-                {
-                    Node nodeX = graph.Nodes[i];
-                    if (nodeX != null)
+                    roads[i, j] = roads[i, j] / timeSteps;
+                    float weight = roads[i, j];
+                    if (weight != 0)
                     {
-                        nodeX.Neighbors.Add(graph.Nodes[j]);
-                        nodeX.NeighborNames.Add(graph.Nodes[j].name);
-                        nodeX.Weights.Add(roads[i, j]);
+                        Node nodeX = graph.Nodes[i];
+                        if (nodeX != null)
+                        {
+                            nodeX.Neighbors.Add(graph.Nodes[j]);
+                            nodeX.NeighborNames.Add(graph.Nodes[j].name);
+                            nodeX.Weights.Add(roads[i, j]);
+                        }
                     }
                 }
             }
+
+            saveSTdataToCSV("Graph5.csv", temporalRoad);
         }
 
         // set Brekke, Vegtun as the nodes of POI nodes
@@ -2490,7 +2539,7 @@ public class ShowMap : MonoBehaviour
                 // Build 0024, auto adjust to closest nodes
                 nodeR = Node.Create<Node>("node" + graph.RawNodes.Count.ToString(), pos);
                 graph.AddRawNode(nodeR);
-                //
+                
                 //coords[i] = pos;
                 if (bImageMapping)
                     ImageMapping(ref pos, ref node_i);
@@ -2591,6 +2640,58 @@ public class ShowMap : MonoBehaviour
             //var coords = fCollection.Features[i].Geometry.Coordinates[0].Coordinates;
         }
 
+        // Build 0025, add lines to separated graph 
+        // 411, 362
+        AddAuxlines("node411", "node362");
+        AddAuxlines("node362", "node411");
+        //406, 404
+        AddAuxlines("node406", "node404");
+        AddAuxlines("node404", "node406");
+        //406, 710
+        AddAuxlines("node406", "node710");
+        AddAuxlines("node710", "node406");
+        //367, 411
+        AddAuxlines("node367", "node411");
+        AddAuxlines("node411", "node367");
+        //369, 391
+        AddAuxlines("node369", "node391");
+        AddAuxlines("node391", "node369");
+        //1120, 600
+        AddAuxlines("node1120", "node600");
+        AddAuxlines("node600", "node1120");
+        //AuxLine AuxLineN = new AuxLine();
+        //string start_str = "node411";
+        //string stop_str = "node362";
+        //Node start_n = graph.FindFirstNode(start_str);
+        //Node stop_n = graph.FindFirstNode(stop_str);
+        //AuxLineN.LineName = start_n.index.ToString() + "_" + stop_n.index.ToString();
+        //AuxLineN.startNodeIndex = start_n.index;
+        //AuxLineN.startNodePosition = start_n.vec;
+        //AuxLineN.stopNodeIndex = stop_n.index;
+        //AuxLineN.stopNodePosition = start_n.vec;
+        //AuxLineN.properties = fCollection.Features[0].Properties;
+        //AuxLineN.properties["SPEEDLIMIT"] = 20;
+        ////AuxLineX.Add()
+        //AuxLines.Add(AuxLineN);
+        //AuxLineN = new AuxLine();
+        //start_str = "node362";
+        //stop_str = "node411";
+        //start_n = graph.FindFirstNode(start_str);
+        //stop_n = graph.FindFirstNode(stop_str);
+        //AuxLineN.LineName = start_n.index.ToString() + "_" + stop_n.index.ToString();
+        //AuxLineN.startNodeIndex = start_n.index;
+        //AuxLineN.startNodePosition = start_n.vec;
+        //AuxLineN.stopNodeIndex = stop_n.index;
+        //AuxLineN.stopNodePosition = start_n.vec;
+        //AuxLineN.properties = fCollection.Features[0].Properties;
+        //AuxLineN.properties["SPEEDLIMIT"] = 20;
+        ////AuxLineX.Add()
+        //AuxLines.Add(AuxLineN);
+        //406, 404
+        //406, 710
+        //367, 411
+        //369, 391
+        //1120, 600
 
         // Load raw edges
         float[,] t0Road = new float[graph.Nodes.Count, graph.Nodes.Count];
@@ -2601,7 +2702,7 @@ public class ShowMap : MonoBehaviour
             {
                 t0Road[AuxLines[i].startNodeIndex, AuxLines[i].stopNodeIndex] = 300 / (float)AuxLines[i].properties["SPEEDLIMIT"];
                 if((string)AuxLines[i].properties["DIRECCTION"] != "med")
-                    Debug.Log("E0005:wrong DIRECCTION value=" + AuxLines[i].properties.ToString());
+                    Debug.Log("E0007:wrong DIRECCTION value=" + AuxLines[i].properties.ToString());
             }
             catch (Exception e)
             {
@@ -2609,6 +2710,7 @@ public class ShowMap : MonoBehaviour
                 Debug.Log("E0004:wrong edge cost value=" + AuxLines[i].properties.ToString() + " " + e.ToString());
             }
         }
+        
 
         timeSteps = 20;
         graph.timeSteps = timeSteps;
@@ -2620,43 +2722,64 @@ public class ShowMap : MonoBehaviour
         graph.roadcosts = roads;
         graph.roadTemporal = temporalRoad;
 
-        System.Random rnd = new System.Random();
-
-        for (int k = 0; k < timeSteps; k++)
+        var defaultfile = "Graph6_Sample1.csv";
+        if (File.Exists(defaultfile))
         {
-            int high = 100;//500;//0
-            int low = 0;
+            loadCSVtoSTdata(defaultfile, ref temporalRoad);
 
-            //temporalRoad[k][0, 13] = rnd.Next(low, high) + 40;//Line 1 (1<=>14) (40, 39)
+            for (int k = 0; k < timeSteps; k++)
+            {
+                for (i = 0; i < nodesNames.Length; i++)
+                {
+                    for (int j = 0; j < nodesNames.Length; j++)
+                    {
+                        roads[i, j] += temporalRoad[k][i, j];
+                    }
+                }
+            }
+        }
+        else
+        {
+            System.Random rnd = new System.Random();
+
+            for (int k = 0; k < timeSteps; k++)
+            {
+                int high = 100;//500;//0
+                int low = 0;
+
+                //temporalRoad[k][0, 13] = rnd.Next(low, high) + 40;//Line 1 (1<=>14) (40, 39)
+
+                for (i = 0; i < roads.GetLength(0); i++)
+                {
+                    for (int j = 0; j < roads.GetLength(1); j++)
+                    {
+                        if (t0Road[i, j] != 0)
+                            temporalRoad[k][i, j] = t0Road[i, j] + rnd.Next(low, high);
+                        roads[i, j] += temporalRoad[k][i, j];
+                    }
+                }
+            }
 
             for (i = 0; i < roads.GetLength(0); i++)
             {
                 for (int j = 0; j < roads.GetLength(1); j++)
                 {
-                    if (t0Road[i, j] != 0)
-                        temporalRoad[k][i, j] = t0Road[i, j] + rnd.Next(low, high);
-                    roads[i, j] += temporalRoad[k][i, j];
-                }
-            }
-        }
-
-        for (i = 0; i < roads.GetLength(0); i++)
-        {
-            for (int j = 0; j < roads.GetLength(1); j++)
-            {
-                roads[i, j] = roads[i, j] / timeSteps;
-                float weight = roads[i, j];
-                if (weight != 0)
-                {
-                    Node nodeX = graph.Nodes[i];
-                    if (nodeX != null)
+                    roads[i, j] = roads[i, j] / timeSteps;
+                    float weight = roads[i, j];
+                    if (weight != 0)
                     {
-                        nodeX.Neighbors.Add(graph.Nodes[j]);
-                        nodeX.NeighborNames.Add(graph.Nodes[j].name);
-                        nodeX.Weights.Add(roads[i, j]);
+                        Node nodeX = graph.Nodes[i];
+                        if (nodeX != null)
+                        {
+                            nodeX.Neighbors.Add(graph.Nodes[j]);
+                            nodeX.NeighborNames.Add(graph.Nodes[j].name);
+                            nodeX.Weights.Add(roads[i, j]);
+                        }
                     }
                 }
             }
+
+            saveSTdataToCSV("Graph6.csv", temporalRoad);
         }
 
         // set Brekke, Vegtun as the nodes of POI nodes
@@ -2683,6 +2806,26 @@ public class ShowMap : MonoBehaviour
 
         graph.printNodes();
     }
+
+    // Build 0025, add lines to separated graph 
+    public void AddAuxlines(string start_str, string stop_str)
+    {
+        AuxLine AuxLineN = new AuxLine();
+        //string start_str = "node411";
+        //string stop_str = "node362";
+        Node start_n = graph.FindFirstNode(start_str);
+        Node stop_n = graph.FindFirstNode(stop_str);
+        AuxLineN.LineName = start_n.index.ToString() + "_" + stop_n.index.ToString();
+        AuxLineN.startNodeIndex = start_n.index;
+        AuxLineN.startNodePosition = start_n.vec;
+        AuxLineN.stopNodeIndex = stop_n.index;
+        AuxLineN.stopNodePosition = start_n.vec;
+        AuxLineN.properties = new Dictionary<string, object>();
+        AuxLineN.properties["DIRECCTION"] = "med";
+        AuxLineN.properties["SPEEDLIMIT"] = 20;
+        AuxLines.Add(AuxLineN);
+    }
+
 
     private string loadFile(string filename)
     {
