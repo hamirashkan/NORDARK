@@ -60,7 +60,7 @@ public class Graph// : ScriptableObject
         }
     }
 
-    // Build 0024
+    // Build 0024, auto adjust to closest nodes
     [SerializeField]
     private List<Node> rawnodes;
     public List<Node> RawNodes

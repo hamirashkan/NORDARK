@@ -94,13 +94,14 @@ public class ShowMap : MonoBehaviour
     int[] edtcostImage;
     float[] distImage;//sqrt(cost), sqrt(V)
     // Build 0010, high scale for the vertices interpolation
-    int vertices_scale = 1;// 4;// scale parameters
+    int vertices_scale = 4;// 4;// scale parameters
     const int vertices_max = 10;
     int vmax;
     //
     // Build 0012
     public List<AuxLine> AuxLines;
     //
+    public bool bImageMapping = true;
 
     void Start()
     {
@@ -213,6 +214,10 @@ public class ShowMap : MonoBehaviour
         graph_op = dropdown_graphop.value;
         if (graph_op == 0)
         {
+            if (UIButton.isIFT)
+            {
+                CalculateMinMax();
+            }
             GraphSet1("RoadGraph1");
             slrStartTime.minValue = 1;
             slrStartTime.maxValue = 4;
@@ -229,6 +234,10 @@ public class ShowMap : MonoBehaviour
             map.Initialize(new Mapbox.Utils.Vector2d(62.4750425, 6.1914948), 17);
             bg_Mapbox.Initialize(new Mapbox.Utils.Vector2d(62.4750425, 6.1914948), 17);
             //map.UpdateMap();
+            if (UIButton.isIFT)
+            {
+                CalculateMinMax();
+            }
             GraphSet3("RoadGraph3");
             slrStartTime.minValue = 1;
             slrStartTime.maxValue = 20;
@@ -241,6 +250,10 @@ public class ShowMap : MonoBehaviour
         {
             map.Initialize(new Mapbox.Utils.Vector2d(62.4750425, 6.1914948), 17);
             bg_Mapbox.Initialize(new Mapbox.Utils.Vector2d(62.4750425, 6.1914948), 17);
+            if (UIButton.isIFT)
+            {
+                CalculateMinMax();
+            }
             GraphSet4("RoadGraph4");
             slrStartTime.minValue = 1;
             slrStartTime.maxValue = 20;
@@ -254,6 +267,10 @@ public class ShowMap : MonoBehaviour
         {
             map.Initialize(new Mapbox.Utils.Vector2d(62.49, 6.3), 12);
             bg_Mapbox.Initialize(new Mapbox.Utils.Vector2d(62.49, 6.3), 12);
+            if (UIButton.isIFT)
+            {
+                CalculateMinMax();
+            }
             GraphSet5("RoadGraph5");
             slrStartTime.minValue = 1;
             slrStartTime.maxValue = 4;
@@ -274,6 +291,10 @@ public class ShowMap : MonoBehaviour
             //bg_Mapbox.SetCenterLatitudeLongitude(new Mapbox.Utils.Vector2d(62.6138851, 6.5737325));
             //bg_Mapbox.SetZoom(10.7f);
             //bg_Mapbox.UpdateMap();
+            if (UIButton.isIFT)
+            {
+                CalculateMinMax();
+            }
             GraphSet6("RoadGraph6");
             slrStartTime.minValue = 1;
             slrStartTime.maxValue = 4;// 20;
@@ -364,7 +385,7 @@ public class ShowMap : MonoBehaviour
             // Build 0018, change the mindist, bestNode to IFT calculation
             if (UIButton.isIFT)
             {
-                CalculateMinMax();
+                //CalculateMinMax();
                 // Get the IFT result
                 IFTindexImageTest();
             }
@@ -1090,38 +1111,42 @@ public class ShowMap : MonoBehaviour
     // Build 0018, change the mindist, bestNode to IFT calculation
     public void CalculateMinMax()
     {
-        tx_min = float.MaxValue;
-        tx_max = float.MinValue;
-        tz_min = float.MaxValue;
-        tz_max = float.MinValue;
-
-        int x_index = 0;
-        int z_index = 0;
-        for (int c = 0; c < 12; c++)
+        // Build 0026, async not finished the map load
+        if (gameObject.transform.GetChild(11) != null)
         {
-            Transform tile;
-            if (c_flag_last)
-                tile = gameObject.transform.GetChild(c);
-            else
-                tile = gameObject.transform.GetChild(c + 1); //ignoring first child that is not a tile
+            tx_min = float.MaxValue;
+            tx_max = float.MinValue;
+            tz_min = float.MaxValue;
+            tz_max = float.MinValue;
 
-            Vector3 center = tile.position;
-            if (center.x < tx_min)
-                tx_min = center.x;
-            if (center.x > tx_max)
-                tx_max = center.x;
-            if (center.z < tz_min)
-                tz_min = center.z;
-            if (center.z > tz_max)
-                tz_max = center.z;
+            int x_index = 0;
+            int z_index = 0;
+            for (int c = 0; c < 12; c++)
+            {
+                Transform tile;
+                if (c_flag_last)
+                    tile = gameObject.transform.GetChild(c);
+                else
+                    tile = gameObject.transform.GetChild(c + 1); //ignoring first child that is not a tile
+
+                Vector3 center = tile.position;
+                if (center.x < tx_min)
+                    tx_min = center.x;
+                if (center.x > tx_max)
+                    tx_max = center.x;
+                if (center.z < tz_min)
+                    tz_min = center.z;
+                if (center.z > tz_max)
+                    tz_max = center.z;
+            }
+
+            // Build 0022, node merge by image mapping
+            ttx_min = tx_min - 50;
+            ttx_max = tx_max - 50;
+            ttz_min = tz_min + 50;
+            ttz_max = tz_max + 50;
+            //
         }
-
-        // Build 0022, node merge by image mapping
-        ttx_min = tx_min - 50;
-        ttx_max = tx_max - 50;
-        ttz_min = tz_min + 50;
-        ttz_max = tz_max + 50;
-        //
     }
 
     // Build 0017, draw auxlines
@@ -2479,7 +2504,6 @@ public class ShowMap : MonoBehaviour
         AuxLines = new List<AuxLine>();
 
         // Build 0022, node merge by image mapping
-        bool bImageMapping = true;
         int node_i = 0;
         int i, ii;
         if (bImageMapping)
@@ -2656,7 +2680,7 @@ public class ShowMap : MonoBehaviour
         //369, 391
         AddAuxlines("node369", "node391");
         AddAuxlines("node391", "node369");
-        //1120, 600
+        ////1120, 600
         AddAuxlines("node1120", "node600");
         AddAuxlines("node600", "node1120");
         //AuxLine AuxLineN = new AuxLine();
@@ -2813,19 +2837,48 @@ public class ShowMap : MonoBehaviour
         AuxLine AuxLineN = new AuxLine();
         //string start_str = "node411";
         //string stop_str = "node362";
-        Node start_n = graph.FindFirstNode(start_str);
-        Node stop_n = graph.FindFirstNode(stop_str);
-        AuxLineN.LineName = start_n.index.ToString() + "_" + stop_n.index.ToString();
-        AuxLineN.startNodeIndex = start_n.index;
-        AuxLineN.startNodePosition = start_n.vec;
-        AuxLineN.stopNodeIndex = stop_n.index;
-        AuxLineN.stopNodePosition = start_n.vec;
-        AuxLineN.properties = new Dictionary<string, object>();
-        AuxLineN.properties["DIRECCTION"] = "med";
-        AuxLineN.properties["SPEEDLIMIT"] = 20;
-        AuxLines.Add(AuxLineN);
-    }
+        if (bImageMapping)
+        {
+            int start_i = 0, stop_i = 0;
+            Node start_n = graph.FindFirstRawNode(start_str);
+            ImageMapping(ref start_n.vec, ref start_i);
+            Node stop_n = graph.FindFirstRawNode(stop_str);
+            ImageMapping(ref stop_n.vec, ref stop_i);
 
+            if (start_i != stop_i)
+            {
+                try
+                {
+                    AuxLineN.LineName = start_i.ToString() + "_" + stop_i.ToString();
+                    AuxLineN.startNodeIndex = start_i;
+                    AuxLineN.startNodePosition = graph.Nodes[start_i].vec;
+                    AuxLineN.stopNodeIndex = stop_i;
+                    AuxLineN.stopNodePosition = graph.Nodes[stop_i].vec;
+
+                    AuxLineN.properties = new Dictionary<string, object>();
+                    AuxLineN.properties["DIRECCTION"] = "med";
+                    AuxLineN.properties["SPEEDLIMIT"] = 20;
+                    AuxLines.Add(AuxLineN);
+                }
+                catch (Exception e)
+                {
+                    Debug.Log("E0008");
+                    Debug.Log(e);
+                }
+            }
+        }
+        else
+        {
+            //Node start_n = graph.FindFirstRawNode(start_str);
+            //Node stop_n = graph.FindFirstRawNode(stop_str);
+
+            //AuxLineN.LineName = start_n.index.ToString() + "_" + stop_n.index.ToString();
+            //AuxLineN.startNodeIndex = start_n.index;
+            //AuxLineN.startNodePosition = start_n.vec;
+            //AuxLineN.stopNodeIndex = stop_n.index;
+            //AuxLineN.stopNodePosition = stop_n.vec;
+        }
+    }
 
     private string loadFile(string filename)
     {
