@@ -94,7 +94,7 @@ public class ShowMap : MonoBehaviour
     int[] edtcostImage;
     float[] distImage;//sqrt(cost), sqrt(V)
     // Build 0010, high scale for the vertices interpolation
-    int vertices_scale = 4;// 4;// scale parameters
+    int vertices_scale = 1;// 4;// scale parameters
     const int vertices_max = 10;
     int vmax;
     //
@@ -297,7 +297,7 @@ public class ShowMap : MonoBehaviour
             }
             GraphSet6("RoadGraph6");
             slrStartTime.minValue = 1;
-            slrStartTime.maxValue = 4;// 20;
+            slrStartTime.maxValue = 20;
             slrStartTime.value = slrStartTime.minValue;
             slrStopTime.minValue = slrStartTime.minValue;
             slrStopTime.maxValue = slrStartTime.maxValue;
@@ -312,6 +312,10 @@ public class ShowMap : MonoBehaviour
             map.Initialize(new Mapbox.Utils.Vector2d(62.7233, 7.51087), 8);
             bg_Mapbox.Initialize(new Mapbox.Utils.Vector2d(62.7233, 7.51087), 8);
             //map.UpdateMap();
+            if (UIButton.isIFT)
+            {
+                CalculateMinMax();
+            }
             GraphSet2("RoadGraph2");//GraphSet2
             slrStartTime.minValue = 1;
             slrStartTime.maxValue = 10;
@@ -1147,6 +1151,8 @@ public class ShowMap : MonoBehaviour
             ttz_max = tz_max + 50;
             //
         }
+        else
+            Debug.Log("F0009:Not ready");
     }
 
     // Build 0017, draw auxlines

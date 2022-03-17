@@ -358,11 +358,11 @@ RectTransform:
   m_Father: {fileID: 1691045665}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 1, y: 1}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 200, y: 500}
-  m_Pivot: {x: 1, y: 1}
+  m_Pivot: {x: 0, y: 1}
 --- !u!114 &111150671
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -705,7 +705,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 2.6, y: -240}
+  m_AnchoredPosition: {x: 2.600006, y: -240}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &275625771
@@ -1534,6 +1534,7 @@ MonoBehaviour:
   SliderStartTimeValue: 1
   SliderStopTimeValue: 10
   dropdown_graphop: {fileID: 0}
+  bImageMapping: 1
   TestMode: 0
 --- !u!1 &509190219
 GameObject:
@@ -2831,7 +2832,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
   m_LocalRotation: {x: 0.7071068, y: -0, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 3, y: 400, z: 3}
+  m_LocalPosition: {x: -92, y: 580, z: -18}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -3843,7 +3844,7 @@ MonoBehaviour:
       m_Image: {fileID: 0}
     - m_Text: Graph 5 (Alesund)
       m_Image: {fileID: 0}
-    - m_Text: Graph 6 (Road012345)
+    - m_Text: Graph 6 (R012345)
       m_Image: {fileID: 0}
   m_OnValueChanged:
     m_PersistentCalls:
@@ -5071,6 +5072,7 @@ MonoBehaviour:
   SliderStartTimeValue: 0
   SliderStopTimeValue: 10
   dropdown_graphop: {fileID: 0}
+  bImageMapping: 1
   TestMode: 0
 --- !u!4 &1551772468
 Transform:
