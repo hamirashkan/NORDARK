@@ -192,6 +192,7 @@ public class Graph// : ScriptableObject
                                      // distance from src to i
         if (name.Length > 0)
         {
+            DateTime dt3 = DateTime.Now;
             // update color
             for (int i = 0; i < name.Length; i++)
             {
@@ -224,9 +225,12 @@ public class Graph// : ScriptableObject
                         POINodes_list.Add(nodeX.index);
                 }
             }
+            // calculate risk
+            risk(roadTemporal, restNodes_list, POINodes_list);
+            Debug.Log("E1005:after risk:" + (DateTime.Now - dt3).TotalMilliseconds + " millisec");
+            dt3 = DateTime.Now;
 
-
-            for(int i =0; i < POINodes_list.Count; i++)
+            for (int i =0; i < POINodes_list.Count; i++)
             {
                 Node nodeX = FindNode(POINodes_list[i]);
                 POInodes.Add(nodeX);// Build 0009, add IFT for Graph 1
@@ -239,10 +243,12 @@ public class Graph// : ScriptableObject
                     }
                 }
             }
-
+            
             // calculate risk
             risk(roadTemporal, restNodes_list, POINodes_list);
+            Debug.Log("E1003:before dijkstra cost:" + (DateTime.Now - dt3).TotalMilliseconds + " millisec");
 
+            DateTime dt1 = DateTime.Now;
             // calculate the minium distances to POIs for each rest node
             for (int i = 0; i < restNodes_list.Count; i++)
             {
@@ -250,9 +256,9 @@ public class Graph// : ScriptableObject
                 RestNodes.Add(nodeX); //keeping track of nodes in between
                 if (nodeX != null)
                 {
-                    Debug.Log("Calculate " + nodeX.name + " nodes");
+                    //Debug.Log("Calculate " + nodeX.name + " nodes");
                     dijkstra(roadcosts, nodeX.index);
-
+                    
                     for (int j = 0; j < POINodes_list.Count; j++)
                     {
                         if (dist[POINodes_list[j]] <= nodeX.LeastCost)
@@ -266,6 +272,11 @@ public class Graph// : ScriptableObject
 
                 }
             }
+            DateTime dt2 = DateTime.Now;
+            var diffInSeconds = (dt2 - dt1).TotalMilliseconds;
+            Debug.Log("E1002:dijkstra cost:" + diffInSeconds + " millisec");
+
+            DateTime dt4 = DateTime.Now;
             // Print the result
             Debug.Log("POI     calculation result " + "from Source\n");
             for (int i = 0; i < restNodes_list.Count; i++)
@@ -274,6 +285,7 @@ public class Graph// : ScriptableObject
                 if (nodeX != null)
                     Debug.Log(nodeX.name + " \t\t " + nodeX.MostAccessPOI + " \t\t " + nodeX.LeastCost + "\t\t RISK FACTOR: " + nodeX.riskFactor + "\n");
             }
+            Debug.Log("E1004:after dijkstra cost:" + (DateTime.Now - dt4).TotalMilliseconds + " millisec");
         }
 
 
@@ -390,7 +402,7 @@ public class Graph// : ScriptableObject
         // calculate the minium distances to POIs for each rest node
         for (int i = 0; i < rests.Count; i++)
         {
-            Node nodeX = FindNode(rests[i]);
+            Node nodeX = FindNode(rests[i]);//Nodes[rests[i]]
             nodeX.riskFactor = 0;
             nodeX.POIList = new Node[timeSteps];
             nodeX.LeastCostList = new float[timeSteps];
@@ -406,7 +418,7 @@ public class Graph// : ScriptableObject
                         if (dist[POIs[j]] <= tempCost)
                         {
                             tempCost = dist[POIs[j]];
-                            tempAccess = FindNode(POIs[j]);
+                            tempAccess = FindNode(POIs[j]);// Nodes[POIs[j]]
                             nodeX.LeastCostList[k] = tempCost;
                             nodeX.POIList[k] = tempAccess;
                         }

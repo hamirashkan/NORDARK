@@ -94,7 +94,7 @@ public class ShowMap : MonoBehaviour
     int[] edtcostImage;
     float[] distImage;//sqrt(cost), sqrt(V)
     // Build 0010, high scale for the vertices interpolation
-    int vertices_scale = 1;// 4;// scale parameters
+    int vertices_scale = 4;// 4;// scale parameters
     const int vertices_max = 10;
     int vmax;
     //
@@ -295,9 +295,10 @@ public class ShowMap : MonoBehaviour
             {
                 CalculateMinMax();
             }
+            timeSteps = 5;//59
             GraphSet6("RoadGraph6");
             slrStartTime.minValue = 1;
-            slrStartTime.maxValue = 20;
+            slrStartTime.maxValue = timeSteps;
             slrStartTime.value = slrStartTime.minValue;
             slrStopTime.minValue = slrStartTime.minValue;
             slrStopTime.maxValue = slrStartTime.maxValue;
@@ -506,7 +507,7 @@ public class ShowMap : MonoBehaviour
                         x = x + x_offset * vertices_scalemax;
                         z = z + z_offset * vertices_scalemax;
                         int i_new = z * ncols + x;
-                        Node node = graph.Nodes[rootImage[i_new] - 1];
+                        Node node = graph.FindNode(rootImage[i_new] - 1);//graph.Nodes[rootImage[i_new] - 1];
 
                         float posX = vertex.x;
                         float posZ = vertex.z;
@@ -645,7 +646,7 @@ public class ShowMap : MonoBehaviour
 
                             try
                             {
-                                Node node = graph.Nodes[rootImage[i_new] - 1];// FindNode(rootImage[i_new] - 1);
+                                Node node = graph.FindNode(rootImage[i_new] - 1);//Nodes[rootImage[i_new] - 1]; 
 
                                 float posX = vertex.x;
                                 float posZ = vertex.z;
@@ -871,7 +872,10 @@ public class ShowMap : MonoBehaviour
         DateTime dt2 = DateTime.Now;
         var diffInSeconds = (dt2 - dt1).TotalMilliseconds;
         if (UIButton.isIFT)
-            Debug.Log("IFT total cost:" + diffInSeconds + " millisec");
+            if (UIButton.isIFTCost)
+                Debug.Log("Fast IFT total cost:" + diffInSeconds + " millisec");
+            else
+                Debug.Log("IFT total cost:" + diffInSeconds + " millisec");
         else
             Debug.Log("TDM total cost:" + diffInSeconds + " millisec");
     }
@@ -2543,6 +2547,7 @@ public class ShowMap : MonoBehaviour
                 if(node_i > graph.Nodes.Count - 1)
                 { 
                     nodeX = Node.Create<Node>(nodeR.name, pos);
+                    nodeX.GeoVec = latlong;
                     nodeX.index = node_i;
                     nodeX.stop_id = node_i.ToString();
                     graph.AddNode(nodeX);
@@ -2577,6 +2582,10 @@ public class ShowMap : MonoBehaviour
                 if (node_i > graph.Nodes.Count - 1)
                 {
                     nodeX = Node.Create<Node>(nodeR.name, pos);
+                    // Build 0026
+                    // pos to geo
+                    nodeX.GeoVec = latlong;
+                    //
                     nodeX.index = node_i;
                     nodeX.stop_id = node_i.ToString();
                     graph.AddNode(nodeX);
@@ -2651,6 +2660,7 @@ public class ShowMap : MonoBehaviour
                         AuxLineX.startNodePosition = start_pos;// graph.Nodes[startindex].vec;
                         AuxLineX.stopNodeIndex = stopindex;
                         AuxLineX.stopNodePosition = stop_pos;// graph.Nodes[stopindex].vec;
+
                         AuxLineX.properties = fCollection.Features[i].Properties;
                         //AuxLineX.Add()
                         AuxLines.Add(AuxLineX);
@@ -2723,6 +2733,7 @@ public class ShowMap : MonoBehaviour
         //369, 391
         //1120, 600
 
+        float maxRisk = 300; 
         // Load raw edges
         float[,] t0Road = new float[graph.Nodes.Count, graph.Nodes.Count];
         // Build 0023, Optimize the network
@@ -2730,19 +2741,22 @@ public class ShowMap : MonoBehaviour
         {
             try
             {
-                t0Road[AuxLines[i].startNodeIndex, AuxLines[i].stopNodeIndex] = 300 / (float)AuxLines[i].properties["SPEEDLIMIT"];
-                if((string)AuxLines[i].properties["DIRECCTION"] != "med")
+                //float speed = (float)(AuxLines[i].properties["SPEEDLIMIT"]);
+                string dir = (string)(AuxLines[i].properties["DIRECCTION"]);
+                // Build 0026
+                // fix bug, failed to get maxspeed when convert object to float
+                float speed = Convert.ToSingle(AuxLines[i].properties["SPEEDLIMIT"]);
+                t0Road[AuxLines[i].startNodeIndex, AuxLines[i].stopNodeIndex] = speed;
+                if (dir != "med")
                     Debug.Log("E0007:wrong DIRECCTION value=" + AuxLines[i].properties.ToString());
             }
             catch (Exception e)
             {
-                t0Road[AuxLines[i].startNodeIndex, AuxLines[i].stopNodeIndex] = 300 / 300;
+                t0Road[AuxLines[i].startNodeIndex, AuxLines[i].stopNodeIndex] = maxRisk;
                 Debug.Log("E0004:wrong edge cost value=" + AuxLines[i].properties.ToString() + " " + e.ToString());
             }
         }
         
-
-        timeSteps = 20;
         graph.timeSteps = timeSteps;
 
         float[][,] temporalRoad = Enumerable.Range(0, timeSteps).Select(_ => new float[graph.Nodes.Count, graph.Nodes.Count]).ToArray();
@@ -2770,22 +2784,65 @@ public class ShowMap : MonoBehaviour
         }
         else
         {
-            System.Random rnd = new System.Random();
+            // Build 0026
+            int method_type = 1;
 
-            for (int k = 0; k < timeSteps; k++)
+            if (method_type == 1)
             {
-                int high = 100;//500;//0
-                int low = 0;
+                // Method 1, single weather station, distance < 20km
+                // average start and stop points, >20cm, speed = 0
+                float[] snowdata = new float[timeSteps];
+                Dictionary<int, string> timedata = new Dictionary<int, string>();
+                LoadSnowData(ref snowdata, ref timedata, "Graph6_snow.csv");
 
-                //temporalRoad[k][0, 13] = rnd.Next(low, high) + 40;//Line 1 (1<=>14) (40, 39)
-
-                for (i = 0; i < roads.GetLength(0); i++)
+                for (int k = 0; k < timeSteps; k++)
                 {
-                    for (int j = 0; j < roads.GetLength(1); j++)
+                    for (i = 0; i < roads.GetLength(0); i++)
                     {
-                        if (t0Road[i, j] != 0)
-                            temporalRoad[k][i, j] = t0Road[i, j] + rnd.Next(low, high);
-                        roads[i, j] += temporalRoad[k][i, j];
+                        for (int j = 0; j < roads.GetLength(1); j++)
+                        {
+                            if (t0Road[i, j] != 0)
+                            {
+                                float sfactor = 1;
+                                double dist1, dist2;
+                                Vector2 wStationGeoVec = new Vector2(62.4775f, 6.8167f);// Ørskog
+                                // calculation i,j node distance to weather station
+                                dist1 = GetDistance(graph.Nodes[i].GeoVec, wStationGeoVec);
+                                dist2 = GetDistance(graph.Nodes[j].GeoVec, wStationGeoVec);
+                                double avgDist = (dist1 + dist2) / 2;
+                                // linear interpolation
+                                double maxDis = 50;
+                                float risk = Clamp((float)(t0Road[i, j] *( 1 - avgDist / maxDis * snowdata[k] / 25)), 5, maxRisk);
+                                // y = -2.5x+50, x is snow depth (cm), y is speed(km/h)
+                                // equation to get the parameters
+                                // calculate
+                                temporalRoad[k][i, j] = maxRisk / risk;
+                            }
+                            roads[i, j] += temporalRoad[k][i, j];
+                        }
+                    }
+                }
+            }
+            else
+            {
+                // Default method, random value
+                System.Random rnd = new System.Random();
+
+                for (int k = 0; k < timeSteps; k++)
+                {
+                    int high = 100;//500;//0
+                    int low = 0;
+
+                    //temporalRoad[k][0, 13] = rnd.Next(low, high) + 40;//Line 1 (1<=>14) (40, 39)
+
+                    for (i = 0; i < roads.GetLength(0); i++)
+                    {
+                        for (int j = 0; j < roads.GetLength(1); j++)
+                        {
+                            if (t0Road[i, j] != 0)
+                                temporalRoad[k][i, j] = t0Road[i, j] + rnd.Next(low, high);
+                            roads[i, j] += temporalRoad[k][i, j];
+                        }
                     }
                 }
             }
@@ -2794,7 +2851,7 @@ public class ShowMap : MonoBehaviour
             {
                 for (int j = 0; j < roads.GetLength(1); j++)
                 {
-                    roads[i, j] = roads[i, j] / timeSteps;
+                    roads[i, j] = roads[i, j] / timeSteps; // use average value to calculate
                     float weight = roads[i, j];
                     if (weight != 0)
                     {
@@ -2819,8 +2876,12 @@ public class ShowMap : MonoBehaviour
 
         //string[] strPOIs = { "7379970941", "8745416892" };
         //Color[] clrPOIs = { Color.blue, Color.red };
-
+        //
+        DateTime dt1 = DateTime.Now;
         graph.CreatePOInodes(strPOIs, clrPOIs);
+        DateTime dt2 = DateTime.Now;
+        var diffInSeconds = (dt2 - dt1).TotalMilliseconds;
+        Debug.Log("E1001:CreatePOInodes cost:" + diffInSeconds + " millisec");
 
         for (i = 0; i < strPOIs.Length; i++)
         {
@@ -2838,7 +2899,7 @@ public class ShowMap : MonoBehaviour
     }
 
     // Build 0025, add lines to separated graph 
-    public void AddAuxlines(string start_str, string stop_str)
+    public void AddAuxlines(string start_str, string stop_str, float value = 15) // ferry speed
     {
         AuxLine AuxLineN = new AuxLine();
         //string start_str = "node411";
@@ -2863,7 +2924,7 @@ public class ShowMap : MonoBehaviour
 
                     AuxLineN.properties = new Dictionary<string, object>();
                     AuxLineN.properties["DIRECCTION"] = "med";
-                    AuxLineN.properties["SPEEDLIMIT"] = 20;
+                    AuxLineN.properties["SPEEDLIMIT"] = value;
                     AuxLines.Add(AuxLineN);
                 }
                 catch (Exception e)
@@ -3265,6 +3326,52 @@ public class ShowMap : MonoBehaviour
         if (bReadyForCFH && (SliderStartTimeValue < SliderStopTimeValue))
             ComputeCFH(1, SliderStartTimeValue - 1, SliderStopTimeValue - 1);
     }
+
+    // Build 0026, snow data load
+    public void LoadSnowData(ref float[] sdata, ref Dictionary<int, string> time, string filename)
+    {
+        try
+        {
+            using (var rd = new StreamReader(filename))
+            {
+                rd.ReadLine();
+                int i = 0;
+                while (!rd.EndOfStream)
+                {
+                    string[] values = rd.ReadLine().Split(';');
+                    if(i < sdata.Length)
+                    { 
+                        time.Add(i, values[2]);
+                        sdata[i] = int.Parse(values[6], System.Globalization.CultureInfo.InvariantCulture);
+                        i++;
+                    }
+                }
+            }
+        }
+        finally
+        {
+        }
+    }
+
+    private const double EARTH_RADIUS = 6378.137; 
+    private static double rad(double d) { return d * Math.PI / 180.0; }
+    public static double GetDistance(double lat1, double lng1, double lat2, double lng2)
+    {
+        double radLat1 = rad(lat1); 
+        double radLat2 = rad(lat2); 
+        double a = radLat1 - radLat2; 
+        double b = rad(lng1) - rad(lng2); 
+        double s = 2 * Math.Asin(Math.Sqrt(Math.Pow(Math.Sin(a / 2), 2) + Math.Cos(radLat1) * Math.Cos(radLat2) * Math.Pow(Math.Sin(b / 2), 2))); 
+        s = s * EARTH_RADIUS; 
+        s = Math.Round(s * 10000) / 10000; 
+        return s;//km
+    }
+
+    public static double GetDistance(Vector2 latlng1, Vector2 latlng2)
+    {
+        return GetDistance(latlng1.x, latlng1.y, latlng2.x, latlng2.y);
+    }
+    //
 }
 
 

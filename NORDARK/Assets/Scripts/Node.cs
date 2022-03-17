@@ -6,6 +6,9 @@ using UnityEditor;
 public class Node : ScriptableObject
 {
     public Vector3 vec;
+    // Build 0026
+    public Vector2 GeoVec;
+    //
     public Transform objTransform;
     public GameObject obj;
     public Color clr;
@@ -17,6 +20,7 @@ public class Node : ScriptableObject
     public Node[] POIList = null; //List of POIs for risk calculation
     public float[] LeastCostList; //List of costs for different POIs for risk calculation
     public float riskFactor; //riskFactor calculation happens in Graph.cs
+
 
 
     [SerializeField]
@@ -45,7 +49,7 @@ public class Node : ScriptableObject
             {
                 neighbors = new List<Node>();
             }
-        
+
             return neighbors;
         }
     }
