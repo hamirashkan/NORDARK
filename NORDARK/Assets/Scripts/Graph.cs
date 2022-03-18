@@ -97,7 +97,7 @@ public class Graph// : ScriptableObject
         float minDist = float.PositiveInfinity;
         foreach (Node x in nodes)
         {
-            float dist = (x.vec - nodeR.vec).magnitude;
+            float dist = (x.vec - node.vec).magnitude;
             if (dist < minDist)
             {
                 minDist = dist;
@@ -225,9 +225,7 @@ public class Graph// : ScriptableObject
                         POINodes_list.Add(nodeX.index);
                 }
             }
-            // calculate risk
-            risk(roadTemporal, restNodes_list, POINodes_list);
-            Debug.Log("E1005:after risk:" + (DateTime.Now - dt3).TotalMilliseconds + " millisec");
+            Debug.Log("E10011:AddNodes:" + (DateTime.Now - dt3).TotalMilliseconds + " millisec");
             dt3 = DateTime.Now;
 
             for (int i =0; i < POINodes_list.Count; i++)
@@ -246,9 +244,8 @@ public class Graph// : ScriptableObject
             
             // calculate risk
             risk(roadTemporal, restNodes_list, POINodes_list);
-            Debug.Log("E1003:before dijkstra cost:" + (DateTime.Now - dt3).TotalMilliseconds + " millisec");
-
-            DateTime dt1 = DateTime.Now;
+            Debug.Log("E10012:Nearest POI & Risk(Dijkstra):" + (DateTime.Now - dt3).TotalMilliseconds + " millisec");
+            dt3 = DateTime.Now;
             // calculate the minium distances to POIs for each rest node
             for (int i = 0; i < restNodes_list.Count; i++)
             {
@@ -272,11 +269,7 @@ public class Graph// : ScriptableObject
 
                 }
             }
-            DateTime dt2 = DateTime.Now;
-            var diffInSeconds = (dt2 - dt1).TotalMilliseconds;
-            Debug.Log("E1002:dijkstra cost:" + diffInSeconds + " millisec");
 
-            DateTime dt4 = DateTime.Now;
             // Print the result
             Debug.Log("POI     calculation result " + "from Source\n");
             for (int i = 0; i < restNodes_list.Count; i++)
@@ -285,7 +278,7 @@ public class Graph// : ScriptableObject
                 if (nodeX != null)
                     Debug.Log(nodeX.name + " \t\t " + nodeX.MostAccessPOI + " \t\t " + nodeX.LeastCost + "\t\t RISK FACTOR: " + nodeX.riskFactor + "\n");
             }
-            Debug.Log("E1004:after dijkstra cost:" + (DateTime.Now - dt4).TotalMilliseconds + " millisec");
+            Debug.Log("E10013:Others:" + (DateTime.Now - dt3).TotalMilliseconds + " millisec");
         }
 
 

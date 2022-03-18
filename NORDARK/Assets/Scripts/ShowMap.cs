@@ -94,7 +94,7 @@ public class ShowMap : MonoBehaviour
     int[] edtcostImage;
     float[] distImage;//sqrt(cost), sqrt(V)
     // Build 0010, high scale for the vertices interpolation
-    int vertices_scale = 4;// 4;// scale parameters
+    int vertices_scale = 1;// 4;// scale parameters
     const int vertices_max = 10;
     int vmax;
     //
@@ -295,7 +295,7 @@ public class ShowMap : MonoBehaviour
             {
                 CalculateMinMax();
             }
-            timeSteps = 5;//59
+            timeSteps = 59;// 5;//59
             GraphSet6("RoadGraph6");
             slrStartTime.minValue = 1;
             slrStartTime.maxValue = timeSteps;
