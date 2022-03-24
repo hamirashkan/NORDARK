@@ -254,8 +254,8 @@ public class Graph// : ScriptableObject
                 if (nodeX != null)
                 {
                     //Debug.Log("Calculate " + nodeX.name + " nodes");
-                    dijkstra(roadcosts, nodeX.index);
                     
+                    dijkstra(roadcosts, nodeX.index);
                     for (int j = 0; j < POINodes_list.Count; j++)
                     {
                         if (dist[POINodes_list[j]] <= nodeX.LeastCost)
@@ -266,7 +266,6 @@ public class Graph// : ScriptableObject
                             nodeX.clr = nodeX.MostAccessPOI.clr;
                         }
                     }
-
                 }
             }
 
@@ -317,6 +316,78 @@ public class Graph// : ScriptableObject
             Debug.Log(i + " \t\t " + dist[i] + "\n");
     }
 
+    //// Function that implements Dijkstra's
+    //// single source shortest path algorithm
+    //// for a graph represented using adjacency
+    //// matrix representation
+    //void dijkstra(float[,] graph, int src)
+    //{
+    //    dist = new float[Nodes.Count]; // The output array. dist[i]
+    //                             // will hold the shortest
+    //                             // distance from src to i
+
+    //    // sptSet[i] will true if vertex
+    //    // i is included in shortest path
+    //    // tree or shortest distance from
+    //    // src to i is finalized
+    //    bool[] sptSet = new bool[Nodes.Count];
+
+    //    // Initialize all distances as
+    //    // INFINITE and stpSet[] as false
+    //    for (int i = 0; i < Nodes.Count; i++)
+    //    {
+    //        dist[i] = int.MaxValue;
+    //        sptSet[i] = false;
+    //    }
+
+    //    // Distance of source vertex
+    //    // from itself is always 0
+    //    dist[src] = 0;
+
+    //    // Find shortest path for all vertices
+    //    for (int count = 0; count < Nodes.Count - 1; count++)
+    //    {
+    //        // Pick the minimum distance vertex
+    //        // from the set of vertices not yet
+    //        // processed. u is always equal to
+    //        // src in first iteration.
+    //        int u = minDistance(dist, sptSet);
+
+    //        // Mark the picked vertex as processed
+    //        sptSet[u] = true;
+
+    //        // Update dist value of the adjacent
+    //        // vertices of the picked vertex.
+    //        for (int v = 0; v < Nodes.Count; v++)
+
+    //            // Update dist[v] only if is not in
+    //            // sptSet, there is an edge from u
+    //            // to v, and total weight of path
+    //            // from src to v through u is smaller
+    //            // than current value of dist[v]
+    //            if (!sptSet[v] && graph[u, v] != 0 &&
+    //                 dist[u] != int.MaxValue && dist[u] + graph[u, v] < dist[v])
+    //                dist[v] = dist[u] + graph[u, v];
+    //    }
+
+    // /*   Node Nodesrc = FindNode(src);
+    //    if(Nodesrc != null)
+    //        for (int i = 0; i < Nodes.Count; i++)
+    //        {
+    //            Node nodeX = FindNode(i);
+    //            if (nodeX != null)
+    //            {
+    //                if (dist[i] <= nodeX.LeastCost)
+    //                { 
+    //                    nodeX.LeastCost = dist[i];
+    //                    nodeX.MostAccessPOI = Nodesrc;
+    //                }
+    //            }
+    //        }
+    //    // print the constructed distance array
+    //    printSolution(dist, Nodes.Count); */
+    //}
+
     // Function that implements Dijkstra's
     // single source shortest path algorithm
     // for a graph represented using adjacency
@@ -324,8 +395,8 @@ public class Graph// : ScriptableObject
     void dijkstra(float[,] graph, int src)
     {
         dist = new float[Nodes.Count]; // The output array. dist[i]
-                                 // will hold the shortest
-                                 // distance from src to i
+                                       // will hold the shortest
+                                       // distance from src to i
 
         // sptSet[i] will true if vertex
         // i is included in shortest path
@@ -371,24 +442,24 @@ public class Graph// : ScriptableObject
                     dist[v] = dist[u] + graph[u, v];
         }
 
-     /*   Node Nodesrc = FindNode(src);
-        if(Nodesrc != null)
-            for (int i = 0; i < Nodes.Count; i++)
-            {
-                Node nodeX = FindNode(i);
-                if (nodeX != null)
-                {
-                    if (dist[i] <= nodeX.LeastCost)
-                    { 
-                        nodeX.LeastCost = dist[i];
-                        nodeX.MostAccessPOI = Nodesrc;
-                    }
-                }
-            }
-        // print the constructed distance array
-        printSolution(dist, Nodes.Count); */
+        /*   Node Nodesrc = FindNode(src);
+           if(Nodesrc != null)
+               for (int i = 0; i < Nodes.Count; i++)
+               {
+                   Node nodeX = FindNode(i);
+                   if (nodeX != null)
+                   {
+                       if (dist[i] <= nodeX.LeastCost)
+                       { 
+                           nodeX.LeastCost = dist[i];
+                           nodeX.MostAccessPOI = Nodesrc;
+                       }
+                   }
+               }
+           // print the constructed distance array
+           printSolution(dist, Nodes.Count); */
     }
-    
+
     // Calculate the risk for timeframes, save the result to POIList and LeastCostList
     void risk(float[][,] temporalCost,List<int> rests,List<int> POIs)
     {
@@ -402,10 +473,15 @@ public class Graph// : ScriptableObject
             Node tempAccess;
             if (nodeX != null)
             {
+                
                 for (int k = 0; k < timeSteps; k++)
                 {
                     float tempCost = Mathf.Infinity;
+                    //DateTime dt3 = DateTime.Now;
+
                     dijkstra(temporalCost[k], nodeX.index);
+
+                    
                     for (int j = 0; j < POIs.Count; j++)
                     {
                         if (dist[POIs[j]] <= tempCost)
@@ -421,11 +497,69 @@ public class Graph// : ScriptableObject
                     {
                         nodeX.riskFactor += 1;
                     }
+                    //Debug.Log("E100131:dij:" + (DateTime.Now - dt3).TotalMilliseconds + " millisec");
                 }
 
             }
         }
     }
 
+    public class SparseMatrix<T>
+    {
+        public int Width { get; private set; }
+        public int Height { get; private set; }
+        public long MaxSize { get; private set; }
+        public long Count { get { return _cells.Count; } }
 
+        private Dictionary<long, T> _cells = new Dictionary<long, T>();
+
+        private Dictionary<int, Dictionary<int, T>> _rows =
+            new Dictionary<int, Dictionary<int, T>>();
+
+        private Dictionary<int, Dictionary<int, T>> _columns =
+            new Dictionary<int, Dictionary<int, T>>();
+
+        public SparseMatrix(int w, int h)
+        {
+            this.Width = w;
+            this.Height = h;
+            this.MaxSize = w * h;
+        }
+
+        public bool IsCellEmpty(int row, int col)
+        {
+            long index = row * Width + col;
+            return _cells.ContainsKey(index);
+        }
+
+        public T this[int row, int col]
+        {
+            get
+            {
+                long index = row * Width + col;
+                T result;
+                _cells.TryGetValue(index, out result);
+                return result;
+            }
+            set
+            {
+                long index = row * Width + col;
+                _cells[index] = value;
+
+                UpdateValue(col, row, _columns, value);
+                UpdateValue(row, col, _rows, value);
+            }
+        }
+
+        private void UpdateValue(int index1, int index2,
+            Dictionary<int, Dictionary<int, T>> parent, T value)
+        {
+            Dictionary<int, T> dict;
+            if (!parent.TryGetValue(index1, out dict))
+            {
+                parent[index2] = dict = new Dictionary<int, T>();
+            }
+            dict[index2] = value;
+        }
+    }
 }

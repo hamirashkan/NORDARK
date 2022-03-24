@@ -68,7 +68,7 @@ public class Lines : MonoBehaviour
                 }
 
                 // Build 0022, node merge by image mapping
-                //if (sm.dropdown_graphop.value >= 4)
+                if (sm.dropdown_graphop.value >= 4)
                     offset = new Vector3(0, 0, 0);
 
                 float sWidth = 1 - (dist - minW) / (maxW - minW);
