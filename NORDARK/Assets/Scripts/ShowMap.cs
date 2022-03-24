@@ -95,7 +95,7 @@ public class ShowMap : MonoBehaviour
     int[] edtcostImage;
     float[] distImage;//sqrt(cost), sqrt(V)
     // Build 0010, high scale for the vertices interpolation
-    int vertices_scale = 1;// 4;// scale parameters
+    int vertices_scale = 20;// 4;// scale parameters
     const int vertices_max = 10;
     int vmax;
     //
@@ -152,10 +152,11 @@ public class ShowMap : MonoBehaviour
             Array.Copy(tile.gameObject.GetComponent<MeshFilter>().mesh.triangles, ArrayTriangles[c], ArrayTriangles[c].Length);
         }
 
+        // Build 0029
         // Build 0009, add IFT for Graph 1
-        vmax = vertices_max + (vertices_scale - 1) * (vertices_max - 1);
-        nrows = vmax * nrows;
-        ncols = vmax * ncols;
+        vmax = vertices_max + (vertices_scale - 1) * (vertices_max - 1) - 1;
+        nrows = vmax * nrows + 1;
+        ncols = vmax * ncols + 1;
         initImageArray(nrows * ncols);
         //
 
@@ -514,11 +515,16 @@ public class ShowMap : MonoBehaviour
                         // map to get the value of rootimage
                         int x = i % vertices_scalemax;
                         int z = i / vertices_scalemax;
-                        x = x + x_offset * vertices_scalemax;
-                        z = z + z_offset * vertices_scalemax;
+                        x = x + x_offset * (vertices_scalemax - 1);
+                        z = z + z_offset * (vertices_scalemax - 1);
                         int i_new = z * ncols + x;
-                        Node node = graph.FindNode(rootImage[i_new] - 1);//graph.Nodes[rootImage[i_new] - 1];
-
+                        Node node = graph.FindNode(0);
+                        try
+                        {
+                            node = graph.FindNode(rootImage[i_new] - 1);//graph.Nodes[rootImage[i_new] - 1];
+                        }
+                        catch (Exception e)
+                        { }
                         float posX = vertex.x;
                         float posZ = vertex.z;
                         Vector3 pos = new Vector3(posX + tile.position.x, node.vec.y, posZ + tile.position.z);
@@ -603,6 +609,7 @@ public class ShowMap : MonoBehaviour
                         verticeNodeXtra.name = "Vertex_" + (c * vertices.Length + i).ToString();
                         verticeNodeXtra.position = vertices[i] + tile.position;
                         verticeNodeXtra.parent = VerticesNodes.transform;
+                        verticeNodeXtra.localScale = new Vector3(1, 1, 1);
                     }
                     //
 
@@ -666,8 +673,8 @@ public class ShowMap : MonoBehaviour
                             // map to get the value of rootimage
                             int x = i % vertices_scalemax;
                             int z = i / vertices_scalemax;
-                            x = x + x_offset * vertices_scalemax;
-                            z = z + z_offset * vertices_scalemax;
+                            x = x + x_offset * (vertices_scalemax - 1);
+                            z = z + z_offset * (vertices_scalemax - 1);
                             int i_new = z * ncols + x;
 
                             try
