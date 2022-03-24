@@ -70,6 +70,7 @@ public class ShowMap : MonoBehaviour
 
     private GameObject Nodes;
     private GameObject Edges;
+    private GameObject VerticesNodes; // Build 0029
 
     private Vector3[][] ArrayV3 = new Vector3[12][];
     private int[][] ArrayTriangles = new int[12][];
@@ -94,7 +95,7 @@ public class ShowMap : MonoBehaviour
     int[] edtcostImage;
     float[] distImage;//sqrt(cost), sqrt(V)
     // Build 0010, high scale for the vertices interpolation
-    int vertices_scale = 4;// 4;// scale parameters
+    int vertices_scale = 1;// 4;// scale parameters
     const int vertices_max = 10;
     int vmax;
     //
@@ -111,6 +112,7 @@ public class ShowMap : MonoBehaviour
         // gameObject.transform.childCount. 13 (static) or 14 (dynamic)
         Nodes = GameObject.Find("Nodes");
         Edges = GameObject.Find("Edges");
+        VerticesNodes = GameObject.Find("Vertices");
 
         slrTimeLine = GameObject.Find("SlrTimeLine").GetComponent<Slider>();
         dropdown_graphop = GameObject.Find("Dropdown").GetComponent<Dropdown>();
@@ -501,6 +503,11 @@ public class ShowMap : MonoBehaviour
                     float distIFT = 0;
                     float distTDM = 0;
 
+                    if(((c * vertices.Length + i) == 498) || ((c * vertices.Length + i) == 508))
+                    {
+                        Debug.Log("");
+                    }
+
                     //// Build 0018, change the mindist, bestNode to IFT calculation
                     if (UIButton.isIFT)
                     {
@@ -581,7 +588,23 @@ public class ShowMap : MonoBehaviour
                     //
 
                     vertex.y = dis_new;// vertex.y + i;
+
                     vertices[i] = vertex;
+
+                    // Build 0029, mesh interval issue
+                    GameObject verticeNodeX = GameObject.Find("Vertex_" + (c* vertices.Length+ i).ToString());
+                    if (verticeNodeX != null)
+                    {
+                        verticeNodeX.transform.position = vertices[i] + tile.position;
+                    }
+                    else
+                    {
+                        Transform verticeNodeXtra = Instantiate(point);
+                        verticeNodeXtra.name = "Vertex_" + (c * vertices.Length + i).ToString();
+                        verticeNodeXtra.position = vertices[i] + tile.position;
+                        verticeNodeXtra.parent = VerticesNodes.transform;
+                    }
+                    //
 
                     //Debug.Log(dis_new);
 
@@ -1437,7 +1460,7 @@ public class ShowMap : MonoBehaviour
                     tile = gameObject.transform.GetChild(c);
                 else
                     tile = gameObject.transform.GetChild(c + 1); //ignoring first child that is not a tile
-
+                // debug, mesh missed when click it
                 Mesh mesh = tile.gameObject.GetComponent<MeshFilter>().mesh;
                 var vertices = mesh.vertices;
                 Color[] colors = new Color[vertices.Length];
