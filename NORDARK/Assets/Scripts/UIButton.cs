@@ -15,6 +15,7 @@ public class UIButton : MonoBehaviour
     public static bool isIFT = true;
     public static bool isIFTCost = true;
     public static bool isCostDiff = false;
+    public static bool isShowVertics = true;
 
     // Start is called before the first frame update
     void Start()
@@ -57,6 +58,12 @@ public class UIButton : MonoBehaviour
     public void UseCostDiffChange()
     {
         isCostDiff = this.GetComponent<Toggle>().isOn;
+        OptionValueChange();
+    }
+
+    public void ShowVerticesChange()
+    {
+        isShowVertics = this.GetComponent<Toggle>().isOn;
         OptionValueChange();
     }
 

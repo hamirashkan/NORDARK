@@ -95,7 +95,7 @@ public class ShowMap : MonoBehaviour
     int[] edtcostImage;
     float[] distImage;//sqrt(cost), sqrt(V)
     // Build 0010, high scale for the vertices interpolation
-    int vertices_scale = 20;// 4;// scale parameters
+    int vertices_scale = 1;// 4;// scale parameters
     const int vertices_max = 10;
     int vmax;
     //
@@ -105,6 +105,8 @@ public class ShowMap : MonoBehaviour
     public bool bImageMapping = true;
     // Build 0027
     public float KMh2MSEC = 3.6f;
+    // Build 0029
+    public List<Node> VerticesNodeArray;
 
     void Start()
     {
@@ -158,6 +160,29 @@ public class ShowMap : MonoBehaviour
         nrows = vmax * nrows + 1;
         ncols = vmax * ncols + 1;
         initImageArray(nrows * ncols);
+        VerticesNodes.SetActive(true);
+        DestroyChildren(VerticesNodes.name);
+        VerticesNodeArray = new List<Node>();
+        for (int i = 0; i < nrows * ncols; i++)
+        {
+            Node verticeNodeX = Node.Create<Node>("Vertex_" + i.ToString(), new Vector3(0, -1, 0));
+            verticeNodeX.index = i;
+            VerticesNodeArray.Add(verticeNodeX);
+            verticeNodeX.objTransform = Instantiate(point);
+            verticeNodeX.obj = verticeNodeX.objTransform.gameObject;
+            verticeNodeX.objTransform.name = verticeNodeX.name;
+            verticeNodeX.objTransform.position = verticeNodeX.vec;
+            verticeNodeX.objTransform.parent = VerticesNodes.transform;
+            verticeNodeX.objTransform.localScale = new Vector3(1, 1, 1);
+
+            //Transform verticeNodeXtra = Instantiate(point);
+            //verticeNodeXtra.name =  + (c * vertices.Length + i).ToString();
+            //verticeNodeXtra.position = vertices[i] + tile.position;
+            //verticeNodeXtra.parent = VerticesNodes.transform;
+            //verticeNodeXtra.localScale = new Vector3(1, 1, 1);
+        }
+        
+        
         //
 
         if (!IsBGMap)// if GraphSet1
@@ -215,14 +240,15 @@ public class ShowMap : MonoBehaviour
         yield return new WaitForSeconds(time);
         DateTime dt1 = DateTime.Now;
         bReadyForCFH = false;
+        
         map = gameObject.GetComponent<AbstractMap>();// GameObject.Find("Mapbox").GetComponent<AbstractMap>();
         graph_op = dropdown_graphop.value;
+        // Build 0029, draw vertices nodes
+        VerticesNodes.SetActive(UIButton.isShowVertics);
+        CalculateMinMax();
+        //
         if (graph_op == 0)
         {
-            if (UIButton.isIFT)
-            {
-                CalculateMinMax();
-            }
             GraphSet1("RoadGraph1");
             slrStartTime.minValue = 1;
             slrStartTime.maxValue = 4;
@@ -239,10 +265,6 @@ public class ShowMap : MonoBehaviour
             map.Initialize(new Mapbox.Utils.Vector2d(62.4750425, 6.1914948), 17);
             bg_Mapbox.Initialize(new Mapbox.Utils.Vector2d(62.4750425, 6.1914948), 17);
             //map.UpdateMap();
-            if (UIButton.isIFT)
-            {
-                CalculateMinMax();
-            }
             GraphSet3("RoadGraph3");
             slrStartTime.minValue = 1;
             slrStartTime.maxValue = 20;
@@ -255,10 +277,6 @@ public class ShowMap : MonoBehaviour
         {
             map.Initialize(new Mapbox.Utils.Vector2d(62.4750425, 6.1914948), 17);
             bg_Mapbox.Initialize(new Mapbox.Utils.Vector2d(62.4750425, 6.1914948), 17);
-            if (UIButton.isIFT)
-            {
-                CalculateMinMax();
-            }
             GraphSet4("RoadGraph4");
             slrStartTime.minValue = 1;
             slrStartTime.maxValue = 20;
@@ -272,10 +290,6 @@ public class ShowMap : MonoBehaviour
         {
             map.Initialize(new Mapbox.Utils.Vector2d(62.49, 6.3), 12);
             bg_Mapbox.Initialize(new Mapbox.Utils.Vector2d(62.49, 6.3), 12);
-            if (UIButton.isIFT)
-            {
-                CalculateMinMax();
-            }
             timeSteps = 59;
             GraphSet5("RoadGraph5");
             slrStartTime.minValue = 1;
@@ -297,10 +311,6 @@ public class ShowMap : MonoBehaviour
             //bg_Mapbox.SetCenterLatitudeLongitude(new Mapbox.Utils.Vector2d(62.6138851, 6.5737325));
             //bg_Mapbox.SetZoom(10.7f);
             //bg_Mapbox.UpdateMap();
-            if (UIButton.isIFT)
-            {
-                CalculateMinMax();
-            }
             timeSteps = 59;// 5;//59
             GraphSet6("RoadGraph6");
             slrStartTime.minValue = 1;
@@ -319,10 +329,6 @@ public class ShowMap : MonoBehaviour
             map.Initialize(new Mapbox.Utils.Vector2d(62.7233, 7.51087), 8);
             bg_Mapbox.Initialize(new Mapbox.Utils.Vector2d(62.7233, 7.51087), 8);
             //map.UpdateMap();
-            if (UIButton.isIFT)
-            {
-                CalculateMinMax();
-            }
             GraphSet2("RoadGraph2");//GraphSet2
             slrStartTime.minValue = 1;
             slrStartTime.maxValue = 10;
@@ -481,7 +487,7 @@ public class ShowMap : MonoBehaviour
                 // Build 0018, change the mindist, bestNode to IFT calculation
                 int x_offset = 0;
                 int z_offset = 0;
-                if (UIButton.isIFT)
+                //if (UIButton.isIFT)
                 {
                     // tile position to offset tile
                     x_offset = (int)(Math.Round(tile.position.x - tx_min)) / 100;
@@ -509,15 +515,16 @@ public class ShowMap : MonoBehaviour
                         Debug.Log("");
                     }
 
+                    // map to get the value of rootimage
+                    int x = i % vertices_scalemax;
+                    int z = i / vertices_scalemax;
+                    x = x + x_offset * (vertices_scalemax - 1);
+                    z = z + z_offset * (vertices_scalemax - 1);
+                    int i_new = z * ncols + x;
+
                     //// Build 0018, change the mindist, bestNode to IFT calculation
                     if (UIButton.isIFT)
                     {
-                        // map to get the value of rootimage
-                        int x = i % vertices_scalemax;
-                        int z = i / vertices_scalemax;
-                        x = x + x_offset * (vertices_scalemax - 1);
-                        z = z + z_offset * (vertices_scalemax - 1);
-                        int i_new = z * ncols + x;
                         Node node = graph.FindNode(0);
                         try
                         {
@@ -598,18 +605,10 @@ public class ShowMap : MonoBehaviour
                     vertices[i] = vertex;
 
                     // Build 0029, mesh interval issue
-                    GameObject verticeNodeX = GameObject.Find("Vertex_" + (c* vertices.Length+ i).ToString());
-                    if (verticeNodeX != null)
+                    if (UIButton.isShowVertics)
                     {
-                        verticeNodeX.transform.position = vertices[i] + tile.position;
-                    }
-                    else
-                    {
-                        Transform verticeNodeXtra = Instantiate(point);
-                        verticeNodeXtra.name = "Vertex_" + (c * vertices.Length + i).ToString();
-                        verticeNodeXtra.position = vertices[i] + tile.position;
-                        verticeNodeXtra.parent = VerticesNodes.transform;
-                        verticeNodeXtra.localScale = new Vector3(1, 1, 1);
+                        VerticesNodeArray[i_new].vec = vertices[i] + tile.position;
+                        VerticesNodeArray[i_new].objTransform.position = VerticesNodeArray[i_new].vec;
                     }
                     //
 
