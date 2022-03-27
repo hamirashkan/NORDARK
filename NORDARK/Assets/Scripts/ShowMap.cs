@@ -15,6 +15,7 @@ using UnityEngine.UI;
 using System.Runtime.InteropServices;
 using Newtonsoft.Json;
 using GeoJSON.Net.Feature;
+using System.Threading;
 
 public class ShowMap : MonoBehaviour
 {
@@ -245,7 +246,6 @@ public class ShowMap : MonoBehaviour
         graph_op = dropdown_graphop.value;
         // Build 0029, draw vertices nodes
         VerticesNodes.SetActive(UIButton.isShowVertics);
-        CalculateMinMax();
         //
         if (graph_op == 0)
         {
@@ -339,7 +339,8 @@ public class ShowMap : MonoBehaviour
         }
 
         bg_Mapbox.gameObject.SetActive(!UIButton.isOn);
-
+        // Build 0030, after the maps update, then calculate the offset for x and z
+        CalculateMinMax();
         // Build 0013, alesund graph 
         if (graph_op < 6)
         {
@@ -415,11 +416,19 @@ public class ShowMap : MonoBehaviour
             //
             for (int c = 0; c < 12; c++)
             {
+
                 Transform tile;
+
                 if (c_flag_last)
                     tile = gameObject.transform.GetChild(c);
                 else
                     tile = gameObject.transform.GetChild(c + 1); //ignoring first child that is not a tile
+
+                // Build 0030
+                while (!(tile.gameObject.GetComponent<UnityTile>().HeightDataState == Mapbox.Unity.MeshGeneration.Enums.TilePropertyState.Loaded))
+                {
+
+                }
 
                 //Texture2D texture = textMap[c];
                 float lambda;
@@ -427,11 +436,11 @@ public class ShowMap : MonoBehaviour
                 float mindist;
                 Node bestNode = null;
                 int step = 10;
-
+                
                 Mesh mesh = tile.gameObject.GetComponent<MeshFilter>().mesh;
 
-                //baseVertices = mesh.vertices;
-                baseVertices = ArrayV3[c];//
+                baseVertices = mesh.vertices;// Build 0030
+                //baseVertices = ArrayV3[c];
                 int vertices_scalemax = vertices_max + (vertices_scale - 1) * (vertices_max - 1);//vertices_max * vertices_scale; // max index for the row or column
                                                                                                  // Build 0006
                 hs = vertices_scalemax;
@@ -473,6 +482,9 @@ public class ShowMap : MonoBehaviour
                     newValue.z = p1.z + (p4.z - p1.z) * k_row;
                     newValue.x = p1.x + (p2.x - p1.x) * k_column;
                     newValue.y = p1.y + (p3.y - p1.y) * k_height;
+
+                    //newValue.y = tile.gameObject.GetComponent<UnityTile>().QueryHeightDataNonclamped((newValue.x + 50) / 100.0f, (newValue.z + 50) / 100.0f);
+                    newValue.y = newValue.y;
                     scale_vertices[i] = newValue;
                 }
                 baseVertices = scale_vertices;
@@ -506,6 +518,17 @@ public class ShowMap : MonoBehaviour
                     vertex.x = vertex.x * scale;
                     vertex.z = vertex.z * scale;
 
+
+                    //// Build 0030
+                    //int hi= (int)Math.Floor((vertex.x + 50) * 2.55f) + (int)Math.Floor((50 - vertex.z) * 2.55f * 256);
+                    //try
+                    //{
+                    //    vertex.y = tile.gameObject.GetComponent<UnityTile>().HeightData[hi];
+                    //}
+                    //catch (Exception e)
+                    //{ }
+                    //vertex.y =tile.gameObject.GetComponent<UnityTile>().QueryHeightDataNonclamped((vertex.x + 50) / 100.0f, (vertex.z + 50) / 100.0f);
+
                     // Build 0020, save ST data to csv file
                     float distIFT = 0;
                     float distTDM = 0;
@@ -518,6 +541,7 @@ public class ShowMap : MonoBehaviour
                     // map to get the value of rootimage
                     int x = i % vertices_scalemax;
                     int z = i / vertices_scalemax;
+
                     x = x + x_offset * (vertices_scalemax - 1);
                     z = z + z_offset * (vertices_scalemax - 1);
                     int i_new = z * ncols + x;
@@ -600,6 +624,7 @@ public class ShowMap : MonoBehaviour
                         dis_new = 0;// disable mesh
                     //
 
+                    //vertex.y = vertex.y * 50;// vertex.y + i;
                     vertex.y = dis_new;// vertex.y + i;
 
                     vertices[i] = vertex;
@@ -607,7 +632,15 @@ public class ShowMap : MonoBehaviour
                     // Build 0029, mesh interval issue
                     if (UIButton.isShowVertics)
                     {
+                        
+                        //Debug.Log(baseVertices[i].y);
                         VerticesNodeArray[i_new].vec = vertices[i] + tile.position;
+
+                        if (baseVertices[i].y < 0.00002f)//0.0001
+                            VerticesNodeArray[i_new].vec.y = -100f;
+                        else
+                            VerticesNodeArray[i_new].vec.y = vertex.y;
+
                         VerticesNodeArray[i_new].objTransform.position = VerticesNodeArray[i_new].vec;
                     }
                     //
