@@ -518,159 +518,170 @@ public class ShowMap : MonoBehaviour
                     vertex.x = vertex.x * scale;
                     vertex.z = vertex.z * scale;
 
-
-                    //// Build 0030
-                    //int hi= (int)Math.Floor((vertex.x + 50) * 2.55f) + (int)Math.Floor((50 - vertex.z) * 2.55f * 256);
-                    //try
-                    //{
-                    //    vertex.y = tile.gameObject.GetComponent<UnityTile>().HeightData[hi];
-                    //}
-                    //catch (Exception e)
-                    //{ }
-                    //vertex.y =tile.gameObject.GetComponent<UnityTile>().QueryHeightDataNonclamped((vertex.x + 50) / 100.0f, (vertex.z + 50) / 100.0f);
-
-                    // Build 0020, save ST data to csv file
-                    float distIFT = 0;
-                    float distTDM = 0;
-
-                    if(((c * vertices.Length + i) == 498) || ((c * vertices.Length + i) == 508))
+                    // Build 0031, not calculate the sea
+                    if (baseVertices[i].y < 0.00002f)
                     {
-                        Debug.Log("");
-                    }
-
-                    // map to get the value of rootimage
-                    int x = i % vertices_scalemax;
-                    int z = i / vertices_scalemax;
-
-                    x = x + x_offset * (vertices_scalemax - 1);
-                    z = z + z_offset * (vertices_scalemax - 1);
-                    int i_new = z * ncols + x;
-
-                    //// Build 0018, change the mindist, bestNode to IFT calculation
-                    if (UIButton.isIFT)
-                    {
-                        Node node = graph.FindNode(0);
-                        try
-                        {
-                            node = graph.FindNode(rootImage[i_new] - 1);//graph.Nodes[rootImage[i_new] - 1];
-                        }
-                        catch (Exception e)
-                        { }
-                        float posX = vertex.x;
-                        float posZ = vertex.z;
-                        Vector3 pos = new Vector3(posX + tile.position.x, node.vec.y, posZ + tile.position.z);
-
-                        // Get the pos for node.vec
-                        //Vector3 nodeVec = node.vec;
-                        //int nx_i = (int)((node.vec.x - (tx_min - 50)) / (100.0 / (vmax - 1)));
-                        //int nz_i = (int)((node.vec.z - (tz_min - 50)) / (100.0 / (vmax - 1)));
-                        //float nx = (float)(nx_i * (100.0 / (vmax - 1)) + (tx_min - 50));
-                        //float nz = (float)(nz_i * (100.0 / (vmax - 1)) + (tz_min - 50));
-
-                        //int pnx_i = (int)((pos.x - (tx_min - 50)) / (100.0 / (vmax - 1)));
-                        //int pnz_i = (int)((pos.z - (tz_min - 50)) / (100.0 / (vmax - 1)));
-                        //float pnx = (float)(pnx_i * (100.0 / (vmax - 1)) + (tx_min - 50));
-                        //float pnz = (float)(pnz_i * (100.0 / (vmax - 1)) + (tz_min - 50));
-
-                        //float dist = (pos - node.vec).magnitude;
-                        //nodeVec = new Vector3(nx, node.vec.y, nz);
-                        //Vector3 posVec = new Vector3(pnx, pos.y, pnz);
-                        //float dist1 = (posVec - nodeVec).magnitude;
-
-                        // method 1, return dist and node
-                        if (UIButton.isIFTCost)
-                            mindist = distImage[i_new]; //dist;// 10;// dist;
-                        else
-                        {
-                            float dist = (pos - node.vec).magnitude;
-                            mindist = dist;
-                        }
-                        bestNode = node; //graph.FindNode(2);// node;
-                        // method 2, directly use the the cost matrix to avoid calculate magnitude twice
-
-                        // Build 0020, save ST data to csv file
-                        if (UIButton.isCostDiff)
-                        {
-                            distIFT = distImage[i_new];
-                            distTDM = (pos - node.vec).magnitude;//dist1;// (pos - node.vec).magnitude;
-                        }
-                        //
+                        vertices[i] = vertex;
+                        lambda = (1 / r) * 1 / (1 + Mathf.Exp(Mathf.Pow((0 + 0), -alpha) / r));
+                        lambdaMap.Add((lambdaMap.Min() + lambdaMap.Max())/ 2);
+                        Color col = Color.black;
+                        colorMap.Add(col);
                     }
                     else
-                    {
-                        foreach (Node node in graph.RestNodes)
+                    { 
+                        //// Build 0030
+                        //int hi= (int)Math.Floor((vertex.x + 50) * 2.55f) + (int)Math.Floor((50 - vertex.z) * 2.55f * 256);
+                        //try
+                        //{
+                        //    vertex.y = tile.gameObject.GetComponent<UnityTile>().HeightData[hi];
+                        //}
+                        //catch (Exception e)
+                        //{ }
+                        //vertex.y =tile.gameObject.GetComponent<UnityTile>().QueryHeightDataNonclamped((vertex.x + 50) / 100.0f, (vertex.z + 50) / 100.0f);
+
+                        // Build 0020, save ST data to csv file
+                        float distIFT = 0;
+                        float distTDM = 0;
+
+                        if(((c * vertices.Length + i) == 498) || ((c * vertices.Length + i) == 508))
                         {
+                            Debug.Log("");
+                        }
+
+                        // map to get the value of rootimage
+                        int x = i % vertices_scalemax;
+                        int z = i / vertices_scalemax;
+
+                        x = x + x_offset * (vertices_scalemax - 1);
+                        z = z + z_offset * (vertices_scalemax - 1);
+                        int i_new = z * ncols + x;
+
+                        //// Build 0018, change the mindist, bestNode to IFT calculation
+                        if (UIButton.isIFT)
+                        {
+                            Node node = graph.FindNode(0);
+                            try
+                            {
+                                node = graph.FindNode(rootImage[i_new] - 1);//graph.Nodes[rootImage[i_new] - 1];
+                            }
+                            catch (Exception e)
+                            { }
                             float posX = vertex.x;
                             float posZ = vertex.z;
                             Vector3 pos = new Vector3(posX + tile.position.x, node.vec.y, posZ + tile.position.z);
 
-                            float dist = (pos - node.vec).magnitude;
+                            // Get the pos for node.vec
+                            //Vector3 nodeVec = node.vec;
+                            //int nx_i = (int)((node.vec.x - (tx_min - 50)) / (100.0 / (vmax - 1)));
+                            //int nz_i = (int)((node.vec.z - (tz_min - 50)) / (100.0 / (vmax - 1)));
+                            //float nx = (float)(nx_i * (100.0 / (vmax - 1)) + (tx_min - 50));
+                            //float nz = (float)(nz_i * (100.0 / (vmax - 1)) + (tz_min - 50));
 
-                            if (dist < mindist)
+                            //int pnx_i = (int)((pos.x - (tx_min - 50)) / (100.0 / (vmax - 1)));
+                            //int pnz_i = (int)((pos.z - (tz_min - 50)) / (100.0 / (vmax - 1)));
+                            //float pnx = (float)(pnx_i * (100.0 / (vmax - 1)) + (tx_min - 50));
+                            //float pnz = (float)(pnz_i * (100.0 / (vmax - 1)) + (tz_min - 50));
+
+                            //float dist = (pos - node.vec).magnitude;
+                            //nodeVec = new Vector3(nx, node.vec.y, nz);
+                            //Vector3 posVec = new Vector3(pnx, pos.y, pnz);
+                            //float dist1 = (posVec - nodeVec).magnitude;
+
+                            // method 1, return dist and node
+                            if (UIButton.isIFTCost)
+                                mindist = distImage[i_new]; //dist;// 10;// dist;
+                            else
                             {
+                                float dist = (pos - node.vec).magnitude;
                                 mindist = dist;
-                                bestNode = node;
+                            }
+                            bestNode = node; //graph.FindNode(2);// node;
+                            // method 2, directly use the the cost matrix to avoid calculate magnitude twice
+
+                            // Build 0020, save ST data to csv file
+                            if (UIButton.isCostDiff)
+                            {
+                                distIFT = distImage[i_new];
+                                distTDM = (pos - node.vec).magnitude;//dist1;// (pos - node.vec).magnitude;
+                            }
+                            //
+                        }
+                        else
+                        {
+                            foreach (Node node in graph.RestNodes)
+                            {
+                                float posX = vertex.x;
+                                float posZ = vertex.z;
+                                Vector3 pos = new Vector3(posX + tile.position.x, node.vec.y, posZ + tile.position.z);
+
+                                float dist = (pos - node.vec).magnitude;
+
+                                if (dist < mindist)
+                                {
+                                    mindist = dist;
+                                    bestNode = node;
+                                }
                             }
                         }
-                    }
-                    // equation, K * Tv / (1 + d(P,Nr)), 
-                    // Tv = bestNode.riskFactor
-                    // K = scale_dis
-                    // d(P,Nr) = mindist
-                    float dis_new = bestNode.riskFactor * scale_dis / (1 + mindist);
+                        // equation, K * Tv / (1 + d(P,Nr)), 
+                        // Tv = bestNode.riskFactor
+                        // K = scale_dis
+                        // d(P,Nr) = mindist
+                        float dis_new = bestNode.riskFactor * scale_dis / (1 + mindist);
 
-                    // Build 0020, save ST data to csv file
-                    if (UIButton.isCostDiff)
-                        dis_new = 0;// disable mesh
-                    //
+                        // Build 0020, save ST data to csv file
+                        if (UIButton.isCostDiff)
+                            dis_new = 0;// disable mesh
+                        //
 
-                    //vertex.y = vertex.y * 50;// vertex.y + i;
-                    vertex.y = dis_new;// vertex.y + i;
+                        //vertex.y = vertex.y * 50;// vertex.y + i;
+                        vertex.y = dis_new;// vertex.y + i;
 
-                    vertices[i] = vertex;
+                        vertices[i] = vertex;
 
-                    // Build 0029, mesh interval issue
-                    if (UIButton.isShowVertics)
-                    {
+                        // Build 0029, mesh interval issue
+                        if (UIButton.isShowVertics)
+                        {
                         
-                        //Debug.Log(baseVertices[i].y);
-                        VerticesNodeArray[i_new].vec = vertices[i] + tile.position;
+                            //Debug.Log(baseVertices[i].y);
+                            VerticesNodeArray[i_new].vec = vertices[i] + tile.position;
 
-                        if (baseVertices[i].y < 0.00002f)//0.0001
-                            VerticesNodeArray[i_new].vec.y = -100f;
+                            if (baseVertices[i].y < 0.00002f)//0.0001
+                                VerticesNodeArray[i_new].vec.y = -100f;
+                            else
+                                VerticesNodeArray[i_new].vec.y = vertex.y;
+
+                            VerticesNodeArray[i_new].objTransform.position = VerticesNodeArray[i_new].vec;
+                        }
+                        //
+
+                        //Debug.Log(dis_new);
+
+                        //choice of kernel function for density estimation
+                        if (Kernel == "G")
+                        {
+                            lambda = (1 / (r * Mathf.Sqrt(2 * Mathf.PI))) * Mathf.Exp(-0.5f * Mathf.Pow((Mathf.Pow((mindist + bestNode.LeastCost), -alpha) / r), 2));  //Gaussian
+                        }
                         else
-                            VerticesNodeArray[i_new].vec.y = vertex.y;
+                        {
+                            lambda = (1 / r) * 1 / (1 + Mathf.Exp(Mathf.Pow((mindist + bestNode.LeastCost), -alpha) / r));  //Sigmoid
+                        }
 
-                        VerticesNodeArray[i_new].objTransform.position = VerticesNodeArray[i_new].vec;
+
+                        lambdaMap.Add(lambda);//Felando
+
+                        Color col = Color.black;
+                        // Build 0020, save ST data to csv file
+                        if (UIButton.isCostDiff)
+                        {
+                            if (distTDM != 0)
+                                col.a = Clamp(0, Math.Abs((distIFT - distTDM) / distTDM), 1);
+                        }
+                        else
+                            col = bestNode.clr;
+                        //
+                        colorMap.Add(col);//felando
                     }
-                    //
-
-                    //Debug.Log(dis_new);
-
-                    //choice of kernel function for density estimation
-                    if (Kernel == "G")
-                    {
-                        lambda = (1 / (r * Mathf.Sqrt(2 * Mathf.PI))) * Mathf.Exp(-0.5f * Mathf.Pow((Mathf.Pow((mindist + bestNode.LeastCost), -alpha) / r), 2));  //Gaussian
-                    }
-                    else
-                    {
-                        lambda = (1 / r) * 1 / (1 + Mathf.Exp(Mathf.Pow((mindist + bestNode.LeastCost), -alpha) / r));  //Sigmoid
-                    }
-
-
-                    lambdaMap.Add(lambda);//Felando
-
-                    Color col = Color.black;
-                    // Build 0020, save ST data to csv file
-                    if (UIButton.isCostDiff)
-                    {
-                        if (distTDM != 0)
-                            col.a = Clamp(0, Math.Abs((distIFT - distTDM) / distTDM), 1);
-                    }
-                    else
-                        col = bestNode.clr;
-                    //
-                    colorMap.Add(col);//felando
                 }
 
                 // TimeLine 
@@ -699,77 +710,84 @@ public class ShowMap : MonoBehaviour
                         vertex.x = vertex.x * scale;
                         vertex.z = vertex.z * scale;
 
-                        // Build 0018, change the mindist, bestNode to IFT calculation
-                        if (UIButton.isIFT)
+                        // Build 0031, not calculate the sea
+                        //if (baseVertices[i].y < 0.00002f)
                         {
-                            // map to get the value of rootimage
-                            int x = i % vertices_scalemax;
-                            int z = i / vertices_scalemax;
-                            x = x + x_offset * (vertices_scalemax - 1);
-                            z = z + z_offset * (vertices_scalemax - 1);
-                            int i_new = z * ncols + x;
-
-                            try
-                            {
-                                Node node = graph.FindNode(rootImage[i_new] - 1);//Nodes[rootImage[i_new] - 1]; 
-
-                                float posX = vertex.x;
-                                float posZ = vertex.z;
-                                Vector3 pos = new Vector3(posX + tile.position.x, node.vec.y, posZ + tile.position.z);
-
-                                // method 2, directly use the the cost matrix to avoid calculate magnitude twice
-                                if (UIButton.isIFTCost)
-                                    mindist = distImage[i_new]; //dist;// 10;// dist;
-                                else
-                                {
-                                    // method 1, return dist and node
-                                    float dist = (pos - node.vec).magnitude;
-                                    mindist = dist;
-                                }
-
-                                bestNode = node; // graph.FindNode(3);// node;
-                            }
-                            catch (Exception e)
-                            {
-                                Debug.Log(rootImage[i_new]);
-                            }
                         }
-                        else
-                        {
-                            foreach (Node node in graph.RestNodes)
+                        //else
+                        { 
+                            // Build 0018, change the mindist, bestNode to IFT calculation
+                            if (UIButton.isIFT)
                             {
-                                float posX = vertex.x;
-                                float posZ = vertex.z;
-                                Vector3 pos = new Vector3(posX + tile.position.x, node.vec.y, posZ + tile.position.z);
+                                // map to get the value of rootimage
+                                int x = i % vertices_scalemax;
+                                int z = i / vertices_scalemax;
+                                x = x + x_offset * (vertices_scalemax - 1);
+                                z = z + z_offset * (vertices_scalemax - 1);
+                                int i_new = z * ncols + x;
 
-                                float dist = (pos - node.vec).magnitude;
-
-                                if (dist < mindist)
+                                try
                                 {
-                                    mindist = dist;
-                                    bestNode = node;
+                                    Node node = graph.FindNode(rootImage[i_new] - 1);//Nodes[rootImage[i_new] - 1]; 
+
+                                    float posX = vertex.x;
+                                    float posZ = vertex.z;
+                                    Vector3 pos = new Vector3(posX + tile.position.x, node.vec.y, posZ + tile.position.z);
+
+                                    // method 2, directly use the the cost matrix to avoid calculate magnitude twice
+                                    if (UIButton.isIFTCost)
+                                        mindist = distImage[i_new]; //dist;// 10;// dist;
+                                    else
+                                    {
+                                        // method 1, return dist and node
+                                        float dist = (pos - node.vec).magnitude;
+                                        mindist = dist;
+                                    }
+
+                                    bestNode = node; // graph.FindNode(3);// node;
                                 }
-
-                            }
-                        }
-
-                        try 
-                        {
-                            // if it is POI node
-                            if (bestNode.POIList == null)
-                            {
-                                NodeIndexArray.Add(bestNode.index);
-                                NodeArray.Add(bestNode);
+                                catch (Exception e)
+                                {
+                                    Debug.Log(rootImage[i_new]);
+                                }
                             }
                             else
                             {
-                                NodeIndexArray.Add(bestNode.POIList[k].index);
-                                NodeArray.Add(bestNode.POIList[k]);
+                                foreach (Node node in graph.RestNodes)
+                                {
+                                    float posX = vertex.x;
+                                    float posZ = vertex.z;
+                                    Vector3 pos = new Vector3(posX + tile.position.x, node.vec.y, posZ + tile.position.z);
+
+                                    float dist = (pos - node.vec).magnitude;
+
+                                    if (dist < mindist)
+                                    {
+                                        mindist = dist;
+                                        bestNode = node;
+                                    }
+
+                                }
                             }
-                        }
-                        catch (Exception e)
-                        {
-                            Debug.Log(bestNode.POIList[k].index);
+
+                            try 
+                            {
+                                // if it is POI node
+                                if (bestNode.POIList == null)
+                                {
+                                    NodeIndexArray.Add(bestNode.index);
+                                    NodeArray.Add(bestNode);
+                                }
+                                else
+                                {
+                                    NodeIndexArray.Add(bestNode.POIList[k].index);
+                                    NodeArray.Add(bestNode.POIList[k]);
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                Debug.Log(bestNode.POIList[k].index);
+                            }
                         }
                     }
                     NodeIndexArrayS[c, k] = NodeIndexArray;
