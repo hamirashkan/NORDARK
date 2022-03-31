@@ -33,8 +33,8 @@ public class ShowMap : MonoBehaviour
     public List<Texture2D> textMap;
     public List<float> costs;
     public AbstractMap map;
-    public string Kernel = "S"; //defaults to sigmoid, "G" for gaussian
-    public float r = 0.005f;
+    public string Kernel = "G"; //defaults to sigmoid, "G" for gaussian
+    public float r = 0.003f;
     public float alpha = 2;
     public float scale_dis = 1000;
     public float scale_risk = 10;
@@ -241,7 +241,9 @@ public class ShowMap : MonoBehaviour
         yield return new WaitForSeconds(time);
         DateTime dt1 = DateTime.Now;
         bReadyForCFH = false;
-        
+        // Build 0032, cost init = 0, for edge calculation.
+        costs = new List<float>();
+
         map = gameObject.GetComponent<AbstractMap>();// GameObject.Find("Mapbox").GetComponent<AbstractMap>();
         graph_op = dropdown_graphop.value;
         // Build 0029, draw vertices nodes
@@ -1492,8 +1494,14 @@ public class ShowMap : MonoBehaviour
 
             for (var i = 0; i < vertices.Length; i++)
             {
-                colors[i] = colorMap[iter];
-                colors[i].a = 1 - (lambdaMap[iter] - lMin) / (lMax - lMin);
+                // Build 0031,
+                if (vertices[i].y < 0.00002f)
+                    colors[i] = Color.black;
+                else
+                {
+                    colors[i] = colorMap[iter];
+                    colors[i].a = 1 - (lambdaMap[iter] - lMin) / (lMax - lMin);
+                }
                 iter += 1;
             }
 
@@ -1510,28 +1518,38 @@ public class ShowMap : MonoBehaviour
         int iter = 0;
         if ((NodeArrayS != null) && (NodeArrayS[0,0]!=null))// Build 0004, null bug
         {
-            for (int c = 0; c < 12; c++)
+            for (int c = 0; c < 13; c++)
             {
                 Transform tile;
-                if (c_flag_last)
-                    tile = gameObject.transform.GetChild(c);
-                else
-                    tile = gameObject.transform.GetChild(c + 1); //ignoring first child that is not a tile
+                //if (c_flag_last)
+                //    tile = gameObject.transform.GetChild(c);
+                //else
+                //    tile = gameObject.transform.GetChild(c + 1); //ignoring first child that is not a tile
                 // debug, mesh missed when click it
-                Mesh mesh = tile.gameObject.GetComponent<MeshFilter>().mesh;
-                var vertices = mesh.vertices;
-                Color[] colors = new Color[vertices.Length];
-                for (var i = 0; i < vertices.Length; i++)
+                tile = gameObject.transform.GetChild(c);
+                if (tile.name != "TileProvider")
                 {
-                    colors[i] = NodeArrayS[c, timeIndex-1][i].clr;//colorMap[iter];
-                    colors[i].a = 0.5f;
-                    iter += 1;
+                    Mesh mesh = tile.gameObject.GetComponent<MeshFilter>().mesh;
+                    var vertices = mesh.vertices;
+                    Color[] colors = new Color[vertices.Length];
+                    for (var i = 0; i < vertices.Length; i++)
+                    {
+                        // Build 0031,
+                        if (vertices[i].y < 0.00002f)
+                            colors[i] = Color.black;
+                        else
+                        {
+                            colors[i] = NodeArrayS[c, timeIndex - 1][i].clr;//colorMap[iter];
+                            colors[i].a = 0.5f;
+                        }
+                        iter += 1;
+                    }
+
+                    Shader shader; shader = Shader.Find("Particles/Standard Unlit");
+
+                    tile.gameObject.GetComponent<Renderer>().material = SurfaceMat;
+                    mesh.colors = colors;
                 }
-
-                Shader shader; shader = Shader.Find("Particles/Standard Unlit");
-
-                tile.gameObject.GetComponent<Renderer>().material = SurfaceMat;
-                mesh.colors = colors;
             }
 
             foreach (Node node in graph.restNodes)
@@ -3389,7 +3407,15 @@ public class ShowMap : MonoBehaviour
                 }
 
                 //new Color(resultCFM[y * ParkTexture.width + x] / (float)patternMax, 0, 1 - resultCFM[y * ParkTexture.width + x] / (float)patternMax)
-                colors[i] = new Color(CFHArrayS[c][i] / (float)patternMax, 0, 1 - CFHArrayS[c][i] / (float)patternMax);// CFHArrayS[i] ;//colorMap[iter];
+
+                // Build 0031,
+                if (vertices[i].y < 0.00002f)
+                {
+                    colors[i] = Color.black;
+                }
+                else
+                    colors[i] = new Color(CFHArrayS[c][i] / (float)patternMax, 0, 1 - CFHArrayS[c][i] / (float)patternMax);// CFHArrayS[i] ;//colorMap[iter];
+                //
                 colors[i].a = 0.5f;
             }
 
