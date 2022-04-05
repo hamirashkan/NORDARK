@@ -521,7 +521,7 @@ public class ShowMap : MonoBehaviour
                     vertex.z = vertex.z * scale;
 
                     // Build 0031, not calculate the sea
-                    if (baseVertices[i].y < 0.00002f)
+                    if ((graph_op > 0) && (baseVertices[i].y < 0.00002f))
                     {
                         vertices[i] = vertex;
                         lambda = (1 / r) * 1 / (1 + Mathf.Exp(Mathf.Pow((0 + 0), -alpha) / r));
@@ -3226,21 +3226,21 @@ public class ShowMap : MonoBehaviour
                     temporalRoad[k][4, 3] = 14;
                     temporalRoad[k][3, 5] = 12;//Line 5 (C<=>H2) (12, 11)
                     temporalRoad[k][5, 3] = 11;
-                    temporalRoad[k][4, 1] = 20;//Line 6 (D=>A) (20, 0)
+                    temporalRoad[k][1, 4] = 15;//Line 6 (A=>D) (0, 15)
                 }
                 else if (k == 1)
                 {
                     temporalRoad[k][0, 1] = 6;//Line 1 (H1<=>A) (6, 5)
                     temporalRoad[k][1, 0] = 5;
-                    temporalRoad[k][1, 2] = 8;//Line 2 (A<=>B) (8, 30)
-                    temporalRoad[k][2, 1] = 30;
+                    temporalRoad[k][1, 2] = 30;//Line 2 (A<=>B) (30, 10)
+                    temporalRoad[k][2, 1] = 10;
                     temporalRoad[k][2, 3] = 21;//Line 3 (B<=>C) (21, 10)
                     temporalRoad[k][3, 2] = 10;
                     temporalRoad[k][3, 4] = 15;//Line 4 (C<=>D) (15, 14)
                     temporalRoad[k][4, 3] = 14;
                     temporalRoad[k][3, 5] = 12;//Line 5 (C<=>H2) (12, 11)
                     temporalRoad[k][5, 3] = 11;
-                    temporalRoad[k][4, 1] = 20;//Line 6 (D=>A) (20, 0)
+                    temporalRoad[k][1, 4] = 15;//Line 6 (A=>D) (0, 15)
                 }
                 else if (k == 2)
                 {
@@ -3248,27 +3248,27 @@ public class ShowMap : MonoBehaviour
                     temporalRoad[k][1, 0] = 5;
                     temporalRoad[k][1, 2] = 8;//Line 2 (A<=>B) (8, 10)
                     temporalRoad[k][2, 1] = 10;
-                    temporalRoad[k][2, 3] = 21;//Line 3 (B<=>C) (21, 24)
-                    temporalRoad[k][3, 2] = 24;
+                    temporalRoad[k][2, 3] = 21;//Line 3 (B<=>C) (21, 10)
+                    temporalRoad[k][3, 2] = 10;
                     temporalRoad[k][3, 4] = 15;//Line 4 (C<=>D) (15, 14)
                     temporalRoad[k][4, 3] = 14;
                     temporalRoad[k][3, 5] = 12;//Line 5 (C<=>H2) (12, 11)
                     temporalRoad[k][5, 3] = 11;
-                    temporalRoad[k][4, 1] = 20;//Line 6 (D=>A) (20, 0)
+                    temporalRoad[k][1, 4] = 25;//Line 6 (A=>D) (0, 25)
                 }
                 else if (k == 3)
                 {
                     temporalRoad[k][0, 1] = 6;//Line 1 (H1<=>A) (6, 5)
                     temporalRoad[k][1, 0] = 5;
-                    temporalRoad[k][1, 2] = 15;//Line 2 (A<=>B) (15, 10)
+                    temporalRoad[k][1, 2] = 8;//Line 2 (A<=>B) (8, 10)
                     temporalRoad[k][2, 1] = 10;
-                    temporalRoad[k][2, 3] = 21;//Line 3 (B<=>C) (21, 25)
-                    temporalRoad[k][3, 2] = 25;
-                    temporalRoad[k][3, 4] = 20;//Line 4 (C<=>D) (20, 14)
+                    temporalRoad[k][2, 3] = 21;//Line 3 (B<=>C) (21, 10)
+                    temporalRoad[k][3, 2] = 10;
+                    temporalRoad[k][3, 4] = 15;//Line 4 (C<=>D) (15, 14)
                     temporalRoad[k][4, 3] = 14;
                     temporalRoad[k][3, 5] = 12;//Line 5 (C<=>H2) (12, 11)
                     temporalRoad[k][5, 3] = 11;
-                    temporalRoad[k][4, 1] = 30;//Line 6 (D=>A) (30, 0)
+                    temporalRoad[k][1, 4] = 25;//Line 6 (A=>D) (0, 25)
                 }
                 for (int i = 0; i < nodesNames.Length; i++)
                 {
