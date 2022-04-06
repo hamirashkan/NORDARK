@@ -7,6 +7,16 @@ using System.Linq;
 
 public class Graph// : ScriptableObject
 {
+    enum DIJ_MODE : ushort
+    {
+        None = 0,
+        Normal = 1,
+        Reverse = 2,
+        ReverseOpt = 3,
+        OutlierReading = 200
+    }
+    // Build 0034, compare Dijkstra
+    private DIJ_MODE dij_mode = DIJ_MODE.Normal;
     // Build 0009, add IFT for Graph 1
     [SerializeField]
     public List<Node> pOInodes;
@@ -253,51 +263,120 @@ public class Graph// : ScriptableObject
             risk(roadTemporal, restNodes_list, POINodes_list);
             Debug.Log("E10012:Nearest POI & Risk(Dijkstra):" + (DateTime.Now - dt3).TotalMilliseconds + " millisec");
             dt3 = DateTime.Now;
-            // Build 0033, calculate the minium distances from POIs to each rest nodes
-            // calculate the minium distances to POIs for each rest node
-            for (int i = 0; i < POINodes_list.Count; i++)
+            // Build 0034
+            if (dij_mode == DIJ_MODE.Normal)
             {
-                Node nodeX = FindNode(POINodes_list[i]);
-                if (nodeX != null)
+                // Build 0033, calculate the minium distances from POIs to each rest nodes
+                // calculate the minium distances to POIs for each rest node
+                for (int i = 0; i < POINodes_list.Count; i++)
                 {
-                    dijkstra(roadcosts, nodeX.index);
-                    for (int j = 0; j < restNodes_list.Count; j++)
+                    Node nodeX = FindNode(POINodes_list[i]);
+                    if (nodeX != null)
                     {
-                        Node nodeY = FindNode(restNodes_list[j]);
-                        if (dist[restNodes_list[j]] <= nodeY.LeastCost)
+                        dijkstra(roadcosts, nodeX.index);
+                        for (int j = 0; j < restNodes_list.Count; j++)
                         {
-                            nodeY.LeastCost = dist[restNodes_list[j]];
-                            nodeY.MostAccessPOI = nodeX;
-                            // update color as the same of the MostAccessPOI
-                            nodeY.clr = nodeY.MostAccessPOI.clr;
+                            Node nodeY = FindNode(restNodes_list[j]);
+                            if (dist[restNodes_list[j]] <= nodeY.LeastCost)
+                            {
+                                nodeY.LeastCost = dist[restNodes_list[j]];
+                                nodeY.MostAccessPOI = nodeX;
+                                // update color as the same of the MostAccessPOI
+                                nodeY.clr = nodeY.MostAccessPOI.clr;
+                            }
                         }
                     }
                 }
             }
-            //// calculate the minium distances to POIs for each rest node
-            //for (int i = 0; i < restNodes_list.Count; i++)
-            //{
-            //    Node nodeX = FindNode(restNodes_list[i]);
-            //    RestNodes.Add(nodeX); //keeping track of nodes in between
-            //    if (nodeX != null)
-            //    {
-            //        //Debug.Log("Calculate " + nodeX.name + " nodes");
+            else if (dij_mode == DIJ_MODE.ReverseOpt) // Build 0034, optimize reverse
+            {
+                for (int i = 0; i < POINodes_list.Count; i++)
+                {
+                    Node nodeX = FindNode(POINodes_list[i]);
+                    if (nodeX != null)
+                    {
+                        dijkstraR(roadcosts, nodeX.index);
+                        for (int j = 0; j < restNodes_list.Count; j++)
+                        {
+                            Node nodeY = FindNode(restNodes_list[j]);
+                            if (dist[restNodes_list[j]] <= nodeY.LeastCost)
+                            {
+                                nodeY.LeastCost = dist[restNodes_list[j]];
+                                nodeY.MostAccessPOI = nodeX;
+                                // update color as the same of the MostAccessPOI
+                                nodeY.clr = nodeY.MostAccessPOI.clr;
+                            }
+                        }
+                    }
+                }
+                //Debug.Log("E13011:DijReverse:" + (DateTime.Now - dt3).TotalMilliseconds + " millisec");
+                
+                //Debug.Log("E1301:POI     calculation result " + "to Source, DijReverse\n");
+                //for (int i = 0; i < restNodes_list.Count; i++)
+                //{
+                //    Node nodeX = FindNode(restNodes_list[i]);
+                //    if (nodeX != null)
+                //        Debug.Log("E1301: "+ nodeX.name + " \t\t " + nodeX.MostAccessPOI + " \t\t " + nodeX.LeastCost + "\t\t RISK FACTOR: " + nodeX.riskFactor + "\n");
+                //}
 
-            //        dijkstra(roadcosts, nodeX.index);
-            //        for (int j = 0; j < POINodes_list.Count; j++)
-            //        {
-            //            if (dist[POINodes_list[j]] <= nodeX.LeastCost)
-            //            {
-            //                nodeX.LeastCost = dist[POINodes_list[j]];
-            //                nodeX.MostAccessPOI = FindNode(POINodes_list[j]);
-            //                // update color as the same of the MostAccessPOI
-            //                nodeX.clr = nodeX.MostAccessPOI.clr;
-            //            }
-            //        }
-            //    }
-            //}
+                //dt3 = DateTime.Now;
+                //for (int i = 0; i < restNodes_list.Count; i++)
+                //{
+                //    Node nodeX = FindNode(restNodes_list[i]);
+                //    RestNodes.Add(nodeX); //keeping track of nodes in between
+                //    if (nodeX != null)
+                //    {
+                //        //Debug.Log("Calculate " + nodeX.name + " nodes");
 
-            // Print the result
+                //        dijkstra(roadcosts, nodeX.index);
+                //        for (int j = 0; j < POINodes_list.Count; j++)
+                //        {
+                //            if (dist[POINodes_list[j]] <= nodeX.LeastCost)
+                //            {
+                //                nodeX.LeastCost = dist[POINodes_list[j]];
+                //                nodeX.MostAccessPOI = FindNode(POINodes_list[j]);
+                //                // update color as the same of the MostAccessPOI
+                //                nodeX.clr = nodeX.MostAccessPOI.clr;
+                //            }
+                //        }
+                //    }
+                //}
+                //Debug.Log("E13011:DijNormal:" + (DateTime.Now - dt3).TotalMilliseconds + " millisec");
+
+                //Debug.Log("E1302:POI     calculation result " + "to Source, DijNormal\n");
+                //for (int i = 0; i < restNodes_list.Count; i++)
+                //{
+                //    Node nodeX = FindNode(restNodes_list[i]);
+                //    if (nodeX != null)
+                //        Debug.Log("E1302: " + nodeX.name + " \t\t " + nodeX.MostAccessPOI + " \t\t " + nodeX.LeastCost + "\t\t RISK FACTOR: " + nodeX.riskFactor + "\n");
+                //}
+            }
+            else//dij_mode == DIJ_MODE.Reverse
+            {
+                // calculate the minium distances to POIs for each rest node
+                for (int i = 0; i < restNodes_list.Count; i++)
+                {
+                    Node nodeX = FindNode(restNodes_list[i]);
+                    RestNodes.Add(nodeX); //keeping track of nodes in between
+                    if (nodeX != null)
+                    {
+                        //Debug.Log("Calculate " + nodeX.name + " nodes");
+
+                        dijkstra(roadcosts, nodeX.index);
+                        for (int j = 0; j < POINodes_list.Count; j++)
+                        {
+                            if (dist[POINodes_list[j]] <= nodeX.LeastCost)
+                            {
+                                nodeX.LeastCost = dist[POINodes_list[j]];
+                                nodeX.MostAccessPOI = FindNode(POINodes_list[j]);
+                                // update color as the same of the MostAccessPOI
+                                nodeX.clr = nodeX.MostAccessPOI.clr;
+                            }
+                        }
+                    }
+                }
+            }
+
             Debug.Log("POI     calculation result " + "from Source\n");
             for (int i = 0; i < restNodes_list.Count; i++)
             {
@@ -488,106 +567,202 @@ public class Graph// : ScriptableObject
            printSolution(dist, Nodes.Count); */
     }
 
+    void dijkstraR(float[,] graph, int src)
+    {
+        dist = new float[Nodes.Count];
+        bool[] sptSet = new bool[Nodes.Count];
+
+        for (int i = 0; i < Nodes.Count; i++)
+        {
+            dist[i] = int.MaxValue;
+            sptSet[i] = false;
+        }
+
+        dist[src] = 0;
+
+        // Find shortest path for all vertices
+        for (int count = 0; count < Nodes.Count - 1; count++)
+        {
+            int u = minDistance(dist, sptSet);
+
+            sptSet[u] = true;
+
+            for (int v = 0; v < Nodes.Count; v++)
+                if (!sptSet[v] && graph[v, u] != 0 &&
+                     dist[u] != int.MaxValue && dist[u] + graph[v, u] < dist[v])
+                    dist[v] = dist[u] + graph[v, u];
+        }
+    }
+
     // Calculate the risk for timeframes, save the result to POIList and LeastCostList
     void risk(float[][,] temporalCost, List<int> rests, List<int> POIs)
     {
-        // Build 0033, calculate the minium distances from POIs to each rest nodes
-        // initialization
-        for (int i = 0; i < rests.Count; i++)
+        // Build 0034
+        if (dij_mode == DIJ_MODE.Normal)
         {
-            Node nodeX = FindNode(rests[i]);//Nodes[rests[i]]
-            nodeX.riskFactor = 0;
-            nodeX.POIList = new Node[timeSteps];
-            nodeX.LeastCostList = Enumerable.Repeat(Mathf.Infinity, timeSteps).ToArray();
-        }
-        // caluclation
-        for (int k = 0; k < timeSteps; k++)
-        {
-            for (int i = 0; i < POIs.Count; i++)
+            // Build 0033, calculate the minium distances from POIs to each rest nodes
+            // initialization
+            for (int i = 0; i < rests.Count; i++)
             {
-                Node nodeX = FindNode(POIs[i]);
-                Node tempAccess;
-                if (nodeX != null)
+                Node nodeX = FindNode(rests[i]);//Nodes[rests[i]]
+                nodeX.riskFactor = 0;
+                nodeX.POIList = new Node[timeSteps];
+                nodeX.LeastCostList = Enumerable.Repeat(Mathf.Infinity, timeSteps).ToArray();
+            }
+            // caluclation
+            for (int k = 0; k < timeSteps; k++)
+            {
+                for (int i = 0; i < POIs.Count; i++)
                 {
-                    float tempCost = Mathf.Infinity;
-                    //DateTime dt3 = DateTime.Now;
-
-                    dijkstra(temporalCost[k], nodeX.index);
-
-                    for (int j = 0; j < rests.Count; j++)
+                    Node nodeX = FindNode(POIs[i]);
+                    Node tempAccess;
+                    if (nodeX != null)
                     {
-                        Node nodeY = FindNode(rests[j]);
-                        tempCost = dist[rests[j]];
-                        tempAccess = nodeX;
-                        if (tempCost <= nodeY.LeastCostList[k])
+                        float tempCost = Mathf.Infinity;
+                        //DateTime dt3 = DateTime.Now;
+                        
+                        dijkstra(temporalCost[k], nodeX.index);
+
+                        for (int j = 0; j < rests.Count; j++)
                         {
-                            nodeY.LeastCostList[k] = tempCost;
-                            nodeY.POIList[k] = tempAccess;
+                            Node nodeY = FindNode(rests[j]);
+                            tempCost = dist[rests[j]];
+                            tempAccess = nodeX;
+                            if (tempCost <= nodeY.LeastCostList[k])
+                            {
+                                nodeY.LeastCostList[k] = tempCost;
+                                nodeY.POIList[k] = tempAccess;
+                            }
                         }
                     }
                 }
             }
-        }
-        // Leastcost
-        //for (int j = 0; j < rests.Count; j++)
-        //{
-        //    Node nodeY = FindNode(rests[j]);
-        //    nodeY.LeastCost = nodeY.LeastCostList.Min();
-        //}
-        //
-        // POI Label frequency calculation, get CFH result
-        for (int k = 0; k < timeSteps; k++)
-        {
-            for (int j = 0; j < rests.Count; j++)
+            // Leastcost
+            //for (int j = 0; j < rests.Count; j++)
+            //{
+            //    Node nodeY = FindNode(rests[j]);
+            //    nodeY.LeastCost = nodeY.LeastCostList.Min();
+            //}
+            //
+            // POI Label frequency calculation, get CFH result
+            for (int k = 0; k < timeSteps; k++)
             {
-                Node nodeY = FindNode(rests[j]);
-
-                if (k > 0 && nodeY.POIList[k] != nodeY.POIList[k - 1])
+                for (int j = 0; j < rests.Count; j++)
                 {
-                    nodeY.riskFactor += 1;
+                    Node nodeY = FindNode(rests[j]);
+
+                    if (k > 0 && nodeY.POIList[k] != nodeY.POIList[k - 1])
+                    {
+                        nodeY.riskFactor += 1;
+                    }
+                    //Debug.Log("E100131:dij:" + (DateTime.Now - dt3).TotalMilliseconds + " millisec");
                 }
-                //Debug.Log("E100131:dij:" + (DateTime.Now - dt3).TotalMilliseconds + " millisec");
             }
         }
-            //// calculate the minium distances to POIs for each rest node
-            //for (int i = 0; i < rests.Count; i++)
+        // Build 0034
+        else if(dij_mode == DIJ_MODE.ReverseOpt)
+        {
+            // Build 0033, calculate the minium distances from POIs to each rest nodes
+            // initialization
+            for (int i = 0; i < rests.Count; i++)
+            {
+                Node nodeX = FindNode(rests[i]);//Nodes[rests[i]]
+                nodeX.riskFactor = 0;
+                nodeX.POIList = new Node[timeSteps];
+                nodeX.LeastCostList = Enumerable.Repeat(Mathf.Infinity, timeSteps).ToArray();
+            }
+            // caluclation
+            for (int k = 0; k < timeSteps; k++)
+            {
+                for (int i = 0; i < POIs.Count; i++)
+                {
+                    Node nodeX = FindNode(POIs[i]);
+                    Node tempAccess;
+                    if (nodeX != null)
+                    {
+                        float tempCost = Mathf.Infinity;
+                        //DateTime dt3 = DateTime.Now;
+
+                        dijkstraR(temporalCost[k], nodeX.index);
+
+                        for (int j = 0; j < rests.Count; j++)
+                        {
+                            Node nodeY = FindNode(rests[j]);
+                            tempCost = dist[rests[j]];
+                            tempAccess = nodeX;
+                            if (tempCost <= nodeY.LeastCostList[k])
+                            {
+                                nodeY.LeastCostList[k] = tempCost;
+                                nodeY.POIList[k] = tempAccess;
+                            }
+                        }
+                    }
+                }
+            }
+            // Leastcost
+            //for (int j = 0; j < rests.Count; j++)
             //{
-            //    Node nodeX = FindNode(rests[i]);//Nodes[rests[i]]
-            //    nodeX.riskFactor = 0;
-            //    nodeX.POIList = new Node[timeSteps];
-            //    nodeX.LeastCostList = new float[timeSteps];
-            //    Node tempAccess;
-            //    if (nodeX != null)
-            //    {
-
-            //        for (int k = 0; k < timeSteps; k++)
-            //        {
-            //            float tempCost = Mathf.Infinity;
-            //            //DateTime dt3 = DateTime.Now;
-
-            //            dijkstra(temporalCost[k], nodeX.index);
-
-            //            for (int j = 0; j < POIs.Count; j++)
-            //            {
-            //                if (dist[POIs[j]] <= tempCost)
-            //                {
-            //                    tempCost = dist[POIs[j]];
-            //                    tempAccess = FindNode(POIs[j]);// Nodes[POIs[j]]
-            //                    nodeX.LeastCostList[k] = tempCost;
-            //                    nodeX.POIList[k] = tempAccess;
-            //                }
-            //            }
-            //            // POI Label frequency calculation, get CFH result
-            //            if (k > 0 && nodeX.POIList[k] != nodeX.POIList[k - 1])
-            //            {
-            //                nodeX.riskFactor += 1;
-            //            }
-            //            //Debug.Log("E100131:dij:" + (DateTime.Now - dt3).TotalMilliseconds + " millisec");
-            //        }
-
-            //    }
+            //    Node nodeY = FindNode(rests[j]);
+            //    nodeY.LeastCost = nodeY.LeastCostList.Min();
             //}
+            //
+            // POI Label frequency calculation, get CFH result
+            for (int k = 0; k < timeSteps; k++)
+            {
+                for (int j = 0; j < rests.Count; j++)
+                {
+                    Node nodeY = FindNode(rests[j]);
+
+                    if (k > 0 && nodeY.POIList[k] != nodeY.POIList[k - 1])
+                    {
+                        nodeY.riskFactor += 1;
+                    }
+                    //Debug.Log("E100131:dij:" + (DateTime.Now - dt3).TotalMilliseconds + " millisec");
+                }
+            }
         }
+        else //
+        {
+            // calculate the minium distances to POIs for each rest node
+            for (int i = 0; i < rests.Count; i++)
+            {
+                Node nodeX = FindNode(rests[i]);//Nodes[rests[i]]
+                nodeX.riskFactor = 0;
+                nodeX.POIList = new Node[timeSteps];
+                nodeX.LeastCostList = new float[timeSteps];
+                Node tempAccess;
+                if (nodeX != null)
+                {
+
+                    for (int k = 0; k < timeSteps; k++)
+                    {
+                        float tempCost = Mathf.Infinity;
+                        //DateTime dt3 = DateTime.Now;
+
+                        dijkstra(temporalCost[k], nodeX.index);
+
+                        for (int j = 0; j < POIs.Count; j++)
+                        {
+                            if (dist[POIs[j]] <= tempCost)
+                            {
+                                tempCost = dist[POIs[j]];
+                                tempAccess = FindNode(POIs[j]);// Nodes[POIs[j]]
+                                nodeX.LeastCostList[k] = tempCost;
+                                nodeX.POIList[k] = tempAccess;
+                            }
+                        }
+                        // POI Label frequency calculation, get CFH result
+                        if (k > 0 && nodeX.POIList[k] != nodeX.POIList[k - 1])
+                        {
+                            nodeX.riskFactor += 1;
+                        }
+                        //Debug.Log("E100131:dij:" + (DateTime.Now - dt3).TotalMilliseconds + " millisec");
+                    }
+
+                }
+            }
+        }
+    }
 
     public class SparseMatrix<T>
     {

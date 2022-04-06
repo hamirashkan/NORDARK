@@ -74,11 +74,12 @@ public class Lines : MonoBehaviour
                 float sWidth = 1 - (dist - minW) / (maxW - minW);
                 float eWidth = 1 - (Neighbors[i].LeastCost - minW) / (maxW - minW);
 
-                //if (dist == Neighbors[i].LeastCost)
-                //{
-                Neighbors[i].visited.Add(currentNode.name);
-                //   eWidth = sWidth;
-                //}
+                // Build 0034, bug fixed for line (C, B), can not have correct offset value 
+                if (dist == Neighbors[i].LeastCost)
+                {
+                    Neighbors[i].visited.Add(currentNode.name);
+                    eWidth = sWidth;
+                }
 
                 Nclr = nColor;
                 newline = Instantiate(line);

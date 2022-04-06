@@ -169,6 +169,7 @@ public class ShowMap : MonoBehaviour
             Node verticeNodeX = Node.Create<Node>("Vertex_" + i.ToString(), new Vector3(0, -1, 0));
             verticeNodeX.index = i;
             VerticesNodeArray.Add(verticeNodeX);
+
             verticeNodeX.objTransform = Instantiate(point);
             verticeNodeX.obj = verticeNodeX.objTransform.gameObject;
             verticeNodeX.objTransform.name = verticeNodeX.name;
@@ -251,6 +252,9 @@ public class ShowMap : MonoBehaviour
         //
         if (graph_op == 0)
         {
+            // Build 0034
+            map.Initialize(new Mapbox.Utils.Vector2d(62.4750425, 6.1914948), 17);
+            bg_Mapbox.Initialize(new Mapbox.Utils.Vector2d(62.4750425, 6.1914948), 17);
             GraphSet1("RoadGraph1");
             slrStartTime.minValue = 1;
             slrStartTime.maxValue = 4;
@@ -525,12 +529,12 @@ public class ShowMap : MonoBehaviour
                     {
                         vertices[i] = vertex;
                         lambda = (1 / r) * 1 / (1 + Mathf.Exp(Mathf.Pow((0 + 0), -alpha) / r));
-                        lambdaMap.Add((lambdaMap.Min() + lambdaMap.Max())/ 2);
+                        lambdaMap.Add((lambdaMap.Min() + lambdaMap.Max()) / 2);
                         Color col = Color.black;
                         colorMap.Add(col);
                     }
                     else
-                    { 
+                    {
                         //// Build 0030
                         //int hi= (int)Math.Floor((vertex.x + 50) * 2.55f) + (int)Math.Floor((50 - vertex.z) * 2.55f * 256);
                         //try
@@ -545,7 +549,7 @@ public class ShowMap : MonoBehaviour
                         float distIFT = 0;
                         float distTDM = 0;
 
-                        if(((c * vertices.Length + i) == 498) || ((c * vertices.Length + i) == 508))
+                        if (((c * vertices.Length + i) == 498) || ((c * vertices.Length + i) == 508))
                         {
                             Debug.Log("");
                         }
@@ -644,11 +648,10 @@ public class ShowMap : MonoBehaviour
                         // Build 0029, mesh interval issue
                         if (UIButton.isShowVertics)
                         {
-                        
+
                             //Debug.Log(baseVertices[i].y);
                             VerticesNodeArray[i_new].vec = vertices[i] + tile.position;
-
-                            if (baseVertices[i].y < 0.00002f)//0.0001
+                            if ((dropdown_graphop.value > 0) && (baseVertices[i].y < 0.00002f))//0.0001
                                 VerticesNodeArray[i_new].vec.y = -100f;
                             else
                                 VerticesNodeArray[i_new].vec.y = vertex.y;
@@ -1495,7 +1498,7 @@ public class ShowMap : MonoBehaviour
             for (var i = 0; i < vertices.Length; i++)
             {
                 // Build 0031,
-                if (vertices[i].y < 0.00002f)
+                if((dropdown_graphop.value > 0) && (vertices[i].y < 0.00002f))
                     colors[i] = Color.black;
                 else
                 {
@@ -1535,7 +1538,7 @@ public class ShowMap : MonoBehaviour
                     for (var i = 0; i < vertices.Length; i++)
                     {
                         // Build 0031,
-                        if (vertices[i].y < 0.00002f)
+                        if ((dropdown_graphop.value > 0) && (vertices[i].y < 0.00002f))
                             colors[i] = Color.black;
                         else
                         {
@@ -3409,7 +3412,7 @@ public class ShowMap : MonoBehaviour
                 //new Color(resultCFM[y * ParkTexture.width + x] / (float)patternMax, 0, 1 - resultCFM[y * ParkTexture.width + x] / (float)patternMax)
 
                 // Build 0031,
-                if (vertices[i].y < 0.00002f)
+                if ((dropdown_graphop.value > 0) && (vertices[i].y < 0.00002f))
                 {
                     colors[i] = Color.black;
                 }
