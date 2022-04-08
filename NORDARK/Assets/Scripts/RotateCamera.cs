@@ -22,8 +22,8 @@ public class RotateCamera : MonoBehaviour
     private float yaw = 0f;
     private float pitch = 0f;
 
-    private Vector3 default_pos;
-    private Vector3 default_rot;
+    public Vector3 default_pos;
+    public Vector3 default_rot;
 
 
     // Use this for initialization

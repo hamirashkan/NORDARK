@@ -21,7 +21,10 @@ public class Node : ScriptableObject
     public float[] LeastCostList; //List of costs for different POIs for risk calculation
     public float riskFactor; //riskFactor calculation happens in Graph.cs
 
+    public float x_index;
+    public float z_index;
 
+    public Vector3 globalposition;
 
     [SerializeField]
     private List<string> neighborNames;

@@ -9,6 +9,7 @@ using Mapbox.Unity.Map;
 public class UIButton : MonoBehaviour
 {
     public ShowMap other;
+    BarsVis bars_script;
 
     public static GameObject bg;
     public static bool isOn = true;
@@ -21,6 +22,7 @@ public class UIButton : MonoBehaviour
     void Start()
     {
         other = GameObject.Find("Mapbox").GetComponent<ShowMap>();
+        bars_script = GameObject.Find("Mapbox").GetComponent<BarsVis>();
     }
 
     // Update is called once per frame
@@ -96,6 +98,18 @@ public class UIButton : MonoBehaviour
     public void ComputeTDM()
     {
         other.ComputeTDM();
+    }
+
+    public void UpdateBars()
+    {
+        System.Random rnd = new System.Random();
+        float[] barValues = new float[bars_script.x_cols * bars_script.z_rows];
+        for (int i = 0; i < barValues.Length; i++)
+        {
+            barValues[i] = rnd.Next(0, 10);
+        }
+        bars_script.value = barValues;
+        bars_script.Redraw();
     }
 
     int long2tilex(double lon, int z)

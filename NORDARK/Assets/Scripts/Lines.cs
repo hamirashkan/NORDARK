@@ -130,7 +130,7 @@ public class Lines : MonoBehaviour
                         posv[0] = currentNode.vec + offset; // Build 0021, transform.position
                         //Debug.Log("Find nodes by index[" + nodeIndex.ToString() + "]: " + x.name);
                         for (int j = 0; j < x.AuxNodes.Count; j++)
-                            posv[j + 1] = x.AuxNodes[j];
+                            posv[j + 1] = x.AuxNodes[j] + offset; // Build 0036
                         posv[x.AuxNodes.Count + 1] = Neighbors[i].vec + offset;
                         l.positionCount = posv.Length;
                         l.SetPositions(posv);

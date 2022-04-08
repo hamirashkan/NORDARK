@@ -72,6 +72,7 @@ public class ShowMap : MonoBehaviour
     private GameObject Nodes;
     private GameObject Edges;
     private GameObject VerticesNodes; // Build 0029
+    private GameObject Camera; // Build 0036
 
     private Vector3[][] ArrayV3 = new Vector3[12][];
     private int[][] ArrayTriangles = new int[12][];
@@ -116,6 +117,7 @@ public class ShowMap : MonoBehaviour
         Nodes = GameObject.Find("Nodes");
         Edges = GameObject.Find("Edges");
         VerticesNodes = GameObject.Find("Vertices");
+        Camera = GameObject.Find("Main Camera");
 
         slrTimeLine = GameObject.Find("SlrTimeLine").GetComponent<Slider>();
         dropdown_graphop = GameObject.Find("Dropdown").GetComponent<Dropdown>();
@@ -281,9 +283,29 @@ public class ShowMap : MonoBehaviour
         }
         else if (graph_op == 3)
         {
-            map.Initialize(new Mapbox.Utils.Vector2d(62.4750425, 6.1914948), 17);
-            bg_Mapbox.Initialize(new Mapbox.Utils.Vector2d(62.4750425, 6.1914948), 17);
-            GraphSet4("RoadGraph4");
+
+            //map.Initialize(new Mapbox.Utils.Vector2d(62.4750425, 6.1914948), 17);
+            //bg_Mapbox.Initialize(new Mapbox.Utils.Vector2d(62.4750425, 6.1914948), 17);
+            //string[] strPOIs = { "7379970941", "7379971169", "8745416901" };
+            //https://www.google.no/maps/@62.4720013,6.1645443,17z?hl=no
+            map.Initialize(new Mapbox.Utils.Vector2d(62.4720013, 6.1645443), 17);
+            bg_Mapbox.Initialize(new Mapbox.Utils.Vector2d(62.4720013, 6.1645443), 17);
+            Camera.transform.position = new Vector3(-43.4042f, 394.8713f, 17.70133f);
+            Camera.transform.rotation = Quaternion.Euler(91.75f, 0, 0);
+            Camera.GetComponent<RotateCamera>().default_pos = Camera.transform.position;
+            Camera.GetComponent<RotateCamera>().default_rot = new Vector3(91.75f, 0, 0);
+            // All
+            string[] strPOIs = { "278087398", "7204337168", "8714559173", "7379970801" };
+            Color[] clrPOIs = { Color.blue, Color.red, Color.green, Color.magenta };
+            // solution 1
+            //string[] strPOIs = { "278087398", "7204337168", "8714559173" };
+            //Color[] clrPOIs = { Color.blue, Color.red, Color.green };
+            // solution 2
+            //string[] strPOIs = { "278087398", "7204337168", "7379970801" };
+            //Color[] clrPOIs = { Color.blue, Color.red, Color.magenta };
+            timeSteps = 20;
+            // Build 0036, generic graph load function
+            GraphSetLoad("Graph4", strPOIs, clrPOIs);
             slrStartTime.minValue = 1;
             slrStartTime.maxValue = 20;
             slrStartTime.value = slrStartTime.minValue;
@@ -431,7 +453,7 @@ public class ShowMap : MonoBehaviour
                     tile = gameObject.transform.GetChild(c + 1); //ignoring first child that is not a tile
 
                 // Build 0030
-                while (!(tile.gameObject.GetComponent<UnityTile>().HeightDataState == Mapbox.Unity.MeshGeneration.Enums.TilePropertyState.Loaded))
+                //while (!(tile.gameObject.GetComponent<UnityTile>().HeightDataState == Mapbox.Unity.MeshGeneration.Enums.TilePropertyState.Loaded))
                 {
 
                 }
@@ -524,6 +546,18 @@ public class ShowMap : MonoBehaviour
                     vertex.x = vertex.x * scale;
                     vertex.z = vertex.z * scale;
 
+                    // Build 0037
+                    // map to get the value of rootimage
+                    int x = i % vertices_scalemax;
+                    int z = i / vertices_scalemax;
+
+                    x = x + x_offset * (vertices_scalemax - 1);
+                    z = z + z_offset * (vertices_scalemax - 1);
+                    int i_new = z * ncols + x;
+
+                    VerticesNodeArray[i_new].globalposition = baseVertices[i] + tile.position;
+                    //
+
                     // Build 0031, not calculate the sea
                     if ((graph_op > 0) && (baseVertices[i].y < 0.00002f))
                     {
@@ -554,13 +588,7 @@ public class ShowMap : MonoBehaviour
                             Debug.Log("");
                         }
 
-                        // map to get the value of rootimage
-                        int x = i % vertices_scalemax;
-                        int z = i / vertices_scalemax;
 
-                        x = x + x_offset * (vertices_scalemax - 1);
-                        z = z + z_offset * (vertices_scalemax - 1);
-                        int i_new = z * ncols + x;
 
                         //// Build 0018, change the mindist, bestNode to IFT calculation
                         if (UIButton.isIFT)
@@ -1369,6 +1397,10 @@ public class ShowMap : MonoBehaviour
             //node.vec
             x_index = (int)((node.vec.x - x_min) / (100.0 / (vmax - 1)));
             z_index = (int)((z_max - node.vec.z) / (100.0 / (vmax - 1)));
+            // Build 0037
+            node.x_index = x_index;
+            node.z_index = z_index;
+            //
             if (adj_type == 1)
             {
                 // set test Image pixel as 1
@@ -1384,6 +1416,50 @@ public class ShowMap : MonoBehaviour
                 SetImageValue(x_index + 1, z_index + 1, node.index + 1);
             }
         }
+
+        // Build 0037
+        float[] distTDM = new float[nrows * ncols];
+        for (int i = 0; i < nrows * ncols; i++)
+        {
+            x_index = i % ncols;
+            z_index = i / ncols;
+            float mindist = Mathf.Infinity;
+            Node best;
+            foreach (Node node in graph.RestNodes)
+            {
+                float dist = Mathf.Sqrt((x_index - node.x_index) * (x_index - node.x_index) + (z_index - node.z_index) * (z_index - node.z_index));
+                if (dist < mindist)
+                {
+                    mindist = dist;
+                    best = node;
+                }
+            }
+            distTDM[i] = mindist;
+        }
+
+        //float[] distTDMv = new float[nrows * ncols];
+        //for (int i = 0; i < nrows * ncols; i++)
+        //{
+        //    x_index = i % ncols;
+        //    z_index = i / ncols;
+        //    float mindist = Mathf.Infinity;
+        //    Node best;
+        //    foreach (Node node in graph.RestNodes)
+        //    {
+        //        Vector3 pos = VerticesNodeArray[i].globalposition;
+        //        pos.y = 0;
+        //        float dist = (pos - node.vec).magnitude;//node.vec
+
+        //        if (dist < mindist)
+        //        {
+        //            mindist = dist;
+        //            best = node;
+        //        }
+        //    }
+        //    distTDMv[i] = mindist;
+        //}
+
+
         //testImage[0] = 1;
         //testImage[ncols * 10 + 20] = 1;
         //testImage[ncols * 10 + 21] = 1;
@@ -1415,7 +1491,7 @@ public class ShowMap : MonoBehaviour
         // Build 0019, cost image matrix
         Marshal.Copy(intPtrEdt, costImage, 0, nrows * ncols);
         for (int i = 0; i < nrows * ncols; i++)
-            distImage[i] = (float)Math.Sqrt(costImage[i]);
+            distImage[i] = (float)Math.Sqrt(costImage[i]);//(distTDM[i] / 
         //
         intPtrEdt = DllInterface.GetImage('R');
         Marshal.Copy(intPtrEdt, edtImage, 0, nrows * ncols);
@@ -1423,7 +1499,13 @@ public class ShowMap : MonoBehaviour
         // Build 0018, change the mindist, bestNode to IFT calculation
         Marshal.Copy(intPtrEdt, rootImage, 0, nrows * ncols);
         //
-
+        // Build 0037, TDM for bars vis
+        BarsVis bars_script = GameObject.Find("Mapbox").GetComponent<BarsVis>();
+        bars_script.x_cols = ncols;
+        bars_script.z_rows = nrows;
+        bars_script.value = distImage;// distTDM;// distImage;
+        bars_script.Redraw();
+        //
     }
     //
 
@@ -2069,7 +2151,214 @@ public class ShowMap : MonoBehaviour
         graph.printNodes();
     }
 
-    public void GraphSet4(string graphName)
+
+    public void GraphSetLoad(string graphName, string[] POI_labels, Color[] POI_colors)
+    {
+        string strSaveRootPath = "Assets/Resources/" + graphName + "/";
+        graph = Graph.Create(graphName);
+        float y = 0.25f;// xOz plane is the map 2D coordinates
+
+        string text = loadFile(strSaveRootPath + "NodeSet.csv");
+        string[] lines = Regex.Split(text, "\n");
+
+        int nodesNum = lines.Length - 2; //25;//lines.Length - 2;//nbStops
+        nodesNames = new string[nodesNum];
+        coords = new Vector3[nodesNum];
+
+        Debug.Log(DateTime.Now.ToString() + ", init started");
+        
+        for (int i = 0; i < nodesNames.Length; i++)
+        {
+            string rowdata = lines[i + 1];
+
+            string[] values = Regex.Split(rowdata, ",");
+            //string id = values[0];
+            float lat = float.Parse(values[1], System.Globalization.CultureInfo.InvariantCulture);
+            float lon = float.Parse(values[2], System.Globalization.CultureInfo.InvariantCulture);
+
+            nodesNames[i] = values[0];
+            Vector2 latlong = new Vector2(lat, lon);
+            Vector3 pos = latlong.AsUnityPosition(map.CenterMercator, map.WorldRelativeScale);
+            //coords[i] = new Vector3((lat - center_lat) * scale, y, (lon - center_lon) * scale);
+            // Build 0023
+            int ii = 0;
+            ImageMapping(ref pos, ref ii);
+
+            coords[i] = pos;
+
+            Node nodeX = Node.Create<Node>(nodesNames[i], coords[i]);
+            nodeX.index = i;
+            nodeX.stop_id = values[0];
+            graph.AddNode(nodeX);
+            nodeX.objTransform = Instantiate(point);
+            nodeX.obj = nodeX.objTransform.gameObject;
+            nodeX.objTransform.name = nodeX.name;
+            nodeX.objTransform.position = nodeX.vec;
+            nodeX.objTransform.parent = Nodes.transform;
+
+            nodeX.obj.GetComponent<Lines>().index = i;
+            nodeX.obj.GetComponent<Lines>().Neighbors = graph.Nodes[i].Neighbors;
+            nodeX.obj.GetComponent<Lines>().Weights = graph.Nodes[i].Weights;
+            nodeX.obj.GetComponent<Lines>().currentNode = graph.Nodes[i];
+            nodeX.obj.GetComponent<Lines>().line = line;
+
+            if (i % 50 == 0)
+                Debug.Log(DateTime.Now.ToString() + ", inited " + i + "_th nodes");
+        }
+
+        // Load raw edges
+        float[,] t0Road = new float[nodesNames.Length, nodesNames.Length];
+        // Build 0012, more nodes for edges
+        AuxLines = new List<AuxLine>();
+        text = loadFile(strSaveRootPath + "EdgeSet.csv");
+        string[] edges_data = Regex.Split(text, "\n");
+
+        int edgesNum = edges_data.Length - 2;
+        edgesNames = new string[edgesNum];
+
+        for (int i = 0; i < edgesNames.Length; i++)
+        {
+            string rowdata = edges_data[i + 1];
+
+            string[] values = Regex.Split(rowdata, ",");
+            //string id = values[0];
+            int startindex = graph.FindFirstNode(values[1]).index;
+            int stopindex = graph.FindFirstNode(values[2]).index;
+            /*if ((values[6] == "nan") || (values[6] == "nan\r"))
+                t0Road[startindex, stopindex] = 300 / 300;// 1e-4f;
+            else
+                t0Road[startindex, stopindex] = 300 / float.Parse(values[6], System.Globalization.CultureInfo.InvariantCulture);
+            */
+            // risk = time
+            //if ((values[6] == "nan") || (values[6] == "nan\r"))
+            //    t0Road[startindex, stopindex] = float.Parse(values[5], System.Globalization.CultureInfo.InvariantCulture) / 70 * KMh2MSEC;// 1e-4f;
+            //else
+            //    t0Road[startindex, stopindex] = float.Parse(values[5], System.Globalization.CultureInfo.InvariantCulture) / float.Parse(values[6], System.Globalization.CultureInfo.InvariantCulture) * KMh2MSEC;
+            // risk = distance
+            if ((values[6] == "nan") || (values[6] == "nan\r"))
+                t0Road[startindex, stopindex] = float.Parse(values[5], System.Globalization.CultureInfo.InvariantCulture) / 5 * KMh2MSEC;// 1e-4f;
+            else
+                t0Road[startindex, stopindex] = float.Parse(values[5], System.Globalization.CultureInfo.InvariantCulture) / 5 * KMh2MSEC;
+
+
+            //Linename values[6]
+            // Build 0012, more nodes for edges
+            // create list based on indexes
+
+            AuxLine AuxLineX = new AuxLine();
+            AuxLineX.LineName = startindex.ToString() + "_" + stopindex.ToString();
+            string[] lonSet = Regex.Split(values[7], "@");
+            string[] latSet = Regex.Split(values[8].Replace("\r", ""), "@");
+            if ((lonSet[0] != "") && (lonSet.Length == latSet.Length))
+            {
+                for (int j = 0; j < lonSet.Length; j++)
+                {
+                    float lon = float.Parse(lonSet[j], System.Globalization.CultureInfo.InvariantCulture);
+                    float lat = float.Parse(latSet[j], System.Globalization.CultureInfo.InvariantCulture);
+                    Vector2 latlong = new Vector2(lat, lon);
+                    Vector3 pos = latlong.AsUnityPosition(map.CenterMercator, map.WorldRelativeScale);
+                    AuxLineX.AuxNodes.Add(pos);
+                }
+            }
+            // Build 0016, draw lines
+            AuxLineX.startNodeIndex = startindex;
+            AuxLineX.startNodePosition = graph.Nodes[startindex].vec;
+            AuxLineX.stopNodeIndex = stopindex;
+            AuxLineX.stopNodePosition = graph.Nodes[stopindex].vec;
+            //
+            //AuxLineX.Add()
+            AuxLines.Add(AuxLineX);
+            //
+        }
+
+        timeSteps = 20;
+        graph.timeSteps = timeSteps;
+
+        float[][,] temporalRoad = Enumerable.Range(0, timeSteps).Select(_ => new float[nodesNames.Length, nodesNames.Length]).ToArray();
+
+        float[,] roads = new float[nodesNames.Length, nodesNames.Length];
+
+        graph.roadcosts = roads;
+        graph.roadTemporal = temporalRoad;
+
+        var defaultfile = strSaveRootPath + "Sample1.csv";
+        if (File.Exists(defaultfile))
+        {
+            loadCSVtoSTdata(defaultfile, ref temporalRoad);
+
+            for (int k = 0; k < timeSteps; k++)
+            {
+                for (int i = 0; i < nodesNames.Length; i++)
+                {
+                    for (int j = 0; j < nodesNames.Length; j++)
+                    {
+                        roads[i, j] += temporalRoad[k][i, j];
+                    }
+                }
+            }
+        }
+        else
+        {
+
+            System.Random rnd = new System.Random();
+
+            for (int k = 0; k < timeSteps; k++)
+            {
+                int high = 100;//500;//0
+                int low = 0;
+
+                //temporalRoad[k][0, 13] = rnd.Next(low, high) + 40;//Line 1 (1<=>14) (40, 39)
+
+                for (int i = 0; i < nodesNames.Length; i++)
+                {
+                    for (int j = 0; j < nodesNames.Length; j++)
+                    {
+                        if (t0Road[i, j] != 0)
+                            temporalRoad[k][i, j] = t0Road[i, j] + rnd.Next(low, high);
+                        roads[i, j] += temporalRoad[k][i, j];
+                    }
+                }
+            }
+            saveSTdataToCSV(strSaveRootPath + "graph.csv", temporalRoad);
+        }
+
+        for (int i = 0; i < roads.GetLength(0); i++)
+        {
+            for (int j = 0; j < roads.GetLength(1); j++)
+            {
+                roads[i, j] = roads[i, j] / timeSteps;
+                float weight = roads[i, j];
+                if (weight != 0)
+                {
+                    Node nodeX = graph.Nodes[i];
+                    if (nodeX != null)
+                    {
+                        nodeX.Neighbors.Add(graph.Nodes[j]);
+                        nodeX.NeighborNames.Add(graph.Nodes[j].name);
+                        nodeX.Weights.Add(roads[i, j]);
+                    }
+                }
+            }
+        }
+
+        graph.CreatePOInodes(POI_labels, POI_colors);
+
+        for (int i = 0; i < POI_labels.Length; i++)
+        {
+            GameObject.Find(POI_labels[i]).GetComponent<Renderer>().material.SetColor("_Color", POI_colors[i]);
+
+        }
+
+        for (int i = 0; i < POI_labels.Length; i++)
+        {
+            Color AccessColor = GameObject.Find(POI_labels[i]).GetComponent<Renderer>().material.color;
+            GameObject.Find(POI_labels[i]).GetComponent<Lines>().nColor = AccessColor;
+        }
+
+        graph.printNodes();
+    }
+
+    public void GraphSet4_Old(string graphName)
     {
         //pass C#'s delegate to C++
         //DllInterface.InitCSharpDelegate(DllInterface.LogMessageFromCpp);
