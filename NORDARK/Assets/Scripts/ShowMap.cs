@@ -97,7 +97,7 @@ public class ShowMap : MonoBehaviour
     int[] edtcostImage;
     float[] distImage;//sqrt(cost), sqrt(V)
     // Build 0010, high scale for the vertices interpolation
-    int vertices_scale = 4;// 4;// scale parameters
+    int vertices_scale = 1;// 4;// scale parameters
     const int vertices_max = 10;
     int vmax;
     //
@@ -1510,12 +1510,17 @@ public class ShowMap : MonoBehaviour
         Marshal.Copy(intPtrEdt, rootImage, 0, nrows * ncols);
         //
         // Build 0037, TDM for bars vis
-        BarsVis bars_script = GameObject.Find("Mapbox").GetComponent<BarsVis>();
-        bars_script.x_cols = ncols;
-        bars_script.z_rows = nrows;
-        bars_script.value = distTDMdff;// distTDM;// distImage;
-        bars_script.Redraw();
-        //
+        //BarsVis bars_script = GameObject.Find("Mapbox").GetComponent<Vis>();
+        //bars_script.x_cols = ncols;
+        //bars_script.z_rows = nrows;
+        //bars_script.value = distTDMdff;// distTDM;// distImage;
+        //bars_script.Redraw();
+        // Build 0039
+        QuadVis quad_script = GameObject.Find("Mapbox").GetComponent<QuadVis>();
+        quad_script.x_cols = ncols;
+        quad_script.z_rows = nrows;
+        quad_script.value = distTDM;// distTDM;// distImage;
+        quad_script.Redraw();
     }
     //
 
