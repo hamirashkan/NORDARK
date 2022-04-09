@@ -97,7 +97,7 @@ public class ShowMap : MonoBehaviour
     int[] edtcostImage;
     float[] distImage;//sqrt(cost), sqrt(V)
     // Build 0010, high scale for the vertices interpolation
-    int vertices_scale = 1;// 4;// scale parameters
+    int vertices_scale = 4;// 4;// scale parameters
     const int vertices_max = 10;
     int vmax;
     //
@@ -551,6 +551,7 @@ public class ShowMap : MonoBehaviour
                     int x = i % vertices_scalemax;
                     int z = i / vertices_scalemax;
 
+                    // Build 0038
                     x = x + x_offset * (vertices_scalemax - 1);
                     z = z + z_offset * (vertices_scalemax - 1);
                     int i_new = z * ncols + x;
@@ -692,7 +693,7 @@ public class ShowMap : MonoBehaviour
 
                         //choice of kernel function for density estimation
                         if (Kernel == "G")
-                        {
+                        {// Build 0038, careful to add distance to time accessibility directly
                             lambda = (1 / (r * Mathf.Sqrt(2 * Mathf.PI))) * Mathf.Exp(-0.5f * Mathf.Pow((Mathf.Pow((mindist + bestNode.LeastCost), -alpha) / r), 2));  //Gaussian
                         }
                         else
@@ -1395,11 +1396,15 @@ public class ShowMap : MonoBehaviour
         foreach (Node node in graph.RestNodes)// Nodes)
         {
             //node.vec
-            x_index = (int)((node.vec.x - x_min) / (100.0 / (vmax - 1)));
-            z_index = (int)((z_max - node.vec.z) / (100.0 / (vmax - 1)));
+            x_index = (int)((node.vec.x - x_min) / (100.0f / vmax));//(vmax - 1)
+            z_index = (int)((z_max - node.vec.z) / (100.0f / vmax));
             // Build 0037
             node.x_index = x_index;
             node.z_index = z_index;
+            // Build 0038, find the difference, adjust node position
+            node.vec.x = x_min + x_index * (100.0f / vmax);
+            node.vec.z = z_max - z_index * (100.0f / vmax);
+            node.objTransform.position = node.vec;
             //
             if (adj_type == 1)
             {
@@ -1437,27 +1442,27 @@ public class ShowMap : MonoBehaviour
             distTDM[i] = mindist;
         }
 
-        //float[] distTDMv = new float[nrows * ncols];
-        //for (int i = 0; i < nrows * ncols; i++)
-        //{
-        //    x_index = i % ncols;
-        //    z_index = i / ncols;
-        //    float mindist = Mathf.Infinity;
-        //    Node best;
-        //    foreach (Node node in graph.RestNodes)
-        //    {
-        //        Vector3 pos = VerticesNodeArray[i].globalposition;
-        //        pos.y = 0;
-        //        float dist = (pos - node.vec).magnitude;//node.vec
+        float[] distTDMv = new float[nrows * ncols];
+        for (int i = 0; i < nrows * ncols; i++)
+        {
+            x_index = i % ncols;
+            z_index = i / ncols;
+            float mindist = Mathf.Infinity;
+            Node best;
+            foreach (Node node in graph.RestNodes)
+            {
+                Vector3 pos = VerticesNodeArray[i].globalposition;
+                pos.y = 0;
+                float dist = (pos - node.vec).magnitude;//node.vec
 
-        //        if (dist < mindist)
-        //        {
-        //            mindist = dist;
-        //            best = node;
-        //        }
-        //    }
-        //    distTDMv[i] = mindist;
-        //}
+                if (dist < mindist)
+                {
+                    mindist = dist;
+                    best = node;
+                }
+            }
+            distTDMv[i] = mindist;
+        }
 
 
         //testImage[0] = 1;
@@ -1490,8 +1495,13 @@ public class ShowMap : MonoBehaviour
         DllInterface.ExportFile(intPtrEdt, nrows, ncols, Marshal.StringToHGlobalAnsi("V.pgm"));
         // Build 0019, cost image matrix
         Marshal.Copy(intPtrEdt, costImage, 0, nrows * ncols);
+        // Build 0038
+        float[] distTDMdff = new float[nrows * ncols];
         for (int i = 0; i < nrows * ncols; i++)
+        {
             distImage[i] = (float)Math.Sqrt(costImage[i]);//(distTDM[i] / 
+            distTDMdff[i] = distTDMv[i] / distTDM[i];
+        } 
         //
         intPtrEdt = DllInterface.GetImage('R');
         Marshal.Copy(intPtrEdt, edtImage, 0, nrows * ncols);
@@ -1503,7 +1513,7 @@ public class ShowMap : MonoBehaviour
         BarsVis bars_script = GameObject.Find("Mapbox").GetComponent<BarsVis>();
         bars_script.x_cols = ncols;
         bars_script.z_rows = nrows;
-        bars_script.value = distImage;// distTDM;// distImage;
+        bars_script.value = distTDMdff;// distTDM;// distImage;
         bars_script.Redraw();
         //
     }
