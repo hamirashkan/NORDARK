@@ -80,7 +80,7 @@ public class ShowMap : MonoBehaviour
     private bool bReadyForCFH = false;
     // Build 0009, add IFT for Graph 1
     IntPtr intPtrImage, intPtrRMImage;
-    int nrows = 3, ncols = 4;
+    public int nrows = 3, ncols = 4;
     int[] testImage;
     int[] testRMImage;
     // Build 0018, change the mindist, bestNode to IFT calculation
@@ -109,7 +109,8 @@ public class ShowMap : MonoBehaviour
     public float KMh2MSEC = 3.6f;
     // Build 0029
     public List<Node> VerticesNodeArray;
-
+    // Build 0040
+    public float[][] rootImages;
     void Start()
     {
         bReadyForCFH = false;
@@ -442,6 +443,19 @@ public class ShowMap : MonoBehaviour
             slrTimeLine.maxValue = timeSteps;// maybe put it to the end of the function
             slrTimeLine.minValue = 1;
             //
+
+            // Build 0040
+            rootImages = null;
+            rootImages = new float[timeSteps][];
+            for (int r = 0; r < timeSteps; r++)
+            {
+                rootImages[r] = null;
+                rootImages[r] = new float[ncols * nrows];
+            }
+            //    
+
+            //
+
             for (int c = 0; c < 12; c++)
             {
 
@@ -557,7 +571,6 @@ public class ShowMap : MonoBehaviour
                     int i_new = z * ncols + x;
 
                     VerticesNodeArray[i_new].globalposition = baseVertices[i] + tile.position;
-                    //
 
                     // Build 0031, not calculate the sea
                     if ((graph_op > 0) && (baseVertices[i].y < 0.00002f))
@@ -784,6 +797,12 @@ public class ShowMap : MonoBehaviour
                                 {
                                     Debug.Log(rootImage[i_new]);
                                 }
+
+                                // Build 0040
+                                //rootImages[k][i_new] = bestNode.POIList[k].index + 1;
+                                lambda = (1 / (r * Mathf.Sqrt(2 * Mathf.PI))) * Mathf.Exp(-0.5f * Mathf.Pow((Mathf.Pow((mindist + bestNode.LeastCostList[k]), -alpha) / r), 2));
+                                rootImages[k][i_new] = lambda;
+                                //
                             }
                             else
                             {
@@ -1510,17 +1529,17 @@ public class ShowMap : MonoBehaviour
         Marshal.Copy(intPtrEdt, rootImage, 0, nrows * ncols);
         //
         // Build 0037, TDM for bars vis
-        //BarsVis bars_script = GameObject.Find("Mapbox").GetComponent<Vis>();
-        //bars_script.x_cols = ncols;
-        //bars_script.z_rows = nrows;
-        //bars_script.value = distTDMdff;// distTDM;// distImage;
-        //bars_script.Redraw();
+        BarsVis bars_script = GameObject.Find("Mapbox").GetComponent<BarsVis>();
+        bars_script.x_cols = ncols;
+        bars_script.z_rows = nrows;
+        bars_script.value = distTDMdff;// distTDM;// distImage;
+        bars_script.Redraw();
         // Build 0039
-        QuadVis quad_script = GameObject.Find("Mapbox").GetComponent<QuadVis>();
-        quad_script.x_cols = ncols;
-        quad_script.z_rows = nrows;
-        quad_script.value = distTDM;// distTDM;// distImage;
-        quad_script.Redraw();
+        //QuadVis quad_script = GameObject.Find("Mapbox").GetComponent<QuadVis>();
+        //quad_script.x_cols = ncols;
+        //quad_script.z_rows = nrows;
+        //quad_script.value = distTDM;// distTDM;// distImage;
+        //quad_script.Redraw();
     }
     //
 

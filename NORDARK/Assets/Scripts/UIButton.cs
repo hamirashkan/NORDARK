@@ -92,7 +92,25 @@ public class UIButton : MonoBehaviour
 
     public void ComputeCFH()
     {
-        other.ComputeCFH(1, other.SliderStartTimeValue - 1, other.SliderStopTimeValue - 1);
+        // Build 0040
+        CFH CFH_script = other.GetComponent<CFH>();
+        if (CFH_script != null)
+        {
+            CFH_script.inputValues = other.rootImages;
+            CFH_script.stept = 1;
+            CFH_script.start_time = other.SliderStartTimeValue - 1;
+            CFH_script.stop_time = other.SliderStopTimeValue - 1;
+            CFH_script.FeatureString = GameObject.Find("IptFeatureString").GetComponent<InputField>().text;
+            CFH_script.ComputeCFH();
+
+            BarsVis bars_script = other.GetComponent<BarsVis>();
+            bars_script.x_cols = other.ncols;
+            bars_script.z_rows = other.nrows;
+            bars_script.value = CFH_script.outputValues;// distTDM;// distImage;
+            bars_script.Redraw();
+        }
+        //
+        //other.ComputeCFH(1, other.SliderStartTimeValue - 1, other.SliderStopTimeValue - 1);
     }
 
     public void ComputeTDM()
