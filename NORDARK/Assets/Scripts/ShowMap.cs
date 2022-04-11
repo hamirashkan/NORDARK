@@ -34,8 +34,8 @@ public class ShowMap : MonoBehaviour
     public List<float> costs;
     public AbstractMap map;
     public string Kernel = "G"; //defaults to sigmoid, "G" for gaussian
-    public float r = 0.003f;
-    public float alpha = 2;
+    public float r = 0.003f;//1f;//0.003f;
+    public float alpha = 2;//1;//2
     public float scale_dis = 1000;
     public float scale_risk = 10;
     // CFH
@@ -97,7 +97,7 @@ public class ShowMap : MonoBehaviour
     int[] edtcostImage;
     float[] distImage;//sqrt(cost), sqrt(V)
     // Build 0010, high scale for the vertices interpolation
-    int vertices_scale = 1;// 4;// scale parameters
+    int vertices_scale = 4;// 4;// scale parameters
     const int vertices_max = 10;
     int vmax;
     //
@@ -370,6 +370,22 @@ public class ShowMap : MonoBehaviour
         bg_Mapbox.gameObject.SetActive(!UIButton.isOn);
         // Build 0030, after the maps update, then calculate the offset for x and z
         CalculateMinMax();
+
+        // Build 0040
+        Vector2 latlongcenter = new Vector2((float)map.CenterLatitudeLongitude.x, (float)map.CenterLatitudeLongitude.y);
+        Vector3 pos1 = latlongcenter.AsUnityPosition(map.CenterMercator, map.WorldRelativeScale);
+        Mapbox.Utils.Vector2d pos2d1 = map.CenterMercator + (pos1 / map.WorldRelativeScale).ToVector2d();
+        Mapbox.Utils.Vector2d latlong1 = pos1.GetGeoPosition(map.CenterMercator, map.WorldRelativeScale);
+        Mapbox.Utils.Vector2d pos2d2 = map.CenterMercator + ((pos1 + new Vector3(100f, 0, 0)) / map.WorldRelativeScale).ToVector2d();
+        Mapbox.Utils.Vector2d latlong2 = (pos1 + new Vector3(100f, 0, 0)).GetGeoPosition(map.CenterMercator, map.WorldRelativeScale);
+        double fx = GetDistance(latlong1, latlong2);
+        float scalex = (float) fx / 100;
+        //Mapbox.Utils.Vector2d pos2d3 = map.CenterMercator + ((pos1 + new Vector3(0, 0, 100f)) / map.WorldRelativeScale).ToVector2d();
+        //Mapbox.Utils.Vector2d latlong3 = (pos1 + new Vector3(0, 0, 100f)).GetGeoPosition(map.CenterMercator, map.WorldRelativeScale);
+        //double fz = GetDistance(latlong1, latlong3);
+        //double scalez = fz / 100;
+        //
+
         // Build 0013, alesund graph 
         if (graph_op < 6)
         {
@@ -424,10 +440,44 @@ public class ShowMap : MonoBehaviour
 
                 float mindist;
                 float lambda;
-                float r = 0.005f;
-                float alpha = 2f;
+                //float r = 0.005f;
+                //float alpha = 2f;
                 Node bestNode = null;
             }
+
+            // Build 0040, just adjust nodes one time
+            float x_min = float.MaxValue;
+            float z_max = float.MinValue;
+            for (int c = 0; c < 12; c++)
+            {
+                Transform tile;
+                if (c_flag_last)
+                    tile = gameObject.transform.GetChild(c);
+                else
+                    tile = gameObject.transform.GetChild(c + 1); //ignoring first child that is not a tile
+
+                Vector3 center = tile.position;
+                if (center.x < x_min)
+                    x_min = center.x;
+                if (center.z > z_max)
+                    z_max = center.z;
+            }
+            x_min = x_min - 50;
+            z_max = z_max + 50;
+            foreach (Node node in graph.RestNodes)// Nodes)
+            {
+                //node.vec
+                int x_index = (int)((node.vec.x - x_min) / (100.0f / vmax));//(vmax - 1)
+                int z_index = (int)((z_max - node.vec.z) / (100.0f / vmax));
+                // Build 0037
+                node.x_index = x_index;
+                node.z_index = z_index;
+                // Build 0038, find the difference, adjust node position
+                node.vec.x = x_min + x_index * (100.0f / vmax);
+                node.vec.z = z_max - z_index * (100.0f / vmax);
+                node.objTransform.position = node.vec;
+            }
+            //
 
             // Build 0018, change the mindist, bestNode to IFT calculation
             if (UIButton.isIFT)
@@ -436,6 +486,7 @@ public class ShowMap : MonoBehaviour
                 // Get the IFT result
                 IFTindexImageTest();
             }
+           
 
             // TimeLine Initilization
             NodeIndexArrayS = new List<int>[12, timeSteps];
@@ -546,6 +597,11 @@ public class ShowMap : MonoBehaviour
                     // tile position to offset tile
                     x_offset = (int)(Math.Round(tile.position.x - tx_min)) / 100;
                     z_offset = (int)(Math.Round(tz_max - tile.position.z)) / 100;
+                    // Build 0040
+                    // latitude
+                    //Vector2 wStationGeoVec = ;
+                    //GetDistance(Vector2)
+                    // longtitude
                 }
 
                 for (var i = 0; i < vertices.Length; i++)
@@ -637,9 +693,14 @@ public class ShowMap : MonoBehaviour
 
                             // method 1, return dist and node
                             if (UIButton.isIFTCost)
-                                mindist = distImage[i_new]; //dist;// 10;// dist;
+                                mindist = distImage[i_new] * 100 / (vertices_scalemax - 1); //dist;// 10;// dist;
                             else
                             {
+                                //
+                                pos = VerticesNodeArray[i_new].globalposition;
+                                pos.y = node.vec.y;
+                                //
+
                                 float dist = (pos - node.vec).magnitude;
                                 mindist = dist;
                             }
@@ -662,6 +723,11 @@ public class ShowMap : MonoBehaviour
                                 float posZ = vertex.z;
                                 Vector3 pos = new Vector3(posX + tile.position.x, node.vec.y, posZ + tile.position.z);
 
+                                // Build 0041, modify the propagation calculation
+                                pos = VerticesNodeArray[i_new].globalposition;
+                                pos.y = node.vec.y;
+                                //
+
                                 float dist = (pos - node.vec).magnitude;
 
                                 if (dist < mindist)
@@ -683,7 +749,8 @@ public class ShowMap : MonoBehaviour
                         //
 
                         //vertex.y = vertex.y * 50;// vertex.y + i;
-                        vertex.y = dis_new;// vertex.y + i;
+                        //vertex.y = dis_new;// vertex.y + i;
+                        vertex.y = 0;
 
                         vertices[i] = vertex;
 
@@ -707,11 +774,11 @@ public class ShowMap : MonoBehaviour
                         //choice of kernel function for density estimation
                         if (Kernel == "G")
                         {// Build 0038, careful to add distance to time accessibility directly
-                            lambda = (1 / (r * Mathf.Sqrt(2 * Mathf.PI))) * Mathf.Exp(-0.5f * Mathf.Pow((Mathf.Pow((mindist + bestNode.LeastCost), -alpha) / r), 2));  //Gaussian
+                            lambda = (1 / (r * Mathf.Sqrt(2 * Mathf.PI))) * Mathf.Exp(-0.5f * Mathf.Pow((Mathf.Pow((bestNode.LeastCost + mindist * scalex / 5 * 3600), -alpha) / r), 2));  //Gaussian
                         }
                         else
                         {
-                            lambda = (1 / r) * 1 / (1 + Mathf.Exp(Mathf.Pow((mindist + bestNode.LeastCost), -alpha) / r));  //Sigmoid
+                            lambda = (1 / r) * 1 / (1 + Mathf.Exp(Mathf.Pow((bestNode.LeastCost + mindist * scalex / 5 * 3600), -alpha) / r));  //Sigmoid
                         }
 
 
@@ -721,8 +788,12 @@ public class ShowMap : MonoBehaviour
                         // Build 0020, save ST data to csv file
                         if (UIButton.isCostDiff)
                         {
-                            if (distTDM != 0)
-                                col.a = Clamp(0, Math.Abs((distIFT - distTDM) / distTDM), 1);
+                            //if (distTDM != 0)
+                            if (distTDM > 0.001f)
+                                //col.a = Clamp(0, Math.Abs((distIFT - distTDM) / distTDM), 1);
+                                col.a = Clamp(0, 1 - Math.Abs((distIFT * 100f / 9f - distTDM) / distTDM), 1);
+                            else
+                                col.a = 1;
                         }
                         else
                             col = bestNode.clr;
@@ -895,6 +966,11 @@ public class ShowMap : MonoBehaviour
             float lMax = lambdaMap.Max();
             int iter = 0;
 
+            // Build 0037, TDM for bars vis
+            BarsVis bars_script = GameObject.Find("Mapbox").GetComponent<BarsVis>();
+            float[] barsvalue = bars_script.value;
+            //
+
             for (int c = 0; c < 12; c++)
             {
                 Transform tile;
@@ -907,18 +983,39 @@ public class ShowMap : MonoBehaviour
                 var vertices = mesh.vertices;
                 Color[] colors = new Color[vertices.Length];
 
+                // Build 0040
+                int vertices_scalemax = vertices_max + (vertices_scale - 1) * (vertices_max - 1);
+                int x_offset = (int)(Math.Round(tile.position.x - tx_min)) / 100;
+                int z_offset = (int)(Math.Round(tz_max - tile.position.z)) / 100;
+                //
+
                 for (var i = 0; i < vertices.Length; i++)
                 {
                     colors[i] = colorMap[iter];
                     // Build 0020, save ST data to csv file
                     if (!UIButton.isCostDiff)
-                        colors[i].a = 1 - (lambdaMap[iter] - lMin) / (lMax - lMin);
+                        colors[i].a = Clamp(1 - (lambdaMap[iter] - lMin) / (lMax - lMin), 0.05f, 1);
+                    else // Build 0040
+                    {
+                        int x = i % vertices_scalemax;
+                        int z = i / vertices_scalemax;
+                        // Build 0038
+                        x = x + x_offset * (vertices_scalemax - 1);
+                        z = z + z_offset * (vertices_scalemax - 1);
+                        int i_new = z * ncols + x;
+                        //if (distTDM != 0)
+                        if (barsvalue[i_new] > 0.001f)
+                            //col.a = Clamp(0, Math.Abs((distIFT - distTDM) / distTDM), 1);
+                            colors[i].a = Clamp(0, barsvalue[i_new] / (100f/9f), 1);
+                        else
+                            colors[i].a = 1;
+                    }
                     iter += 1;
                 }
 
                 Shader shader; shader = Shader.Find("Particles/Standard Unlit");
 
-                //tile.gameObject.GetComponent<Renderer>().material.shader = shader;
+                tile.gameObject.GetComponent<Renderer>().material.shader = shader;
                 tile.gameObject.GetComponent<Renderer>().material = SurfaceMat;
                 mesh.colors = colors;
             }
@@ -998,8 +1095,7 @@ public class ShowMap : MonoBehaviour
                 }
 
                 Shader shader; shader = Shader.Find("Particles/Standard Unlit");
-
-                //tile.gameObject.GetComponent<Renderer>().material.shader = shader;
+                tile.gameObject.GetComponent<Renderer>().material.shader = shader;
                 tile.gameObject.GetComponent<Renderer>().material = SurfaceMat;
                 mesh.colors = colors;
             }
@@ -1417,14 +1513,14 @@ public class ShowMap : MonoBehaviour
             //node.vec
             x_index = (int)((node.vec.x - x_min) / (100.0f / vmax));//(vmax - 1)
             z_index = (int)((z_max - node.vec.z) / (100.0f / vmax));
-            // Build 0037
-            node.x_index = x_index;
-            node.z_index = z_index;
-            // Build 0038, find the difference, adjust node position
-            node.vec.x = x_min + x_index * (100.0f / vmax);
-            node.vec.z = z_max - z_index * (100.0f / vmax);
-            node.objTransform.position = node.vec;
-            //
+            //// Build 0037
+            //node.x_index = x_index;
+            //node.z_index = z_index;
+            //// Build 0038, find the difference, adjust node position
+            //node.vec.x = x_min + x_index * (100.0f / vmax);
+            //node.vec.z = z_max - z_index * (100.0f / vmax);
+            //node.objTransform.position = node.vec;
+            ////
             if (adj_type == 1)
             {
                 // set test Image pixel as 1
@@ -1471,7 +1567,7 @@ public class ShowMap : MonoBehaviour
             foreach (Node node in graph.RestNodes)
             {
                 Vector3 pos = VerticesNodeArray[i].globalposition;
-                pos.y = 0;
+                pos.y = node.vec.y;
                 float dist = (pos - node.vec).magnitude;//node.vec
 
                 if (dist < mindist)
@@ -1538,7 +1634,7 @@ public class ShowMap : MonoBehaviour
         //QuadVis quad_script = GameObject.Find("Mapbox").GetComponent<QuadVis>();
         //quad_script.x_cols = ncols;
         //quad_script.z_rows = nrows;
-        //quad_script.value = distTDM;// distTDM;// distImage;
+        //quad_script.value = distTDMdff;// distTDM;// distImage;
         //quad_script.Redraw();
     }
     //
@@ -1599,37 +1695,67 @@ public class ShowMap : MonoBehaviour
         float lMax = lambdaMap.Max();
         int iter = 0;
 
-        for (int c = 0; c < 12; c++)
+        for (int c = 0; c < 13; c++)
         {
             Transform tile;
-            if (c_flag_last)
-                tile = gameObject.transform.GetChild(c);
-            else
-                tile = gameObject.transform.GetChild(c + 1); //ignoring first child that is not a tile
-
-            Mesh mesh = tile.gameObject.GetComponent<MeshFilter>().mesh;
-            var vertices = mesh.vertices;
-            Color[] colors = new Color[vertices.Length];
-
-            for (var i = 0; i < vertices.Length; i++)
+            //if (c_flag_last)
+            //    tile = gameObject.transform.GetChild(c);
+            //else
+            //    tile = gameObject.transform.GetChild(c + 1); //ignoring first child that is not a tile
+            // debug, mesh missed when click it
+            tile = gameObject.transform.GetChild(c);
+            if (tile.name != "TileProvider")
             {
-                // Build 0031,
-                if((dropdown_graphop.value > 0) && (vertices[i].y < 0.00002f))
-                    colors[i] = Color.black;
-                else
+                Mesh mesh = tile.gameObject.GetComponent<MeshFilter>().mesh;
+                var vertices = mesh.vertices;
+                Color[] colors = new Color[vertices.Length];
+
+                for (var i = 0; i < vertices.Length; i++)
                 {
-                    colors[i] = colorMap[iter];
-                    colors[i].a = 1 - (lambdaMap[iter] - lMin) / (lMax - lMin);
+                    // Build 0031,
+                    if ((dropdown_graphop.value > 0) && (vertices[i].y < 0.00002f))
+                        colors[i] = Color.black;
+                    else
+                    {
+                        colors[i] = colorMap[iter];
+                        colors[i].a = 1 - (lambdaMap[iter] - lMin) / (lMax - lMin);
+                    }
+                    iter += 1;
                 }
-                iter += 1;
+
+                Shader shader; shader = Shader.Find("Particles/Standard Unlit");
+                tile.gameObject.GetComponent<Renderer>().material.shader = shader;
+                tile.gameObject.GetComponent<Renderer>().material = SurfaceMat;
+                mesh.colors = colors;
             }
-
-            Shader shader; shader = Shader.Find("Particles/Standard Unlit");
-
-            //tile.gameObject.GetComponent<Renderer>().material.shader = shader;
-            tile.gameObject.GetComponent<Renderer>().material = SurfaceMat;
-            mesh.colors = colors;
         }
+
+        // texture color to density map
+        //GameObject densitymap = GameObject.Find("DensityMap");
+        //densitymap.transform.localScale = new Vector3(ncols, 1, nrows);
+        //Texture2D ParkTexture = new Texture2D(ncols, nrows);
+        //densitymap.GetComponent<MeshRenderer>().materials = new Material[0];
+        //densitymap.GetComponent<Renderer>().material.mainTexture = ParkTexture;
+        //densitymap.GetComponent<Renderer>().material.mainTexture.filterMode = FilterMode.Point;
+
+        //densitymap.GetComponent<Renderer>().sharedMaterial.SetFloat("_SpecularHighlights", 0);
+        //densitymap.GetComponent<Renderer>().sharedMaterial.SetFloat("_GlossyReflections", 0);
+        //float colormax = 20f;
+        //for (int y = 0; y < nrows; y++)
+        //{
+        //    for (int x = 0; x < ncols; x++)
+        //    {
+        //        int i = y * ncols + x;
+        //        //Color cl = new Color(i / colormax, i / colormax, i / colormax);
+
+        //        Color cl = new Color(rootImage[i] / colormax, rootImage[i] / colormax, rootImage[i] / colormax);
+        //        //ncols * nrows
+        //        ParkTexture.SetPixel(x, y, cl);
+        //        //ParkTexture.SetPixel(ncols - 1 - x, y, cl);
+        //    }
+        //}
+        //ParkTexture.Apply();
+        //
     }
 
     public void UpdateTexture()
@@ -1665,7 +1791,6 @@ public class ShowMap : MonoBehaviour
                     }
 
                     Shader shader; shader = Shader.Find("Particles/Standard Unlit");
-
                     tile.gameObject.GetComponent<Renderer>().material = SurfaceMat;
                     mesh.colors = colors;
                 }
@@ -1819,6 +1944,7 @@ public class ShowMap : MonoBehaviour
             nodesNames[i] = values[2];
             Vector2 latlong = new Vector2(lat, lon);
             Vector3 pos = latlong.AsUnityPosition(map.CenterMercator, map.WorldRelativeScale);
+            
             //coords[i] = new Vector3((lat - center_lat) * scale, y, (lon - center_lon) * scale);
             coords[i] = pos;
 
@@ -2269,7 +2395,7 @@ public class ShowMap : MonoBehaviour
             //else
             //    t0Road[startindex, stopindex] = float.Parse(values[5], System.Globalization.CultureInfo.InvariantCulture) / float.Parse(values[6], System.Globalization.CultureInfo.InvariantCulture) * KMh2MSEC;
             // risk = distance
-            if ((values[6] == "nan") || (values[6] == "nan\r"))
+            if ((values[6] == "nan") || (values[6] == "nan\r"))// access time unit, second
                 t0Road[startindex, stopindex] = float.Parse(values[5], System.Globalization.CultureInfo.InvariantCulture) / 5 * KMh2MSEC;// 1e-4f;
             else
                 t0Road[startindex, stopindex] = float.Parse(values[5], System.Globalization.CultureInfo.InvariantCulture) / 5 * KMh2MSEC;
@@ -2305,7 +2431,7 @@ public class ShowMap : MonoBehaviour
             //
         }
 
-        timeSteps = 20;
+        //timeSteps = 20;
         graph.timeSteps = timeSteps;
 
         float[][,] temporalRoad = Enumerable.Range(0, timeSteps).Select(_ => new float[nodesNames.Length, nodesNames.Length]).ToArray();
@@ -3671,7 +3797,7 @@ public class ShowMap : MonoBehaviour
     {
         CFHArrayS = new List<int>[12];
 
-        for (int c = 0; c < 12; c++)
+        for (int c = 0; c < 13; c++)
         {
             Transform tile;
             if (c_flag_last)
@@ -3746,11 +3872,11 @@ public class ShowMap : MonoBehaviour
             }
 
             Shader shader; shader = Shader.Find("Particles/Standard Unlit");
-
             tile.gameObject.GetComponent<Renderer>().material = SurfaceMat;
             mesh.colors = colors;
         }
         Debug.Log("PatternMax = " + patternMax.ToString());
+
         return null;
     }
 
@@ -3872,7 +3998,7 @@ public class ShowMap : MonoBehaviour
     private const double EARTH_RADIUS = 6378.137; 
     private static double rad(double d) { return d * Math.PI / 180.0; }
     public static double GetDistance(double lat1, double lng1, double lat2, double lng2)
-    {
+    {        
         double radLat1 = rad(lat1); 
         double radLat2 = rad(lat2); 
         double a = radLat1 - radLat2; 
@@ -3884,6 +4010,11 @@ public class ShowMap : MonoBehaviour
     }
 
     public static double GetDistance(Vector2 latlng1, Vector2 latlng2)
+    {
+        return GetDistance(latlng1.x, latlng1.y, latlng2.x, latlng2.y);
+    }
+
+    public static double GetDistance(Mapbox.Utils.Vector2d latlng1, Mapbox.Utils.Vector2d latlng2)
     {
         return GetDistance(latlng1.x, latlng1.y, latlng2.x, latlng2.y);
     }
