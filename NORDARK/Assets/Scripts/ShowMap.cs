@@ -97,7 +97,7 @@ public class ShowMap : MonoBehaviour
     int[] edtcostImage;
     float[] distImage;//sqrt(cost), sqrt(V)
     // Build 0010, high scale for the vertices interpolation
-    int vertices_scale = 4;// 4;// scale parameters
+    int vertices_scale = 1;// 4;// scale parameters
     const int vertices_max = 10;
     int vmax;
     //
@@ -993,8 +993,8 @@ public class ShowMap : MonoBehaviour
                 {
                     colors[i] = colorMap[iter];
                     // Build 0020, save ST data to csv file
-                    if (!UIButton.isCostDiff)
-                        colors[i].a = Clamp(1 - (lambdaMap[iter] - lMin) / (lMax - lMin), 0.05f, 1);
+                    if (!UIButton.isCostDiff)// 0 = transparent, 1 = solid color
+                        colors[i].a = Clamp(1 - (lambdaMap[iter] - lMin) / (lMax - lMin), 0.05f, 1);// Build 0040.2
                     else // Build 0040
                     {
                         int x = i % vertices_scalemax;
@@ -1731,31 +1731,31 @@ public class ShowMap : MonoBehaviour
         }
 
         // texture color to density map
-        //GameObject densitymap = GameObject.Find("DensityMap");
-        //densitymap.transform.localScale = new Vector3(ncols, 1, nrows);
-        //Texture2D ParkTexture = new Texture2D(ncols, nrows);
+        GameObject densitymap = GameObject.Find("DensityMap");
+        densitymap.transform.localScale = new Vector3(ncols, 1, nrows);
+        Texture2D ParkTexture = new Texture2D(ncols, nrows);
         //densitymap.GetComponent<MeshRenderer>().materials = new Material[0];
-        //densitymap.GetComponent<Renderer>().material.mainTexture = ParkTexture;
-        //densitymap.GetComponent<Renderer>().material.mainTexture.filterMode = FilterMode.Point;
+        densitymap.GetComponent<Renderer>().material.mainTexture = ParkTexture;
+        densitymap.GetComponent<Renderer>().material.mainTexture.filterMode = FilterMode.Point;
 
-        //densitymap.GetComponent<Renderer>().sharedMaterial.SetFloat("_SpecularHighlights", 0);
-        //densitymap.GetComponent<Renderer>().sharedMaterial.SetFloat("_GlossyReflections", 0);
-        //float colormax = 20f;
-        //for (int y = 0; y < nrows; y++)
-        //{
-        //    for (int x = 0; x < ncols; x++)
-        //    {
-        //        int i = y * ncols + x;
-        //        //Color cl = new Color(i / colormax, i / colormax, i / colormax);
+        densitymap.GetComponent<Renderer>().sharedMaterial.SetFloat("_SpecularHighlights", 0);
+        densitymap.GetComponent<Renderer>().sharedMaterial.SetFloat("_GlossyReflections", 0);
+        float colormax = 20f;
+        for (int y = 0; y < nrows; y++)
+        {
+            for (int x = 0; x < ncols; x++)
+            {
+                int i = y * ncols + x;
+                //Color cl = new Color(i / colormax, i / colormax, i / colormax);
 
-        //        Color cl = new Color(rootImage[i] / colormax, rootImage[i] / colormax, rootImage[i] / colormax);
-        //        //ncols * nrows
-        //        ParkTexture.SetPixel(x, y, cl);
-        //        //ParkTexture.SetPixel(ncols - 1 - x, y, cl);
-        //    }
-        //}
-        //ParkTexture.Apply();
-        //
+                Color cl = new Color(rootImage[i] / colormax, rootImage[i] / colormax, rootImage[i] / colormax);
+                //ncols * nrows
+                ParkTexture.SetPixel(x, y, cl);
+                //ParkTexture.SetPixel(ncols - 1 - x, y, cl);
+            }
+        }
+        ParkTexture.Apply();
+
     }
 
     public void UpdateTexture()
