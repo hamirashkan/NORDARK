@@ -1732,7 +1732,8 @@ public class ShowMap : MonoBehaviour
 
         // texture color to density map
         GameObject densitymap = GameObject.Find("DensityMap");
-        densitymap.transform.localScale = new Vector3(ncols, 1, nrows);
+        densitymap.transform.position = new Vector3((tx_max + tx_min) / 2, 12, (tz_max + tz_min) / 2);
+        densitymap.transform.localScale = new Vector3(10f /9 * ncols, 1, 10f / 9 * nrows);
         Texture2D ParkTexture = new Texture2D(ncols, nrows);
         //densitymap.GetComponent<MeshRenderer>().materials = new Material[0];
         densitymap.GetComponent<Renderer>().material.mainTexture = ParkTexture;

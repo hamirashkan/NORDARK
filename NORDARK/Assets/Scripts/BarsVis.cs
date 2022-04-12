@@ -31,8 +31,8 @@ public class BarsVis : MonoBehaviour
                     int i = (z_rows - z) * x_cols + x;
                     GameObject NewBar = Instantiate(AssetBar);
                     NewBar.name = "Vertex_" + i.ToString();
-                    NewBar.transform.parent = Container.transform;
-                    NewBar.transform.position = new Vector3(StartPosition.x + x * x_Margin, Mathf.Min(StartPosition.y + value[i], 100), StartPosition.z + z * z_Margin);
+                    NewBar.transform.parent = Container.transform;// local position, ignore the parent. Position, global position
+                    NewBar.transform.localPosition = new Vector3(StartPosition.x + x * x_Margin, Mathf.Min(StartPosition.y + value[i], 100), StartPosition.z + z * z_Margin);
                     NewBar.transform.localScale = new Vector3(1, Mathf.Min((StartPosition.y + value[i]) * 2, 200), 1);
                     //NewBar.transform.position = new Vector3(StartPosition.x + x * x_Margin, StartPosition.y, StartPosition.z + z * z_Margin);
                     //NewBar.GetComponent<BarIndication>().BarValue = value[i];
