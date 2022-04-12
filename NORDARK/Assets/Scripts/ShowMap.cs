@@ -34,7 +34,7 @@ public class ShowMap : MonoBehaviour
     public List<float> costs;
     public AbstractMap map;
     public string Kernel = "G"; //defaults to sigmoid, "G" for gaussian
-    public float r = 0.003f;//1f;//0.003f;
+    public float r = 0.005f;//1f;//0.003f;
     public float alpha = 2;//1;//2
     public float scale_dis = 1000;
     public float scale_risk = 10;
@@ -97,7 +97,7 @@ public class ShowMap : MonoBehaviour
     int[] edtcostImage;
     float[] distImage;//sqrt(cost), sqrt(V)
     // Build 0010, high scale for the vertices interpolation
-    int vertices_scale = 1;// 4;// scale parameters
+    int vertices_scale = 4;// 4;// scale parameters
     const int vertices_max = 10;
     int vmax;
     //
@@ -2313,7 +2313,7 @@ public class ShowMap : MonoBehaviour
     }
 
 
-    public void GraphSetLoad(string graphName, string[] POI_labels, Color[] POI_colors)
+    public void GraphSetLoad(string graphName, string[] POI_labels, Color[] POI_colors, int method_type = 1)
     {
         string strSaveRootPath = "Assets/Resources/" + graphName + "/";
         graph = Graph.Create(graphName);
@@ -2323,12 +2323,19 @@ public class ShowMap : MonoBehaviour
         string[] lines = Regex.Split(text, "\n");
 
         int nodesNum = lines.Length - 2; //25;//lines.Length - 2;//nbStops
-        nodesNames = new string[nodesNum];
-        coords = new Vector3[nodesNum];
+        //nodesNames = new string[nodesNum];
+        //coords = new Vector3[nodesNum];
 
         Debug.Log(DateTime.Now.ToString() + ", init started");
-        
-        for (int i = 0; i < nodesNames.Length; i++)
+
+        int node_i = 0;
+        int i;
+        bool bImageMapping = true;
+        Dictionary<string, int> nodeDict = new Dictionary<string, int>();
+        if (bImageMapping)
+            Array.Clear(testImage, 0, testImage.Length);
+
+        for (i = 0; i < nodesNum; i++)
         {
             string rowdata = lines[i + 1];
 
@@ -2337,38 +2344,53 @@ public class ShowMap : MonoBehaviour
             float lat = float.Parse(values[1], System.Globalization.CultureInfo.InvariantCulture);
             float lon = float.Parse(values[2], System.Globalization.CultureInfo.InvariantCulture);
 
-            nodesNames[i] = values[0];
+            //nodesNames[i] = values[0];
             Vector2 latlong = new Vector2(lat, lon);
             Vector3 pos = latlong.AsUnityPosition(map.CenterMercator, map.WorldRelativeScale);
-            //coords[i] = new Vector3((lat - center_lat) * scale, y, (lon - center_lon) * scale);
-            // Build 0023
-            int ii = 0;
-            ImageMapping(ref pos, ref ii);
 
-            coords[i] = pos;
+            if (bImageMapping)
+                ImageMapping(ref pos, ref node_i);
 
-            Node nodeX = Node.Create<Node>(nodesNames[i], coords[i]);
-            nodeX.index = i;
-            nodeX.stop_id = values[0];
-            graph.AddNode(nodeX);
-            nodeX.objTransform = Instantiate(point);
-            nodeX.obj = nodeX.objTransform.gameObject;
-            nodeX.objTransform.name = nodeX.name;
-            nodeX.objTransform.position = nodeX.vec;
-            nodeX.objTransform.parent = Nodes.transform;
+            nodeDict.Add(values[0], node_i);
 
-            nodeX.obj.GetComponent<Lines>().index = i;
-            nodeX.obj.GetComponent<Lines>().Neighbors = graph.Nodes[i].Neighbors;
-            nodeX.obj.GetComponent<Lines>().Weights = graph.Nodes[i].Weights;
-            nodeX.obj.GetComponent<Lines>().currentNode = graph.Nodes[i];
-            nodeX.obj.GetComponent<Lines>().line = line;
+            // 1 0
+            if (node_i > graph.Nodes.Count - 1)
+            {
+                Node nodeX = Node.Create<Node>(values[0], pos);
+                nodeX.GeoVec = latlong;
+                nodeX.index = node_i;
+                nodeX.stop_id = node_i.ToString();
+                graph.AddNode(nodeX);
+                nodeX.objTransform = Instantiate(point);
+                nodeX.obj = nodeX.objTransform.gameObject;
+                nodeX.objTransform.name = nodeX.name;
+                nodeX.objTransform.position = nodeX.vec;
+                nodeX.objTransform.parent = Nodes.transform;
+
+                int ii = graph.Nodes.Count - 1;
+                nodeX.obj.GetComponent<Lines>().index = ii;
+                nodeX.obj.GetComponent<Lines>().Neighbors = graph.Nodes[ii].Neighbors;
+                nodeX.obj.GetComponent<Lines>().Weights = graph.Nodes[ii].Weights;
+                nodeX.obj.GetComponent<Lines>().currentNode = graph.Nodes[ii];
+                nodeX.obj.GetComponent<Lines>().line = line;
+            }
+
+            // Build 0024, auto adjust to closest nodes
+            Node nodeR = Node.Create<Node>(values[0], pos);
+            graph.AddRawNode(nodeR);
+            //
 
             if (i % 50 == 0)
                 Debug.Log(DateTime.Now.ToString() + ", inited " + i + "_th nodes");
         }
 
+        float maxRisk = 300;
+
         // Load raw edges
-        float[,] t0Road = new float[nodesNames.Length, nodesNames.Length];
+        float[,] t0Road = new float[nodesNames.Length, graph.Nodes.Count];
+
+        float[,] distanceRoad = new float[graph.Nodes.Count, graph.Nodes.Count];
+        float[,] speedlimitRoad = new float[graph.Nodes.Count, graph.Nodes.Count];
         // Build 0012, more nodes for edges
         AuxLines = new List<AuxLine>();
         text = loadFile(strSaveRootPath + "EdgeSet.csv");
@@ -2377,14 +2399,14 @@ public class ShowMap : MonoBehaviour
         int edgesNum = edges_data.Length - 2;
         edgesNames = new string[edgesNum];
 
-        for (int i = 0; i < edgesNames.Length; i++)
+        for (i = 0; i < edgesNames.Length; i++)
         {
             string rowdata = edges_data[i + 1];
 
             string[] values = Regex.Split(rowdata, ",");
             //string id = values[0];
-            int startindex = graph.FindFirstNode(values[1]).index;
-            int stopindex = graph.FindFirstNode(values[2]).index;
+            int startindex = nodeDict[values[1]]; //graph.FindFirstNode(values[1]).index;
+            int stopindex = nodeDict[values[2]]; //graph.FindFirstNode(values[2]).index;
             /*if ((values[6] == "nan") || (values[6] == "nan\r"))
                 t0Road[startindex, stopindex] = 300 / 300;// 1e-4f;
             else
@@ -2396,10 +2418,15 @@ public class ShowMap : MonoBehaviour
             //else
             //    t0Road[startindex, stopindex] = float.Parse(values[5], System.Globalization.CultureInfo.InvariantCulture) / float.Parse(values[6], System.Globalization.CultureInfo.InvariantCulture) * KMh2MSEC;
             // risk = distance
-            if ((values[6] == "nan") || (values[6] == "nan\r"))// access time unit, second
-                t0Road[startindex, stopindex] = float.Parse(values[5], System.Globalization.CultureInfo.InvariantCulture) / 5 * KMh2MSEC;// 1e-4f;
+            distanceRoad[startindex, stopindex] = float.Parse(values[5], System.Globalization.CultureInfo.InvariantCulture);
+            if ((values[6] == "nan") || (values[6] == "nan\r"))
+                speedlimitRoad[startindex, stopindex] = 70;
             else
-                t0Road[startindex, stopindex] = float.Parse(values[5], System.Globalization.CultureInfo.InvariantCulture) / 5 * KMh2MSEC;
+                speedlimitRoad[startindex, stopindex] = float.Parse(values[6], System.Globalization.CultureInfo.InvariantCulture);
+            //if ((values[6] == "nan") || (values[6] == "nan\r"))// access time unit, second
+            //    t0Road[startindex, stopindex] = float.Parse(values[5], System.Globalization.CultureInfo.InvariantCulture) / 5 * KMh2MSEC;// 1e-4f;
+            //else
+            //    t0Road[startindex, stopindex] = float.Parse(values[5], System.Globalization.CultureInfo.InvariantCulture) / 5 * KMh2MSEC;
 
 
             //Linename values[6]
@@ -2432,12 +2459,11 @@ public class ShowMap : MonoBehaviour
             //
         }
 
-        //timeSteps = 20;
         graph.timeSteps = timeSteps;
+        // Build 0041, check the snow data
+        float[][,] temporalRoad = Enumerable.Range(0, timeSteps).Select(_ => new float[graph.Nodes.Count, graph.Nodes.Count]).ToArray();
 
-        float[][,] temporalRoad = Enumerable.Range(0, timeSteps).Select(_ => new float[nodesNames.Length, nodesNames.Length]).ToArray();
-
-        float[,] roads = new float[nodesNames.Length, nodesNames.Length];
+        float[,] roads = new float[graph.Nodes.Count, graph.Nodes.Count];
 
         graph.roadcosts = roads;
         graph.roadTemporal = temporalRoad;
@@ -2449,7 +2475,7 @@ public class ShowMap : MonoBehaviour
 
             for (int k = 0; k < timeSteps; k++)
             {
-                for (int i = 0; i < nodesNames.Length; i++)
+                for (i = 0; i < nodesNames.Length; i++)
                 {
                     for (int j = 0; j < nodesNames.Length; j++)
                     {
@@ -2460,30 +2486,72 @@ public class ShowMap : MonoBehaviour
         }
         else
         {
-
-            System.Random rnd = new System.Random();
-
-            for (int k = 0; k < timeSteps; k++)
+            if (method_type == 1)
             {
-                int high = 100;//500;//0
-                int low = 0;
+                // Method 1, single weather station, distance < 20km
+                // average start and stop points, >20cm, speed = 0
+                float[] snowdata = new float[timeSteps];
+                Dictionary<int, string> timedata = new Dictionary<int, string>();
+                LoadSnowData(ref snowdata, ref timedata, strSaveRootPath + "snow.csv");
 
-                //temporalRoad[k][0, 13] = rnd.Next(low, high) + 40;//Line 1 (1<=>14) (40, 39)
-
-                for (int i = 0; i < nodesNames.Length; i++)
+                for (int k = 0; k < timeSteps; k++)
                 {
-                    for (int j = 0; j < nodesNames.Length; j++)
+                    for (i = 0; i < roads.GetLength(0); i++)
                     {
-                        if (t0Road[i, j] != 0)
-                            temporalRoad[k][i, j] = t0Road[i, j] + rnd.Next(low, high);
-                        roads[i, j] += temporalRoad[k][i, j];
+                        for (int j = 0; j < roads.GetLength(1); j++)
+                        {
+                            // Build 0028, adjust distance and time calculation
+                            if (distanceRoad[i, j] != 0) // toRoad
+                            {
+                                float sfactor = 1;
+                                double dist1, dist2;
+                                Vector2 wStationGeoVec = new Vector2(62.4775f, 6.8167f);// Ørskog
+                                // calculation i,j node distance to weather station
+                                dist1 = GetDistance(graph.Nodes[i].GeoVec, wStationGeoVec);
+                                dist2 = GetDistance(graph.Nodes[j].GeoVec, wStationGeoVec);
+                                double avgDist = (dist1 + dist2) / 2;
+                                // linear interpolation
+                                double maxDis = 50;
+                                float newspeed = Clamp((float)(speedlimitRoad[i, j] * (1 - avgDist / maxDis * snowdata[k] / 25)), 5, maxRisk);
+                                // y = -2.5x+50, x is snow depth (cm), y is speed(km/h)
+                                // equation to get the parameters
+                                // big region, drive, calculate
+                                //temporalRoad[k][i, j] = distanceRoad[i, j] / newspeed * KMh2MSEC;
+                                // small region, walk
+                                float walknewspeed = Clamp((float)(5 - avgDist / maxDis * snowdata[k] / 10.0), 2f, 5); // not snowdata[k], will be zero
+                                temporalRoad[k][i, j] = distanceRoad[i, j] / walknewspeed * KMh2MSEC; // distance unit = meter
+                            }
+                            roads[i, j] += temporalRoad[k][i, j];
+                        }
+                    }
+                }
+            }
+            else
+            {
+                System.Random rnd = new System.Random();
+
+                for (int k = 0; k < timeSteps; k++)
+                {
+                    int high = 100;//500;//0
+                    int low = 0;
+
+                    //temporalRoad[k][0, 13] = rnd.Next(low, high) + 40;//Line 1 (1<=>14) (40, 39)
+
+                    for (i = 0; i < nodesNames.Length; i++)
+                    {
+                        for (int j = 0; j < nodesNames.Length; j++)
+                        {
+                            if (t0Road[i, j] != 0)
+                                temporalRoad[k][i, j] = t0Road[i, j] + rnd.Next(low, high);
+                            roads[i, j] += temporalRoad[k][i, j];
+                        }
                     }
                 }
             }
             saveSTdataToCSV(strSaveRootPath + "graph.csv", temporalRoad);
         }
 
-        for (int i = 0; i < roads.GetLength(0); i++)
+        for (i = 0; i < roads.GetLength(0); i++)
         {
             for (int j = 0; j < roads.GetLength(1); j++)
             {
@@ -2504,13 +2572,13 @@ public class ShowMap : MonoBehaviour
 
         graph.CreatePOInodes(POI_labels, POI_colors);
 
-        for (int i = 0; i < POI_labels.Length; i++)
+        for (i = 0; i < POI_labels.Length; i++)
         {
             GameObject.Find(POI_labels[i]).GetComponent<Renderer>().material.SetColor("_Color", POI_colors[i]);
 
         }
 
-        for (int i = 0; i < POI_labels.Length; i++)
+        for (i = 0; i < POI_labels.Length; i++)
         {
             Color AccessColor = GameObject.Find(POI_labels[i]).GetComponent<Renderer>().material.color;
             GameObject.Find(POI_labels[i]).GetComponent<Lines>().nColor = AccessColor;
@@ -3941,13 +4009,38 @@ public class ShowMap : MonoBehaviour
         }
     }
 
+    public void UpdateCFH2Bars()
+    {
+        CFH CFH_script = GetComponent<CFH>();
+        if (CFH_script != null)
+        {
+            CFH_script.inputValues = rootImages;
+            CFH_script.stept = 1;
+            CFH_script.start_time = SliderStartTimeValue - 1;
+            CFH_script.stop_time = SliderStopTimeValue - 1;
+            CFH_script.FeatureString = GameObject.Find("IptFeatureString").GetComponent<InputField>().text;
+            CFH_script.ComputeCFH();
+
+            BarsVis bars_script = GetComponent<BarsVis>();
+            bars_script.x_cols = ncols;
+            bars_script.z_rows = nrows;
+            bars_script.value = CFH_script.outputValues;// distTDM;// distImage;
+            bars_script.Redraw();
+        }
+    }
+
     public void StartTimeValueChangeCheck()
     {
         if (SliderStartTimeValue != (int)slrStartTime.value)
         {
             SliderStartTimeValue = (int)slrStartTime.value;
             if (bReadyForCFH && (SliderStartTimeValue < SliderStopTimeValue))
-                ComputeCFH(1, SliderStartTimeValue - 1, SliderStopTimeValue - 1);
+            {
+                // Build 0041, CFH check
+                UpdateCFH2Bars();
+                //ComputeCFH(1, SliderStartTimeValue - 1, SliderStopTimeValue - 1);
+
+            }
         }
         txtStartTime.text = "Start Time:" + SliderStartTimeValue + "/" + slrStartTime.maxValue;
     }
@@ -3958,7 +4051,11 @@ public class ShowMap : MonoBehaviour
         {
             SliderStopTimeValue = (int)slrStopTime.value;
             if (bReadyForCFH && (SliderStartTimeValue < SliderStopTimeValue))
-                ComputeCFH(1, SliderStartTimeValue - 1, SliderStopTimeValue - 1);
+            {
+                // Build 0041, CFH check
+                UpdateCFH2Bars();
+                //ComputeCFH(1, SliderStartTimeValue - 1, SliderStopTimeValue - 1);
+            }
         }
         txtStopTime.text = "Stop Time:" + SliderStopTimeValue + "/" + slrStopTime.maxValue;
     }
@@ -3967,7 +4064,11 @@ public class ShowMap : MonoBehaviour
     {
         FeatureString = IptFeatureString.text;
         if (bReadyForCFH && (SliderStartTimeValue < SliderStopTimeValue))
-            ComputeCFH(1, SliderStartTimeValue - 1, SliderStopTimeValue - 1);
+        {
+            // Build 0041, CFH check
+            UpdateCFH2Bars();
+            //ComputeCFH(1, SliderStartTimeValue - 1, SliderStopTimeValue - 1);
+        }
     }
 
     // Build 0026, snow data load
