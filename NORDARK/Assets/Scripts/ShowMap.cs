@@ -15,6 +15,7 @@ using UnityEngine.UI;
 using System.Runtime.InteropServices;
 using Newtonsoft.Json;
 using GeoJSON.Net.Feature;
+using GeoJSON.Net.Geometry;
 using System.Threading;
 
 public class ShowMap : MonoBehaviour
@@ -97,7 +98,7 @@ public class ShowMap : MonoBehaviour
     int[] edtcostImage;
     float[] distImage;//sqrt(cost), sqrt(V)
     // Build 0010, high scale for the vertices interpolation
-    int vertices_scale = 4;// 4;// scale parameters
+    int vertices_scale = 1;// 4;// scale parameters
     const int vertices_max = 10;
     int vmax;
     //
@@ -111,6 +112,9 @@ public class ShowMap : MonoBehaviour
     public List<Node> VerticesNodeArray;
     // Build 0040
     public float[][] rootImages;
+    // Build 0043
+    float[] lambdaImage;
+    string[] colorImage;
     void Start()
     {
         bReadyForCFH = false;
@@ -216,6 +220,9 @@ public class ShowMap : MonoBehaviour
                 intPtrRMImage = new IntPtr((void*)pArrayRM);
             }
         }
+        // Build 0043, save image to geojson file
+        lambdaImage = new float[length];
+        colorImage = new string[length];
     }
     //
 
@@ -749,8 +756,8 @@ public class ShowMap : MonoBehaviour
                         //
 
                         //vertex.y = vertex.y * 50;// vertex.y + i;
-                        //vertex.y = dis_new;// vertex.y + i;
-                        vertex.y = 0;
+                        vertex.y = dis_new;// vertex.y + i;
+                        //vertex.y = 0;
 
                         vertices[i] = vertex;
 
@@ -783,6 +790,10 @@ public class ShowMap : MonoBehaviour
 
 
                         lambdaMap.Add(lambda);//Felando
+
+                        // Build 0043
+                        lambdaImage[i_new] = lambda;
+                        colorImage[i_new]= ColorToHex(bestNode.MostAccessPOI.clr);
 
                         Color col = Color.black;
                         // Build 0020, save ST data to csv file
@@ -1110,7 +1121,87 @@ public class ShowMap : MonoBehaviour
                 Debug.Log("IFT total cost:" + diffInSeconds + " millisec");
         else
             Debug.Log("TDM total cost:" + diffInSeconds + " millisec");
+
+        // Build 0043, save image to geojson file
+        Mapbox.Utils.Vector2d[] g_image = new Mapbox.Utils.Vector2d[ncols * nrows];
+        Dictionary<string, object>[] props= new Dictionary<string, object>[ncols * nrows + 1];
+        for (int i = 0; i < g_image.Length; i++)
+        {
+            Mapbox.Utils.Vector2d geopos= VerticesNodeArray[i].globalposition.GetGeoPosition(map.CenterMercator, map.WorldRelativeScale);
+            VerticesNodeArray[i].GeoVec.x = (float)geopos.x;
+            VerticesNodeArray[i].GeoVec.x = (float)geopos.y;
+            g_image[i] = geopos;
+            props[i] = new Dictionary<string, object>();
+            props[i].Add("name", "vertex_" + i);
+            props[i].Add("cfh", i);
+            props[i].Add("color", "white");
+            props[i].Add("tdm_lambda", lambdaImage[i]);
+            props[i].Add("tdm_color", colorImage[i]);
+        }
+        props[ncols * nrows] = new Dictionary<string, object>();
+        props[ncols * nrows].Add("name", "0");
+        props[ncols * nrows].Add("cfh", 0);
+        props[ncols * nrows].Add("color", "white");
+        props[ncols * nrows].Add("tdm_lambda_min", lambdaImage.Min());
+        props[ncols * nrows].Add("tdm_lambda_max", lambdaImage.Max());
+        SaveToGeojson("polygon.geojson", props, g_image);
+        //
     }
+
+    public void SaveToGeojson(string filename, Dictionary<string, object>[] properties, Mapbox.Utils.Vector2d[] geoimage)
+    {
+        if (geoimage.Length == ncols * nrows)
+        {
+            var model = new FeatureCollection();
+            // Vector3, GetGeoPosition(map.CenterMercator, map.WorldRelativeScale);
+            //x, lat, y, lon
+            // get lat and lon offset for any position
+            double y_offset = (geoimage[ncols - 1].y - geoimage[0].y) / (ncols - 1);
+            double x_offset = (geoimage[(nrows - 1) * ncols].x - geoimage[0].x) / (nrows - 1);
+            for (int i = 0; i < geoimage.Length; i++)
+            {
+                // a b
+                // d c
+                Position a = new Position(geoimage[i].x - x_offset, geoimage[i].y - y_offset);
+                Position b = new Position(geoimage[i].x - x_offset, geoimage[i].y + y_offset);
+                Position c = new Position(geoimage[i].x + x_offset, geoimage[i].y + y_offset);
+                Position d = new Position(geoimage[i].x + x_offset, geoimage[i].y - y_offset);
+                Polygon poly = new Polygon(new List<LineString>
+                {
+                    new LineString(new List<IPosition>
+                    {a,d,c,b,a}) 
+                });
+
+                var feature = new Feature(poly, properties[i]);
+                model.Features.Add(feature);
+            }
+            GeoJSON.Net.Geometry.Point point = new GeoJSON.Net.Geometry.Point(new Position(0, 0));
+
+            model.Features.Add(new Feature(point, properties[geoimage.Length]));
+
+            var json = JsonConvert.SerializeObject(model);
+
+            json = json.Replace("\"type\":8", "\"type\":\"FeatureCollection\"");
+            json = json.Replace("\"type\":7", "\"type\":\"Feature\"");
+            json = json.Replace("\"type\":5", "\"type\":\"MultiPolygon\"");
+            json = json.Replace("\"type\":4", "\"type\":\"Polygon\"");
+            json = json.Replace("\"type\":0", "\"type\":\"Point\"");
+
+            StreamWriter sw = new StreamWriter(filename);
+            sw.WriteLine(json);
+            sw.Close();
+        }
+    }
+
+    public string ColorToHex(Color clr)
+    {
+        int r = (int)(clr.r * 255);
+        int g = (int)(clr.g * 255);
+        int b = (int)(clr.b * 255);
+        string hex = string.Format("#{0:X2}{1:X2}{2:X2}", r, g, b);
+        return hex;
+    }
+
 
     // Build 0015, IFT opt map
     public void IFTImageTest()
