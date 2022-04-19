@@ -35,7 +35,7 @@ public class ShowMap : MonoBehaviour
     public List<float> costs;
     public AbstractMap map;
     public string Kernel = "G"; //defaults to sigmoid, "G" for gaussian
-    public float r = 0.005f;//1f;//0.003f;
+    public float r = 0.05f;//for Graph4, 0.005f;//1f;//0.003f;
     public float alpha = 2;//1;//2
     public float scale_dis = 1000;
     public float scale_risk = 10;
@@ -98,7 +98,7 @@ public class ShowMap : MonoBehaviour
     int[] edtcostImage;
     float[] distImage;//sqrt(cost), sqrt(V)
     // Build 0010, high scale for the vertices interpolation
-    int vertices_scale = 1;// 4;// scale parameters
+    int vertices_scale = 4;// 4;// scale parameters
     const int vertices_max = 10;
     int vmax;
     //
@@ -115,6 +115,10 @@ public class ShowMap : MonoBehaviour
     // Build 0043
     float[] lambdaImage;
     string[] colorImage;
+    float[] accesstimeImage;
+    int[] iftcostImage;
+    float[] tdmcostImage;
+    string[][] labelImages;
     void Start()
     {
         bReadyForCFH = false;
@@ -223,6 +227,9 @@ public class ShowMap : MonoBehaviour
         // Build 0043, save image to geojson file
         lambdaImage = new float[length];
         colorImage = new string[length];
+        accesstimeImage = new float[length];
+        iftcostImage = new int[length];
+        tdmcostImage = new float[length];
     }
     //
 
@@ -311,11 +318,11 @@ public class ShowMap : MonoBehaviour
             // solution 2
             //string[] strPOIs = { "278087398", "7204337168", "7379970801" };
             //Color[] clrPOIs = { Color.blue, Color.red, Color.magenta };
-            timeSteps = 20;
+            timeSteps = 59;
             // Build 0036, generic graph load function
             GraphSetLoad("Graph4", strPOIs, clrPOIs);
             slrStartTime.minValue = 1;
-            slrStartTime.maxValue = 20;
+            slrStartTime.maxValue = timeSteps;
             slrStartTime.value = slrStartTime.minValue;
             slrStopTime.minValue = slrStartTime.minValue;
             slrStopTime.maxValue = slrStartTime.maxValue;
@@ -510,7 +517,14 @@ public class ShowMap : MonoBehaviour
                 rootImages[r] = null;
                 rootImages[r] = new float[ncols * nrows];
             }
-            //    
+            // Build 0043
+            labelImages = null;
+            labelImages = new string[timeSteps][];
+            for (int r = 0; r < timeSteps; r++)
+            {
+                labelImages[r] = null;
+                labelImages[r] = new string[ncols * nrows];
+            }
 
             //
 
@@ -636,7 +650,7 @@ public class ShowMap : MonoBehaviour
                     VerticesNodeArray[i_new].globalposition = baseVertices[i] + tile.position;
 
                     // Build 0031, not calculate the sea
-                    if ((graph_op > 0) && (baseVertices[i].y < 0.00002f))
+                    if ((graph_op != 3) && (baseVertices[i].y < 0.00002f)) // (graph_op >= 0)
                     {
                         vertices[i] = vertex;
                         lambda = (1 / r) * 1 / (1 + Mathf.Exp(Mathf.Pow((0 + 0), -alpha) / r));
@@ -777,6 +791,9 @@ public class ShowMap : MonoBehaviour
                         //
 
                         //Debug.Log(dis_new);
+                        float threshold = 0;// 0.000001f;
+                        if (mindist <= threshold)
+                            mindist = threshold;
 
                         //choice of kernel function for density estimation
                         if (Kernel == "G")
@@ -788,12 +805,16 @@ public class ShowMap : MonoBehaviour
                             lambda = (1 / r) * 1 / (1 + Mathf.Exp(Mathf.Pow((bestNode.LeastCost + mindist * scalex / 5 * 3600), -alpha) / r));  //Sigmoid
                         }
 
-
+                        if(lambda <= threshold)
+                            lambda = threshold;
                         lambdaMap.Add(lambda);//Felando
 
                         // Build 0043
                         lambdaImage[i_new] = lambda;
                         colorImage[i_new]= ColorToHex(bestNode.MostAccessPOI.clr);
+                        accesstimeImage[i_new] = bestNode.LeastCost + mindist * scalex / 5 * 3600;//s
+                        iftcostImage[i_new] = costImage[i_new];
+                        tdmcostImage[i_new] = mindist * scalex * 1000;//m
 
                         Color col = Color.black;
                         // Build 0020, save ST data to csv file
@@ -881,9 +902,16 @@ public class ShowMap : MonoBehaviour
                                 }
 
                                 // Build 0040
+                                //lambda = (1 / (r * Mathf.Sqrt(2 * Mathf.PI))) * Mathf.Exp(-0.5f * Mathf.Pow((Mathf.Pow((mindist + bestNode.LeastCostList[k]), -alpha) / r), 2));
                                 //rootImages[k][i_new] = bestNode.POIList[k].index + 1;
-                                lambda = (1 / (r * Mathf.Sqrt(2 * Mathf.PI))) * Mathf.Exp(-0.5f * Mathf.Pow((Mathf.Pow((mindist + bestNode.LeastCostList[k]), -alpha) / r), 2));
+                                float threshold = 0;// 0.000001f;
+                                if (mindist <= threshold)
+                                    mindist = threshold;
+                                lambda = (1 / r) * 1 / (1 + Mathf.Exp(Mathf.Pow((bestNode.LeastCostList[k] + mindist * scalex / 5 * 3600), -alpha) / r));  //Sigmoid
+                                if (lambda <= threshold)
+                                    lambda = threshold;
                                 rootImages[k][i_new] = lambda;
+                                labelImages[k][i_new] = ColorToHex(bestNode.POIList[k].clr);
                                 //
                             }
                             else
@@ -1123,10 +1151,24 @@ public class ShowMap : MonoBehaviour
             Debug.Log("TDM total cost:" + diffInSeconds + " millisec");
 
         // Build 0043, save image to geojson file
+        UpdateCFH2Bars();
         Mapbox.Utils.Vector2d[] g_image = new Mapbox.Utils.Vector2d[ncols * nrows];
+
+        // feed the array and concat to as a string
         Dictionary<string, object>[] props= new Dictionary<string, object>[ncols * nrows + 1];
         for (int i = 0; i < g_image.Length; i++)
         {
+            //List<float> test = new List<float>();
+            //test.Add(i % 20);
+            //test.Add((i + 1) % 20);
+            //test.Add((i + 2) % 20);
+            List<float> cfhdata = new List<float>();
+            for (int k = 0; k < timeSteps; k++)
+                cfhdata.Add(rootImages[k][i]);
+            List<string> cfhlabel = new List<string>();
+            for (int k = 0; k < timeSteps; k++)
+                cfhlabel.Add(labelImages[k][i]);
+
             Mapbox.Utils.Vector2d geopos= VerticesNodeArray[i].globalposition.GetGeoPosition(map.CenterMercator, map.WorldRelativeScale);
             VerticesNodeArray[i].GeoVec.x = (float)geopos.x;
             VerticesNodeArray[i].GeoVec.x = (float)geopos.y;
@@ -1135,15 +1177,22 @@ public class ShowMap : MonoBehaviour
             props[i].Add("name", "vertex_" + i);
             props[i].Add("cfh", i);
             props[i].Add("color", "white");
+            props[i].Add("height", 0);
             props[i].Add("tdm_lambda", lambdaImage[i]);
             props[i].Add("tdm_color", colorImage[i]);
+            props[i].Add("tdm_accesstime", accesstimeImage[i]);
+            props[i].Add("ift_cost", iftcostImage[i]);
+            props[i].Add("tdm_cost", tdmcostImage[i]);
+            props[i].Add("cfh_matrix", cfhdata);
+            props[i].Add("cfh_bstr", "");
+            props[i].Add("cfh_labelmatrix", cfhlabel);
         }
         props[ncols * nrows] = new Dictionary<string, object>();
         props[ncols * nrows].Add("name", "0");
         props[ncols * nrows].Add("cfh", 0);
         props[ncols * nrows].Add("color", "white");
-        props[ncols * nrows].Add("tdm_lambda_min", lambdaImage.Min());
-        props[ncols * nrows].Add("tdm_lambda_max", lambdaImage.Max());
+        props[ncols * nrows].Add("tdm_lambda_min", rootImages[0].Min());
+        props[ncols * nrows].Add("tdm_lambda_max", rootImages[0].Max());
         SaveToGeojson("polygon.geojson", props, g_image);
         //
     }
@@ -1156,8 +1205,8 @@ public class ShowMap : MonoBehaviour
             // Vector3, GetGeoPosition(map.CenterMercator, map.WorldRelativeScale);
             //x, lat, y, lon
             // get lat and lon offset for any position
-            double y_offset = (geoimage[ncols - 1].y - geoimage[0].y) / (ncols - 1);
-            double x_offset = (geoimage[(nrows - 1) * ncols].x - geoimage[0].x) / (nrows - 1);
+            double y_offset = (geoimage[ncols - 1].y - geoimage[0].y) / (ncols - 1) / 2;
+            double x_offset = (geoimage[(nrows - 1) * ncols].x - geoimage[0].x) / (nrows - 1) /2;
             for (int i = 0; i < geoimage.Length; i++)
             {
                 // a b
@@ -1172,12 +1221,12 @@ public class ShowMap : MonoBehaviour
                     {a,d,c,b,a}) 
                 });
 
-                var feature = new Feature(poly, properties[i]);
+                var feature = new Feature(poly, properties[i], i.ToString());
                 model.Features.Add(feature);
             }
             GeoJSON.Net.Geometry.Point point = new GeoJSON.Net.Geometry.Point(new Position(0, 0));
 
-            model.Features.Add(new Feature(point, properties[geoimage.Length]));
+            model.Features.Add(new Feature(point, properties[geoimage.Length], geoimage.Length.ToString()));
 
             var json = JsonConvert.SerializeObject(model);
 
