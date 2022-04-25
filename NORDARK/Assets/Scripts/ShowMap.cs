@@ -731,7 +731,9 @@ public class ShowMap : MonoBehaviour
                             // Build 0020, save ST data to csv file
                             if (UIButton.isCostDiff)
                             {
-                                distIFT = distImage[i_new];
+                                distIFT = distImage[i_new] * 100 / (vertices_scalemax - 1);// distImage[i_new];
+                                pos = VerticesNodeArray[i_new].globalposition;
+                                pos.y = node.vec.y;
                                 distTDM = (pos - node.vec).magnitude;//dist1;// (pos - node.vec).magnitude;
                             }
                             //
@@ -770,8 +772,8 @@ public class ShowMap : MonoBehaviour
                         //
 
                         //vertex.y = vertex.y * 50;// vertex.y + i;
-                        vertex.y = dis_new;// vertex.y + i;
-                        //vertex.y = 0;
+                        //vertex.y = dis_new;// vertex.y + i;
+                        vertex.y = 0;
 
                         vertices[i] = vertex;
 
@@ -821,11 +823,10 @@ public class ShowMap : MonoBehaviour
                         if (UIButton.isCostDiff)
                         {
                             //if (distTDM != 0)
-                            if (distTDM > 0.001f)
-                                //col.a = Clamp(0, Math.Abs((distIFT - distTDM) / distTDM), 1);
-                                col.a = Clamp(0, 1 - Math.Abs((distIFT * 100f / 9f - distTDM) / distTDM), 1);
-                            else
-                                col.a = 1;
+                            //if (distTDM > 0.001f)
+                                col.a = Clamp(0, 1 - Math.Abs((distIFT - distTDM) / distTDM), 1);
+                            //else
+                            //    col.a = 1;
                         }
                         else
                             col = bestNode.clr;
@@ -1036,18 +1037,19 @@ public class ShowMap : MonoBehaviour
                         colors[i].a = Clamp(1 - (lambdaMap[iter] - lMin) / (lMax - lMin), 0.05f, 1);// Build 0040.2
                     else // Build 0040
                     {
-                        int x = i % vertices_scalemax;
-                        int z = i / vertices_scalemax;
-                        // Build 0038
-                        x = x + x_offset * (vertices_scalemax - 1);
-                        z = z + z_offset * (vertices_scalemax - 1);
-                        int i_new = z * ncols + x;
-                        //if (distTDM != 0)
-                        if (barsvalue[i_new] > 0.001f)
-                            //col.a = Clamp(0, Math.Abs((distIFT - distTDM) / distTDM), 1);
-                            colors[i].a = Clamp(0, barsvalue[i_new] / (100f/9f), 1);
-                        else
-                            colors[i].a = 1;
+                        // Build 0044, no need to use bar
+                        //int x = i % vertices_scalemax;
+                        //int z = i / vertices_scalemax;
+                        //// Build 0038
+                        //x = x + x_offset * (vertices_scalemax - 1);
+                        //z = z + z_offset * (vertices_scalemax - 1);
+                        //int i_new = z * ncols + x;
+                        ////if (distTDM != 0)
+                        //if (barsvalue[i_new] > 0.001f)
+                        //    //col.a = Clamp(0, Math.Abs((distIFT - distTDM) / distTDM), 1);
+                        //    colors[i].a = Clamp(0, barsvalue[i_new], 1);
+                        //else
+                        //    colors[i].a = 1;
                     }
                     iter += 1;
                 }
@@ -1650,9 +1652,13 @@ public class ShowMap : MonoBehaviour
         // Adjacent region 1, 4 or more points
         foreach (Node node in graph.RestNodes)// Nodes)
         {
+            // Build 0044, number 1 error, pixel 5292 for graph3
+            // (x,z)=(72,36), (71,35).....(70,26), 104=(10x10)+(2x2), 90(9x9+1x1)
+            x_index = node.x_index;
+            z_index = node.z_index;
             //node.vec
-            x_index = (int)((node.vec.x - x_min) / (100.0f / vmax));//(vmax - 1)
-            z_index = (int)((z_max - node.vec.z) / (100.0f / vmax));
+            //x_index = (int)((node.vec.x - x_min) / (100.0f / vmax));//(vmax - 1)
+            //z_index = (int)((z_max - node.vec.z) / (100.0f / vmax));
             //// Build 0037
             //node.x_index = x_index;
             //node.z_index = z_index;
@@ -1685,6 +1691,10 @@ public class ShowMap : MonoBehaviour
             z_index = i / ncols;
             float mindist = Mathf.Infinity;
             Node best;
+            if (i == 5292)
+            {
+                mindist = Mathf.Infinity;
+            }
             foreach (Node node in graph.RestNodes)
             {
                 float dist = Mathf.Sqrt((x_index - node.x_index) * (x_index - node.x_index) + (z_index - node.z_index) * (z_index - node.z_index));
