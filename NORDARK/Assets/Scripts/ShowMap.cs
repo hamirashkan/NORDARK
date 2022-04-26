@@ -1173,7 +1173,7 @@ public class ShowMap : MonoBehaviour
 
             Mapbox.Utils.Vector2d geopos= VerticesNodeArray[i].globalposition.GetGeoPosition(map.CenterMercator, map.WorldRelativeScale);
             VerticesNodeArray[i].GeoVec.x = (float)geopos.x;
-            VerticesNodeArray[i].GeoVec.x = (float)geopos.y;
+            VerticesNodeArray[i].GeoVec.y = (float)geopos.y;
             g_image[i] = geopos;
             props[i] = new Dictionary<string, object>();
             props[i].Add("name", "vertex_" + i);
@@ -1195,11 +1195,11 @@ public class ShowMap : MonoBehaviour
         props[ncols * nrows].Add("color", "white");
         props[ncols * nrows].Add("tdm_lambda_min", rootImages[0].Min());
         props[ncols * nrows].Add("tdm_lambda_max", rootImages[0].Max());
-        SaveToGeojson("polygon.geojson", props, g_image);
+        SaveToGeojson("polygon.geojson", props, g_image, AuxLines); //g_edges
         //
     }
 
-    public void SaveToGeojson(string filename, Dictionary<string, object>[] properties, Mapbox.Utils.Vector2d[] geoimage)
+    public void SaveToGeojson(string filename, Dictionary<string, object>[] properties, Mapbox.Utils.Vector2d[] geoimage, List<AuxLine> edges)
     {
         if (geoimage.Length == ncols * nrows)
         {
@@ -1230,12 +1230,24 @@ public class ShowMap : MonoBehaviour
 
             model.Features.Add(new Feature(point, properties[geoimage.Length], geoimage.Length.ToString()));
 
+            //new List<LineString>
+            //{ }
+            List<LineString> edgeLS = new List<LineString>();
+            // Build 0045, edges output
+            for (int i = 0; i < edges.Count; i++)
+            {
+                LineString edgeL = new LineString(edges[i].geoPointList);
+                edgeLS.Add(edgeL);
+            }
+            model.Features.Add(new Feature(new MultiLineString(edgeLS)));
+
             var json = JsonConvert.SerializeObject(model);
 
             json = json.Replace("\"type\":8", "\"type\":\"FeatureCollection\"");
             json = json.Replace("\"type\":7", "\"type\":\"Feature\"");
             json = json.Replace("\"type\":5", "\"type\":\"MultiPolygon\"");
             json = json.Replace("\"type\":4", "\"type\":\"Polygon\"");
+            json = json.Replace("\"type\":3", "\"type\":\"MultiLineString\"");
             json = json.Replace("\"type\":0", "\"type\":\"Point\"");
 
             StreamWriter sw = new StreamWriter(filename);
@@ -2587,23 +2599,29 @@ public class ShowMap : MonoBehaviour
             AuxLineX.LineName = startindex.ToString() + "_" + stopindex.ToString();
             string[] lonSet = Regex.Split(values[7], "@");
             string[] latSet = Regex.Split(values[8].Replace("\r", ""), "@");
+            // Build 0045, output edges
+            AuxLineX.geoPointList = new List<IPosition>();//x, lat, y, lon
+            AuxLineX.geoPointList.Add(new Position(graph.Nodes[startindex].GeoVec.x, graph.Nodes[startindex].GeoVec.y));
             if ((lonSet[0] != "") && (lonSet.Length == latSet.Length))
             {
                 for (int j = 0; j < lonSet.Length; j++)
                 {
                     float lon = float.Parse(lonSet[j], System.Globalization.CultureInfo.InvariantCulture);
                     float lat = float.Parse(latSet[j], System.Globalization.CultureInfo.InvariantCulture);
+                    AuxLineX.geoPointList.Add(new Position(lat, lon));
                     Vector2 latlong = new Vector2(lat, lon);
                     Vector3 pos = latlong.AsUnityPosition(map.CenterMercator, map.WorldRelativeScale);
                     AuxLineX.AuxNodes.Add(pos);
                 }
             }
+            AuxLineX.geoPointList.Add(new Position(graph.Nodes[stopindex].GeoVec.x, graph.Nodes[stopindex].GeoVec.y));
             // Build 0016, draw lines
             AuxLineX.startNodeIndex = startindex;
             AuxLineX.startNodePosition = graph.Nodes[startindex].vec;
             AuxLineX.stopNodeIndex = stopindex;
             AuxLineX.stopNodePosition = graph.Nodes[stopindex].vec;
             //
+
             //AuxLineX.Add()
             AuxLines.Add(AuxLineX);
             //

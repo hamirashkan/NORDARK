@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using GeoJSON.Net.Geometry;
 
 public class Node : ScriptableObject
 {
@@ -114,4 +115,6 @@ public class AuxLine //: ScriptableObject
     public int stopNodeIndex;
     public Vector3 stopNodePosition;
     public Dictionary<string, object> properties;
+    // Build 0045, output edges
+    public List<IPosition> geoPointList;
 }
