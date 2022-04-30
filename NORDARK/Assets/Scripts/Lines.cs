@@ -122,7 +122,7 @@ public class Lines : MonoBehaviour
                 
                 l.SetPositions(pos.ToArray());
                 //Build 0012, more nodes for edges, search LinesNum
-                if (sm.dropdown_graphop.value >= 3)
+                if (sm.dropdown_graphop.value >= 2)
                 {
                     foreach (AuxLine x in sm.AuxLines.FindAll(element => element.LineName == (currentNode.index + "_" + Neighbors[i].index)))
                     {

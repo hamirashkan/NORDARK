@@ -20,9 +20,11 @@ using System.Threading;
 
 public class ShowMap : MonoBehaviour
 {
+    // Build 0047, wait for the delete
     Vector3[] coords = new Vector3[40];
     string[] nodesNames = new string[40];
     string[] edgesNames;
+    //
     public int timeSteps;
     public Transform point;
     public float minW;
@@ -288,9 +290,13 @@ public class ShowMap : MonoBehaviour
             map.Initialize(new Mapbox.Utils.Vector2d(62.4750425, 6.1914948), 17);
             bg_Mapbox.Initialize(new Mapbox.Utils.Vector2d(62.4750425, 6.1914948), 17);
             //map.UpdateMap();
-            GraphSet3("RoadGraph3");
+            timeSteps = 59;
+            string[] strPOIs = { "7379970941", "7379971169", "8745416901" };
+            Color[] clrPOIs = { Color.blue, Color.red, Color.green };
+            GraphSetLoad("Graph3", strPOIs, clrPOIs, 1, false);
+            //GraphSet3Old("RoadGraph3");
             slrStartTime.minValue = 1;
-            slrStartTime.maxValue = 20;
+            slrStartTime.maxValue = timeSteps;
             slrStartTime.value = slrStartTime.minValue;
             slrStopTime.minValue = slrStartTime.minValue;
             slrStopTime.maxValue = slrStartTime.maxValue;
@@ -320,7 +326,7 @@ public class ShowMap : MonoBehaviour
             //Color[] clrPOIs = { Color.blue, Color.red, Color.magenta };
             timeSteps = 59;
             // Build 0036, generic graph load function
-            GraphSetLoad("Graph4", strPOIs, clrPOIs);
+            GraphSetLoad("Graph4", strPOIs, clrPOIs, 1);
             slrStartTime.minValue = 1;
             slrStartTime.maxValue = timeSteps;
             slrStartTime.value = slrStartTime.minValue;
@@ -382,7 +388,11 @@ public class ShowMap : MonoBehaviour
             map.Initialize(new Mapbox.Utils.Vector2d(62.7233, 7.51087), 8);
             bg_Mapbox.Initialize(new Mapbox.Utils.Vector2d(62.7233, 7.51087), 8);
             //map.UpdateMap();
-            GraphSet2("RoadGraph2");//GraphSet2
+            timeSteps = 59;
+            string[] strPOIs = { "7379970941", "7379971169", "8745416901" };
+            Color[] clrPOIs = { Color.blue, Color.red, Color.green };
+            GraphSetLoad("Graph3", strPOIs, clrPOIs, 1, false);
+            //GraphSet2Old("RoadGraph2");//GraphSet2
             slrStartTime.minValue = 1;
             slrStartTime.maxValue = 10;
             slrStartTime.value = slrStartTime.minValue;
@@ -2071,7 +2081,7 @@ public class ShowMap : MonoBehaviour
     }
 
 
-    public void GraphSet2(string graphName)
+    public void GraphSet2Old(string graphName)
     {
         graph = Graph.Create(graphName);
         float y = 0.25f;// xOz plane is the map 2D coordinates
@@ -2300,7 +2310,7 @@ public class ShowMap : MonoBehaviour
         graph.printNodes();
     }
 
-    public void GraphSet3(string graphName)
+    public void GraphSet3Old(string graphName)
     {
         graph = Graph.Create(graphName, false);
         float y = 0.25f;// xOz plane is the map 2D coordinates
@@ -2485,7 +2495,7 @@ public class ShowMap : MonoBehaviour
     }
 
 
-    public void GraphSetLoad(string graphName, string[] POI_labels, Color[] POI_colors, int method_type = 1, bool isDriveRoad = false)
+    public void GraphSetLoad(string graphName, string[] POI_labels, Color[] POI_colors, int method_type = 1, bool isDriveRoad = false, bool bImageMapping = true)
     {
         string strSaveRootPath = "Assets/Resources/" + graphName + "/";
         graph = Graph.Create(graphName);
@@ -2502,7 +2512,6 @@ public class ShowMap : MonoBehaviour
 
         int node_i = 0;
         int i;
-        bool bImageMapping = true;
         Dictionary<string, int> nodeDict = new Dictionary<string, int>();
         if (bImageMapping)
             Array.Clear(testImage, 0, testImage.Length);
@@ -2522,6 +2531,8 @@ public class ShowMap : MonoBehaviour
 
             if (bImageMapping)
                 ImageMapping(ref pos, ref node_i);
+            else
+                node_i = graph.Nodes.Count;
 
             nodeDict.Add(values[0], node_i);
 
@@ -2663,9 +2674,9 @@ public class ShowMap : MonoBehaviour
 
             for (int k = 0; k < timeSteps; k++)
             {
-                for (i = 0; i < nodesNames.Length; i++)
+                for (i = 0; i < graph.Nodes.Count; i++) //nodesNames.Length
                 {
-                    for (int j = 0; j < nodesNames.Length; j++)
+                    for (int j = 0; j < graph.Nodes.Count; j++) //nodesNames.Length
                     {
                         roads[i, j] += temporalRoad[k][i, j];
                     }
@@ -2732,12 +2743,13 @@ public class ShowMap : MonoBehaviour
 
                     //temporalRoad[k][0, 13] = rnd.Next(low, high) + 40;//Line 1 (1<=>14) (40, 39)
 
-                    for (i = 0; i < nodesNames.Length; i++)
+                    for (i = 0; i < graph.Nodes.Count; i++) // nodesNames.Length
                     {
-                        for (int j = 0; j < nodesNames.Length; j++)
+                        for (int j = 0; j < graph.Nodes.Count; j++) // nodesNames.Length
                         {
-                            if (t0Road[i, j] != 0)
-                                temporalRoad[k][i, j] = t0Road[i, j] + rnd.Next(low, high);
+                            // Buil 0047, check random values
+                            if (distanceRoad[i, j] != 0) // toRoad
+                                temporalRoad[k][i, j] = distanceRoad[i, j] / speedlimitRoad[i, j] * KMh2MSEC * (1 + rnd.Next(low, high) / 100f);// toRoad
                             roads[i, j] += temporalRoad[k][i, j];
                         }
                     }
