@@ -230,10 +230,17 @@ public class Graph// : ScriptableObject
                 if (nodeX != null)
                 {
                     if (Array.IndexOf(name, nodeX.name) == -1)
+                    { 
                         //if(Array.IndexOf())// felando
                         restNodes_list.Add(nodeX.index);
+                        nodeX.indexOfPOI = -1;
+                    }
                     else
+                    { 
+                        // Build 0047
                         POINodes_list.Add(nodeX.index);
+                        nodeX.indexOfPOI = Array.IndexOf(name, nodeX.name);
+                    }
                 }
             }
             Debug.Log("E10011:AddNodes:" + (DateTime.Now - dt3).TotalMilliseconds + " millisec");

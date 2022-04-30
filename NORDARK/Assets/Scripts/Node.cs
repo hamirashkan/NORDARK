@@ -27,6 +27,8 @@ public class Node : ScriptableObject
 
     public Vector3 globalposition;
 
+    public int indexOfPOI = -1;
+
     [SerializeField]
     private List<string> neighborNames;
     public List<string> NeighborNames

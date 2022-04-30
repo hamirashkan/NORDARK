@@ -120,7 +120,7 @@ public class ShowMap : MonoBehaviour
     float[] accesstimeImage;
     int[] iftcostImage;
     float[] tdmcostImage;
-    string[][] labelImages;
+    int[][] labelImages;
     void Start()
     {
         bReadyForCFH = false;
@@ -362,16 +362,19 @@ public class ShowMap : MonoBehaviour
         // Build 0021, alesund road05 graph
         else if (graph_op == 5)
         {
-            map.Initialize(new Mapbox.Utils.Vector2d(62.54, 6.4), 10);//(62.64, 6.4), 10)
+            map.Initialize(new Mapbox.Utils.Vector2d(62.487133353397, 6.241912657788008), 12);//(62.64, 6.4), 10)
             //map.SetCenterLatitudeLongitude(new Mapbox.Utils.Vector2d(62.6138851, 6.5737325));
             //map.SetZoom(10.7f);
             //map.UpdateMap();
-            bg_Mapbox.Initialize(new Mapbox.Utils.Vector2d(62.54, 6.4), 10);
+            bg_Mapbox.Initialize(new Mapbox.Utils.Vector2d(62.487133353397, 6.241912657788008), 12);
             //bg_Mapbox.SetCenterLatitudeLongitude(new Mapbox.Utils.Vector2d(62.6138851, 6.5737325));
             //bg_Mapbox.SetZoom(10.7f);
             //bg_Mapbox.UpdateMap();
             timeSteps = 59;// 5;//59
-            GraphSet6("RoadGraph6");
+            string[] strPOIs = { "7379970095", "278085706", "7389963213" };
+            Color[] clrPOIs = { Color.blue, Color.red, Color.green };
+            GraphSetLoad("Graph6", strPOIs, clrPOIs, 1, true);
+            //GraphSet6("RoadGraph6");
             slrStartTime.minValue = 1;
             slrStartTime.maxValue = timeSteps;
             slrStartTime.value = slrStartTime.minValue;
@@ -539,11 +542,11 @@ public class ShowMap : MonoBehaviour
             }
             // Build 0043
             labelImages = null;
-            labelImages = new string[timeSteps][];
+            labelImages = new int[timeSteps][];
             for (int r = 0; r < timeSteps; r++)
             {
                 labelImages[r] = null;
-                labelImages[r] = new string[ncols * nrows];
+                labelImages[r] = new int[ncols * nrows];
             }
 
             //
@@ -932,7 +935,8 @@ public class ShowMap : MonoBehaviour
                                 if (lambda <= threshold)
                                     lambda = threshold;
                                 rootImages[k][i_new] = lambda;
-                                labelImages[k][i_new] = ColorToHex(bestNode.POIList[k].clr);
+                                // Build 0048, output all data
+                                labelImages[k][i_new] = bestNode.POIList[k].indexOfPOI;// ColorToHex(bestNode.POIList[k].clr);
                                 //
                             }
                             else
@@ -1187,7 +1191,7 @@ public class ShowMap : MonoBehaviour
             List<float> cfhdata = new List<float>();
             for (int k = 0; k < timeSteps; k++)
                 cfhdata.Add(rootImages[k][i]);
-            List<string> cfhlabel = new List<string>();
+            List<int> cfhlabel = new List<int>();
             for (int k = 0; k < timeSteps; k++)
                 cfhlabel.Add(labelImages[k][i]);
 
@@ -1215,6 +1219,12 @@ public class ShowMap : MonoBehaviour
         props[ncols * nrows].Add("color", "white");
         props[ncols * nrows].Add("tdm_lambda_min", rootImages[0].Min());
         props[ncols * nrows].Add("tdm_lambda_max", rootImages[0].Max());
+        props[ncols * nrows].Add("nrows", nrows);
+        props[ncols * nrows].Add("ncols", ncols);
+        props[ncols * nrows].Add("lon_min", g_image[0].y);
+        props[ncols * nrows].Add("lat_min", g_image[0].x);
+        props[ncols * nrows].Add("lon_step", (g_image[ncols - 1].y - g_image[0].y) / (ncols - 1));
+        props[ncols * nrows].Add("lat_step", (g_image[(nrows - 1) * ncols].x - g_image[0].x) / (nrows - 1));
         SaveToGeojson("polygon.geojson", props, g_image, AuxLines); //g_edges
         //
     }
