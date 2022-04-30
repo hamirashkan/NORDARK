@@ -334,7 +334,17 @@ public class ShowMap : MonoBehaviour
             map.Initialize(new Mapbox.Utils.Vector2d(62.49, 6.3), 12);
             bg_Mapbox.Initialize(new Mapbox.Utils.Vector2d(62.49, 6.3), 12);
             timeSteps = 59;
-            GraphSet5("RoadGraph5");
+            // Build 0046
+            //GraphSet5("RoadGraph5");
+            // All
+            string[] strPOIs = { "7379971301", "7379970095", "419659911" };
+            //string[] strPOIs = { "2390101122", "847431215", "3966732182" };
+            //string[] strPOIs = { graph.RawNodes[10].name, graph.RawNodes[40].name, "7389961142" };
+            Color[] clrPOIs = { Color.blue, Color.red, Color.green};
+            //string[] strPOIs = { "7379970941", "8745416892" };
+            //Color[] clrPOIs = { Color.blue, Color.red };
+            GraphSetLoad("Graph5", strPOIs, clrPOIs, 1, true);
+            //
             slrStartTime.minValue = 1;
             slrStartTime.maxValue = timeSteps;
             slrStartTime.value = slrStartTime.minValue;
@@ -772,8 +782,8 @@ public class ShowMap : MonoBehaviour
                         //
 
                         //vertex.y = vertex.y * 50;// vertex.y + i;
-                        //vertex.y = dis_new;// vertex.y + i;
-                        vertex.y = 0;
+                        vertex.y = dis_new;// vertex.y + i;
+                        //vertex.y = 0;
 
                         vertices[i] = vertex;
 
@@ -2475,7 +2485,7 @@ public class ShowMap : MonoBehaviour
     }
 
 
-    public void GraphSetLoad(string graphName, string[] POI_labels, Color[] POI_colors, int method_type = 1)
+    public void GraphSetLoad(string graphName, string[] POI_labels, Color[] POI_colors, int method_type = 1, bool isDriveRoad = false)
     {
         string strSaveRootPath = "Assets/Resources/" + graphName + "/";
         graph = Graph.Create(graphName);
@@ -2563,68 +2573,78 @@ public class ShowMap : MonoBehaviour
 
         for (i = 0; i < edgesNames.Length; i++)
         {
-            string rowdata = edges_data[i + 1];
-
-            string[] values = Regex.Split(rowdata, ",");
-            //string id = values[0];
-            int startindex = nodeDict[values[1]]; //graph.FindFirstNode(values[1]).index;
-            int stopindex = nodeDict[values[2]]; //graph.FindFirstNode(values[2]).index;
-            /*if ((values[6] == "nan") || (values[6] == "nan\r"))
-                t0Road[startindex, stopindex] = 300 / 300;// 1e-4f;
-            else
-                t0Road[startindex, stopindex] = 300 / float.Parse(values[6], System.Globalization.CultureInfo.InvariantCulture);
-            */
-            // risk = time
-            //if ((values[6] == "nan") || (values[6] == "nan\r"))
-            //    t0Road[startindex, stopindex] = float.Parse(values[5], System.Globalization.CultureInfo.InvariantCulture) / 70 * KMh2MSEC;// 1e-4f;
-            //else
-            //    t0Road[startindex, stopindex] = float.Parse(values[5], System.Globalization.CultureInfo.InvariantCulture) / float.Parse(values[6], System.Globalization.CultureInfo.InvariantCulture) * KMh2MSEC;
-            // risk = distance
-            distanceRoad[startindex, stopindex] = float.Parse(values[5], System.Globalization.CultureInfo.InvariantCulture);
-            if ((values[6] == "nan") || (values[6] == "nan\r"))
-                speedlimitRoad[startindex, stopindex] = 70;
-            else
-                speedlimitRoad[startindex, stopindex] = float.Parse(values[6], System.Globalization.CultureInfo.InvariantCulture);
-            //if ((values[6] == "nan") || (values[6] == "nan\r"))// access time unit, second
-            //    t0Road[startindex, stopindex] = float.Parse(values[5], System.Globalization.CultureInfo.InvariantCulture) / 5 * KMh2MSEC;// 1e-4f;
-            //else
-            //    t0Road[startindex, stopindex] = float.Parse(values[5], System.Globalization.CultureInfo.InvariantCulture) / 5 * KMh2MSEC;
-
-
-            //Linename values[6]
-            // Build 0012, more nodes for edges
-            // create list based on indexes
-
-            AuxLine AuxLineX = new AuxLine();
-            AuxLineX.LineName = startindex.ToString() + "_" + stopindex.ToString();
-            string[] lonSet = Regex.Split(values[7], "@");
-            string[] latSet = Regex.Split(values[8].Replace("\r", ""), "@");
-            // Build 0045, output edges
-            AuxLineX.geoPointList = new List<IPosition>();//x, lat, y, lon
-            AuxLineX.geoPointList.Add(new Position(graph.Nodes[startindex].GeoVec.x, graph.Nodes[startindex].GeoVec.y));
-            if ((lonSet[0] != "") && (lonSet.Length == latSet.Length))
+            try
             {
-                for (int j = 0; j < lonSet.Length; j++)
+                string rowdata = edges_data[i + 1];
+
+                string[] values = Regex.Split(rowdata, ",");
+                //string id = values[0];
+                int startindex = nodeDict[values[1]]; //graph.FindFirstNode(values[1]).index;
+                int stopindex = nodeDict[values[2]]; //graph.FindFirstNode(values[2]).index;
+                if (startindex != stopindex)
                 {
-                    float lon = float.Parse(lonSet[j], System.Globalization.CultureInfo.InvariantCulture);
-                    float lat = float.Parse(latSet[j], System.Globalization.CultureInfo.InvariantCulture);
-                    AuxLineX.geoPointList.Add(new Position(lat, lon));
-                    Vector2 latlong = new Vector2(lat, lon);
-                    Vector3 pos = latlong.AsUnityPosition(map.CenterMercator, map.WorldRelativeScale);
-                    AuxLineX.AuxNodes.Add(pos);
+                    /*if ((values[6] == "nan") || (values[6] == "nan\r"))
+                        t0Road[startindex, stopindex] = 300 / 300;// 1e-4f;
+                    else
+                        t0Road[startindex, stopindex] = 300 / float.Parse(values[6], System.Globalization.CultureInfo.InvariantCulture);
+                    */
+                    // risk = time
+                    //if ((values[6] == "nan") || (values[6] == "nan\r"))
+                    //    t0Road[startindex, stopindex] = float.Parse(values[5], System.Globalization.CultureInfo.InvariantCulture) / 70 * KMh2MSEC;// 1e-4f;
+                    //else
+                    //    t0Road[startindex, stopindex] = float.Parse(values[5], System.Globalization.CultureInfo.InvariantCulture) / float.Parse(values[6], System.Globalization.CultureInfo.InvariantCulture) * KMh2MSEC;
+                    // risk = distance
+                    distanceRoad[startindex, stopindex] = float.Parse(values[5], System.Globalization.CultureInfo.InvariantCulture);
+                    if ((values[6] == "nan") || (values[6] == "nan\r"))
+                        speedlimitRoad[startindex, stopindex] = 70;
+                    else
+                        speedlimitRoad[startindex, stopindex] = float.Parse(values[6], System.Globalization.CultureInfo.InvariantCulture);
+                    //if ((values[6] == "nan") || (values[6] == "nan\r"))// access time unit, second
+                    //    t0Road[startindex, stopindex] = float.Parse(values[5], System.Globalization.CultureInfo.InvariantCulture) / 5 * KMh2MSEC;// 1e-4f;
+                    //else
+                    //    t0Road[startindex, stopindex] = float.Parse(values[5], System.Globalization.CultureInfo.InvariantCulture) / 5 * KMh2MSEC;
+
+
+                    //Linename values[6]
+                    // Build 0012, more nodes for edges
+                    // create list based on indexes
+
+                    AuxLine AuxLineX = new AuxLine();
+                    AuxLineX.LineName = startindex.ToString() + "_" + stopindex.ToString();
+                    string[] lonSet = Regex.Split(values[7], "@");
+                    string[] latSet = Regex.Split(values[8].Replace("\r", ""), "@");
+                    // Build 0045, output edges
+                    AuxLineX.geoPointList = new List<IPosition>();//x, lat, y, lon
+                    AuxLineX.geoPointList.Add(new Position(graph.Nodes[startindex].GeoVec.x, graph.Nodes[startindex].GeoVec.y));
+                    if ((lonSet[0] != "") && (lonSet.Length == latSet.Length))
+                    {
+                        for (int j = 0; j < lonSet.Length; j++)
+                        {
+                            float lon = float.Parse(lonSet[j], System.Globalization.CultureInfo.InvariantCulture);
+                            float lat = float.Parse(latSet[j], System.Globalization.CultureInfo.InvariantCulture);
+                            AuxLineX.geoPointList.Add(new Position(lat, lon));
+                            Vector2 latlong = new Vector2(lat, lon);
+                            Vector3 pos = latlong.AsUnityPosition(map.CenterMercator, map.WorldRelativeScale);
+                            AuxLineX.AuxNodes.Add(pos);
+                        }
+                    }
+                    AuxLineX.geoPointList.Add(new Position(graph.Nodes[stopindex].GeoVec.x, graph.Nodes[stopindex].GeoVec.y));
+                    // Build 0016, draw lines
+                    AuxLineX.startNodeIndex = startindex;
+                    AuxLineX.startNodePosition = graph.Nodes[startindex].vec;
+                    AuxLineX.stopNodeIndex = stopindex;
+                    AuxLineX.stopNodePosition = graph.Nodes[stopindex].vec;
+                    //
+
+                    //AuxLineX.Add()
+                    AuxLines.Add(AuxLineX);
+                    //
                 }
             }
-            AuxLineX.geoPointList.Add(new Position(graph.Nodes[stopindex].GeoVec.x, graph.Nodes[stopindex].GeoVec.y));
-            // Build 0016, draw lines
-            AuxLineX.startNodeIndex = startindex;
-            AuxLineX.startNodePosition = graph.Nodes[startindex].vec;
-            AuxLineX.stopNodeIndex = stopindex;
-            AuxLineX.stopNodePosition = graph.Nodes[stopindex].vec;
-            //
-
-            //AuxLineX.Add()
-            AuxLines.Add(AuxLineX);
-            //
+            catch (Exception e)
+            {
+                Debug.Log(i);
+            }
         }
 
         graph.timeSteps = timeSteps;
@@ -2683,11 +2703,18 @@ public class ShowMap : MonoBehaviour
                                 float newspeed = Clamp((float)(speedlimitRoad[i, j] * (1 - avgDist / maxDis * snowdata[k] / 25)), 5, maxRisk);
                                 // y = -2.5x+50, x is snow depth (cm), y is speed(km/h)
                                 // equation to get the parameters
-                                // big region, drive, calculate
-                                //temporalRoad[k][i, j] = distanceRoad[i, j] / newspeed * KMh2MSEC;
-                                // small region, walk
-                                float walknewspeed = Clamp((float)(5 - avgDist / maxDis * snowdata[k] / 10.0), 2f, 5); // not snowdata[k], will be zero
-                                temporalRoad[k][i, j] = distanceRoad[i, j] / walknewspeed * KMh2MSEC; // distance unit = meter
+                                // Build 0046
+                                if (isDriveRoad)
+                                {
+                                    // big region, drive, calculate
+                                    temporalRoad[k][i, j] = distanceRoad[i, j] / newspeed * KMh2MSEC;
+                                }
+                                else
+                                { 
+                                    // small region, walk
+                                    float walknewspeed = Clamp((float)(5 - avgDist / maxDis * snowdata[k] / 10.0), 2f, 5); // not snowdata[k], will be zero
+                                    temporalRoad[k][i, j] = distanceRoad[i, j] / walknewspeed * KMh2MSEC; // distance unit = meter
+                                }
                             }
                             roads[i, j] += temporalRoad[k][i, j];
                         }
@@ -3038,7 +3065,7 @@ public class ShowMap : MonoBehaviour
         graph.printNodes();
     }
 
-    public void GraphSet5(string graphName)
+    public void GraphSet5_Old(string graphName)
     {
         graph = Graph.Create(graphName);
         float y = 0.25f;// xOz plane is the map 2D coordinates
