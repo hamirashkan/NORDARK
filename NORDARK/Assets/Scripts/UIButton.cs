@@ -41,7 +41,7 @@ public class UIButton : MonoBehaviour
 
     public void HideValueChange()
     {
-        bg.SetActive(!this.GetComponent<Toggle>().isOn);
+        bg.SetActive(this.GetComponent<Toggle>().isOn);
         isOn = this.GetComponent<Toggle>().isOn;
     }
 
@@ -66,7 +66,8 @@ public class UIButton : MonoBehaviour
     public void ShowVerticesChange()
     {
         isShowVertics = this.GetComponent<Toggle>().isOn;
-        OptionValueChange();
+        // Build 0052, sort the manual
+        //OptionValueChange();
     }
 
     public void test()
@@ -90,6 +91,7 @@ public class UIButton : MonoBehaviour
         Debug.Log("timeIndex=" + other.timeIndex);
     }
 
+    // Build 0052, retain the computation of CFH by bars
     public void ComputeCFH()
     {
         // Build 0040
@@ -113,6 +115,7 @@ public class UIButton : MonoBehaviour
         //other.ComputeCFH(1, other.SliderStartTimeValue - 1, other.SliderStopTimeValue - 1);
     }
 
+    // Build 0052, retain the computation of TDM by texture
     public void ComputeTDM()
     {
         other.ComputeTDM();
