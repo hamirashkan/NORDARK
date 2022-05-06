@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEditor;
 using System;
 using System.Linq;
+using GeoJSON.Net.Geometry;
 
 public class Graph// : ScriptableObject
 {
@@ -39,6 +40,10 @@ public class Graph// : ScriptableObject
     private float[] dist;//int
     public int timeSteps;
     public static int LinesNum;
+    public string[] clrPOIsStr;
+    public List<double[]> nodes_geo;
+    public string[] nodes_name;
+    public int[] indexPOIs;
 
     [SerializeField]
     public List<Node> restNodes;
@@ -91,6 +96,44 @@ public class Graph// : ScriptableObject
     {
         RawNodes.Add(node);
     }
+
+    public void CreateStrClrs()
+    {
+        clrPOIsStr = new string[POInodes.Count];
+        for (int i = 0; i < POInodes.Count; i++)
+        {
+            clrPOIsStr[i] = ShowMap.ColorToHex(POInodes[i].clr);
+        }
+    }
+
+    public void CreateStrPOIindex()
+    {
+        indexPOIs = new int[POInodes.Count];
+        for (int i = 0; i < POInodes.Count; i++)
+        {
+            indexPOIs[i] = POInodes[i].index;
+        }
+    }
+
+    public void CreateStrNodesName()
+    {
+        nodes_name = new string[Nodes.Count];
+        for (int i = 0; i < Nodes.Count; i++)
+            nodes_name[i] = Nodes[i].name;
+    }
+
+    public void CreateStrNodesGeo() 
+    {
+        nodes_geo = new List<double[]>();
+        for (int i = 0; i < Nodes.Count; i++)
+        {
+            double[] geoXY = new double[2];
+            geoXY[0] = Nodes[i].GeoVec.y;//lng
+            geoXY[1] = Nodes[i].GeoVec.x;//lat
+            nodes_geo.Add(geoXY);
+        }
+    }
+
 
     public Node FindFirstRawNode(string nodeName)
     {
@@ -204,6 +247,11 @@ public class Graph// : ScriptableObject
         if (name.Length > 0)
         {
             DateTime dt3 = DateTime.Now;
+
+            // create two lists for index
+            List<int> POINodes_list = new List<int>();
+            List<int> restNodes_list = new List<int>();
+
             // update color
             for (int i = 0; i < name.Length; i++)
             {
@@ -217,13 +265,15 @@ public class Graph// : ScriptableObject
                     Debug.Log("E0005:adjust POI name=" + name[i].ToString() + " to new name=" + nodeX.name);
                 }
                 nodeX.clr = colors[i];
+                POINodes_list.Add(nodeX.index);
+                nodeX.indexOfPOI = Array.IndexOf(name, nodeX.name);
                 // Build 0024, manually add risk to new lines
                 // TBD
                 //
             }
-            // create two lists for index
-            List<int> POINodes_list = new List<int>();
-            List<int> restNodes_list = new List<int>();
+
+            // Build 0048
+            //
             for (int i = 0; i < Nodes.Count; i++)
             {
                 Node nodeX = FindNode(i);
@@ -237,9 +287,6 @@ public class Graph// : ScriptableObject
                     }
                     else
                     { 
-                        // Build 0047
-                        POINodes_list.Add(nodeX.index);
-                        nodeX.indexOfPOI = Array.IndexOf(name, nodeX.name);
                     }
                 }
             }
@@ -265,6 +312,13 @@ public class Graph// : ScriptableObject
                 Node nodeX = FindNode(restNodes_list[i]);
                 RestNodes.Add(nodeX); //keeping track of nodes in between
             }
+
+            // Build 0048
+            CreateStrClrs();
+            CreateStrPOIindex();
+            CreateStrNodesName();
+            CreateStrNodesGeo();
+            //
 
             // calculate risk
             risk(roadTemporal, restNodes_list, POINodes_list);

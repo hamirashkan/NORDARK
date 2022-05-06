@@ -16,7 +16,7 @@ public class UIButton : MonoBehaviour
     public static bool isIFT = true;
     public static bool isIFTCost = true;
     public static bool isCostDiff = false;
-    public static bool isShowVertics = true;
+    public static bool isShowVertics = false;
 
     // Start is called before the first frame update
     void Start()

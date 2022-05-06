@@ -121,6 +121,9 @@ public class ShowMap : MonoBehaviour
     int[] iftcostImage;
     float[] tdmcostImage;
     int[][] labelImages;
+    // Build 0050, save calculating time, comment diff and bar
+    bool disabledDiffCalulation = true;
+
     void Start()
     {
         bReadyForCFH = false;
@@ -326,7 +329,7 @@ public class ShowMap : MonoBehaviour
             //Color[] clrPOIs = { Color.blue, Color.red, Color.magenta };
             timeSteps = 59;
             // Build 0036, generic graph load function
-            GraphSetLoad("Graph4", strPOIs, clrPOIs, 1);
+            GraphSetLoad("Graph4", strPOIs, clrPOIs, 1, false, false);
             slrStartTime.minValue = 1;
             slrStartTime.maxValue = timeSteps;
             slrStartTime.value = slrStartTime.minValue;
@@ -373,7 +376,7 @@ public class ShowMap : MonoBehaviour
             timeSteps = 59;// 5;//59
             string[] strPOIs = { "7379970095", "278085706", "7389963213" };
             Color[] clrPOIs = { Color.blue, Color.red, Color.green };
-            GraphSetLoad("Graph6", strPOIs, clrPOIs, 1, true);
+            GraphSetLoad("Graph6", strPOIs, clrPOIs, 1, true, false);
             //GraphSet6("RoadGraph6");
             slrStartTime.minValue = 1;
             slrStartTime.maxValue = timeSteps;
@@ -672,16 +675,17 @@ public class ShowMap : MonoBehaviour
 
                     VerticesNodeArray[i_new].globalposition = baseVertices[i] + tile.position;
 
+                    // Build 0049, disable sea
                     // Build 0031, not calculate the sea
-                    if ((graph_op != 3) && (baseVertices[i].y < 0.00002f)) // (graph_op >= 0)
-                    {
-                        vertices[i] = vertex;
-                        lambda = (1 / r) * 1 / (1 + Mathf.Exp(Mathf.Pow((0 + 0), -alpha) / r));
-                        lambdaMap.Add((lambdaMap.Min() + lambdaMap.Max()) / 2);
-                        Color col = Color.black;
-                        colorMap.Add(col);
-                    }
-                    else
+                    //if ((graph_op != 3) && (baseVertices[i].y < 0.00002f)) // (graph_op >= 0)
+                    //{
+                    //    vertices[i] = vertex;
+                    //    lambda = (1 / r) * 1 / (1 + Mathf.Exp(Mathf.Pow((0 + 0), -alpha) / r));
+                    //    lambdaMap.Add((lambdaMap.Min() + lambdaMap.Max()) / 2);
+                    //    Color col = Color.black;
+                    //    colorMap.Add(col);
+                    //}
+                    //else
                     {
                         //// Build 0030
                         //int hi= (int)Math.Floor((vertex.x + 50) * 2.55f) + (int)Math.Floor((50 - vertex.z) * 2.55f * 256);
@@ -1203,6 +1207,7 @@ public class ShowMap : MonoBehaviour
             props[i].Add("name", "vertex_" + i);
             props[i].Add("cfh", i);
             props[i].Add("color", "white");
+            props[i].Add("clrA", "white"); // after convert the alpha
             props[i].Add("height", 0);
             props[i].Add("tdm_lambda", lambdaImage[i]);
             props[i].Add("tdm_color", colorImage[i]);
@@ -1217,6 +1222,7 @@ public class ShowMap : MonoBehaviour
         props[ncols * nrows].Add("name", "0");
         props[ncols * nrows].Add("cfh", 0);
         props[ncols * nrows].Add("color", "white");
+        props[ncols * nrows].Add("clrA", "white"); // after convert the alpha
         props[ncols * nrows].Add("tdm_lambda_min", rootImages[0].Min());
         props[ncols * nrows].Add("tdm_lambda_max", rootImages[0].Max());
         props[ncols * nrows].Add("nrows", nrows);
@@ -1225,6 +1231,10 @@ public class ShowMap : MonoBehaviour
         props[ncols * nrows].Add("lat_min", g_image[0].x);
         props[ncols * nrows].Add("lon_step", (g_image[ncols - 1].y - g_image[0].y) / (ncols - 1));
         props[ncols * nrows].Add("lat_step", (g_image[(nrows - 1) * ncols].x - g_image[0].x) / (nrows - 1));
+        props[ncols * nrows].Add("nodes_geo", graph.nodes_geo);
+        props[ncols * nrows].Add("nodes_name", graph.nodes_name);
+        props[ncols * nrows].Add("indexPOIs", graph.indexPOIs);
+        props[ncols * nrows].Add("clrPOIs", graph.clrPOIsStr);
         SaveToGeojson("polygon.geojson", props, g_image, AuxLines); //g_edges
         //
     }
@@ -1239,6 +1249,14 @@ public class ShowMap : MonoBehaviour
             // get lat and lon offset for any position
             double y_offset = (geoimage[ncols - 1].y - geoimage[0].y) / (ncols - 1) / 2;
             double x_offset = (geoimage[(nrows - 1) * ncols].x - geoimage[0].x) / (nrows - 1) /2;
+            //double w = 0.9992f;
+            //Debug.Log("E0111:" + (y_offset - y_offset * w).ToString());
+            //y_offset = y_offset * w;
+            //double wx = -40e-8;
+            ////Debug.Log("E0111:" + (x_offset - x_offset * w).ToString());
+            ////x_offset = x_offset * w;
+            //Debug.Log("E0111:" + (x_offset - x_offset * w).ToString());
+            //x_offset = x_offset - wx;
             for (int i = 0; i < geoimage.Length; i++)
             {
                 // a b
@@ -1286,7 +1304,7 @@ public class ShowMap : MonoBehaviour
         }
     }
 
-    public string ColorToHex(Color clr)
+    public static string ColorToHex(Color clr)
     {
         int r = (int)(clr.r * 255);
         int g = (int)(clr.g * 255);
@@ -1724,53 +1742,55 @@ public class ShowMap : MonoBehaviour
                 SetImageValue(x_index + 1, z_index + 1, node.index + 1);
             }
         }
+        //// Build 0050
+        //if (disabledDiffCalulation)
+        //{ 
+        //    // Build 0037
+        //    float[] distTDM = new float[nrows * ncols];
+        //for (int i = 0; i < nrows * ncols; i++)
+        //{
+        //    x_index = i % ncols;
+        //    z_index = i / ncols;
+        //    float mindist = Mathf.Infinity;
+        //    Node best;
+        //    if (i == 5292)
+        //    {
+        //        mindist = Mathf.Infinity;
+        //    }
+        //    foreach (Node node in graph.RestNodes)
+        //    {
+        //        float dist = Mathf.Sqrt((x_index - node.x_index) * (x_index - node.x_index) + (z_index - node.z_index) * (z_index - node.z_index));
+        //        if (dist < mindist)
+        //        {
+        //            mindist = dist;
+        //            best = node;
+        //        }
+        //    }
+        //    distTDM[i] = mindist;
+        //}
 
-        // Build 0037
-        float[] distTDM = new float[nrows * ncols];
-        for (int i = 0; i < nrows * ncols; i++)
-        {
-            x_index = i % ncols;
-            z_index = i / ncols;
-            float mindist = Mathf.Infinity;
-            Node best;
-            if (i == 5292)
-            {
-                mindist = Mathf.Infinity;
-            }
-            foreach (Node node in graph.RestNodes)
-            {
-                float dist = Mathf.Sqrt((x_index - node.x_index) * (x_index - node.x_index) + (z_index - node.z_index) * (z_index - node.z_index));
-                if (dist < mindist)
-                {
-                    mindist = dist;
-                    best = node;
-                }
-            }
-            distTDM[i] = mindist;
-        }
+        //float[] distTDMv = new float[nrows * ncols];
+        //for (int i = 0; i < nrows * ncols; i++)
+        //{
+        //    x_index = i % ncols;
+        //    z_index = i / ncols;
+        //    float mindist = Mathf.Infinity;
+        //    Node best;
+        //    foreach (Node node in graph.RestNodes)
+        //    {
+        //        Vector3 pos = VerticesNodeArray[i].globalposition;
+        //        pos.y = node.vec.y;
+        //        float dist = (pos - node.vec).magnitude;//node.vec
 
-        float[] distTDMv = new float[nrows * ncols];
-        for (int i = 0; i < nrows * ncols; i++)
-        {
-            x_index = i % ncols;
-            z_index = i / ncols;
-            float mindist = Mathf.Infinity;
-            Node best;
-            foreach (Node node in graph.RestNodes)
-            {
-                Vector3 pos = VerticesNodeArray[i].globalposition;
-                pos.y = node.vec.y;
-                float dist = (pos - node.vec).magnitude;//node.vec
-
-                if (dist < mindist)
-                {
-                    mindist = dist;
-                    best = node;
-                }
-            }
-            distTDMv[i] = mindist;
-        }
-
+        //        if (dist < mindist)
+        //            {
+        //                mindist = dist;
+        //                best = node;
+        //            }
+        //        }
+        //        distTDMv[i] = mindist;
+        //    }
+        //}
 
         //testImage[0] = 1;
         //testImage[ncols * 10 + 20] = 1;
@@ -1804,12 +1824,18 @@ public class ShowMap : MonoBehaviour
         Marshal.Copy(intPtrEdt, costImage, 0, nrows * ncols);
         // Build 0038
         float[] distTDMdff = new float[nrows * ncols];
+        // Build 0050
+        //if(disabledDiffCalulation)
+        //    for (int i = 0; i < nrows * ncols; i++)
+        //    {
+        //        distImage[i] = (float)Math.Sqrt(costImage[i]);//(distTDM[i] / 
+        //        distTDMdff[i] = distTDMv[i] / distTDM[i];
+        //    } 
+        //
         for (int i = 0; i < nrows * ncols; i++)
         {
-            distImage[i] = (float)Math.Sqrt(costImage[i]);//(distTDM[i] / 
-            distTDMdff[i] = distTDMv[i] / distTDM[i];
-        } 
-        //
+            distImage[i] = (float)Math.Sqrt(costImage[i]);
+        }
         intPtrEdt = DllInterface.GetImage('R');
         Marshal.Copy(intPtrEdt, edtImage, 0, nrows * ncols);
         DllInterface.ExportFile(intPtrEdt, nrows, ncols, Marshal.StringToHGlobalAnsi("R.pgm"));
@@ -1820,7 +1846,7 @@ public class ShowMap : MonoBehaviour
         BarsVis bars_script = GameObject.Find("Mapbox").GetComponent<BarsVis>();
         bars_script.x_cols = ncols;
         bars_script.z_rows = nrows;
-        bars_script.value = distTDMdff;// distTDM;// distImage;
+        bars_script.value = distImage;//Build 0050 distTDMdff;// distTDM;// distImage;
         bars_script.Redraw();
         // Build 0039
         //QuadVis quad_script = GameObject.Find("Mapbox").GetComponent<QuadVis>();
@@ -2505,7 +2531,7 @@ public class ShowMap : MonoBehaviour
     }
 
 
-    public void GraphSetLoad(string graphName, string[] POI_labels, Color[] POI_colors, int method_type = 1, bool isDriveRoad = false, bool bImageMapping = true)
+    public void GraphSetLoad(string graphName, string[] POI_labels, Color[] POI_colors, int method_type = 1, bool isDriveRoad = false, bool bImageMapping = false)
     {
         string strSaveRootPath = "Assets/Resources/" + graphName + "/";
         graph = Graph.Create(graphName);
