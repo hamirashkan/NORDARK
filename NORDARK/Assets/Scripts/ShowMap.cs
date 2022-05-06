@@ -56,6 +56,8 @@ public class ShowMap : MonoBehaviour
     public List<int>[,] NodeIndexArrayS;
     public List<Node> NodeArray;
     public List<Node>[,] NodeArrayS;
+    //public List<int> NodeDiffArray;// Build 0051
+    public List<int>[,] NodeDiffArrayS;
     public List<int>[] CFHArrayS;
     public int timeIndex;
     public int tileIndex;
@@ -512,10 +514,12 @@ public class ShowMap : MonoBehaviour
                 // Build 0037
                 node.x_index = x_index;
                 node.z_index = z_index;
+                // Build 0051, not change node position
                 // Build 0038, find the difference, adjust node position
-                node.vec.x = x_min + x_index * (100.0f / vmax);
-                node.vec.z = z_max - z_index * (100.0f / vmax);
-                node.objTransform.position = node.vec;
+                //node.vec.x = x_min + x_index * (100.0f / vmax);
+                //node.vec.z = z_max - z_index * (100.0f / vmax);
+                //node.objTransform.position = node.vec;
+                //
             }
             //
 
@@ -531,6 +535,7 @@ public class ShowMap : MonoBehaviour
             // TimeLine Initilization
             NodeIndexArrayS = new List<int>[12, timeSteps];
             NodeArrayS = new List<Node>[12, timeSteps];
+            //NodeDiffArrayS = new List<int>[12, timeSteps];// Build 0051
             slrTimeLine.maxValue = timeSteps;// maybe put it to the end of the function
             slrTimeLine.minValue = 1;
             //
@@ -701,6 +706,10 @@ public class ShowMap : MonoBehaviour
                         float distIFT = 0;
                         float distTDM = 0;
 
+                        // Build 0051
+                        int labelIFT = 0;
+                        int labelTDM = 0;
+
                         if (((c * vertices.Length + i) == 498) || ((c * vertices.Length + i) == 508))
                         {
                             Debug.Log("");
@@ -762,6 +771,29 @@ public class ShowMap : MonoBehaviour
                                 pos = VerticesNodeArray[i_new].globalposition;
                                 pos.y = node.vec.y;
                                 distTDM = (pos - node.vec).magnitude;//dist1;// (pos - node.vec).magnitude;
+
+                                // Build 0051
+                                labelIFT = bestNode.index;
+                                float tmindist = Mathf.Infinity;
+                                Node tbestNode = null;
+                                foreach (Node tnode in graph.RestNodes)
+                                {
+                                    pos = new Vector3(vertex.x + tile.position.x, tnode.vec.y, vertex.z + tile.position.z);
+
+                                    // Build 0041, modify the propagation calculation
+                                    pos = VerticesNodeArray[i_new].globalposition;
+                                    pos.y = tnode.vec.y;
+                                    //
+
+                                    float tdist = (pos - tnode.vec).magnitude;
+
+                                    if (tdist < tmindist)
+                                    {
+                                        tmindist = tdist;
+                                        tbestNode = tnode;
+                                    }
+                                }
+                                labelTDM = tbestNode.index;
                             }
                             //
                         }
@@ -854,6 +886,12 @@ public class ShowMap : MonoBehaviour
                                 col.a = Clamp(0, 1 - Math.Abs((distIFT - distTDM) / distTDM), 1);
                             //else
                             //    col.a = 1;
+
+                            // Build 0051, label map check
+                            if (labelIFT == labelTDM)
+                                col.a = 1;
+                            else
+                                col.a = 0;
                         }
                         else
                             col = bestNode.clr;
@@ -873,9 +911,12 @@ public class ShowMap : MonoBehaviour
                     //    // Get the IFT result
                     //    IFTindexImageTest();
                     //}
-
+                    // Build 0051
+                    int labelIFT = 0;
+                    int labelTDM = 0;
                     NodeIndexArray = new List<int>();
                     NodeArray = new List<Node>();
+                    //NodeDiffArray = new List<int>();// Build 0051
                     for (var i = 0; i < vertices.Length; i++)
                     {
                         //int x = i % 10;
@@ -942,6 +983,34 @@ public class ShowMap : MonoBehaviour
                                 // Build 0048, output all data
                                 labelImages[k][i_new] = bestNode.POIList[k].indexOfPOI;// ColorToHex(bestNode.POIList[k].clr);
                                 //
+
+                                if (UIButton.isCostDiff)
+                                {
+                                    // Build 0051
+                                    labelIFT = bestNode.index;
+                                    float tmindist = Mathf.Infinity;
+                                    Node tbestNode = null;
+                                    foreach (Node tnode in graph.RestNodes)
+                                    {
+                                        Vector3 pos;
+                                        pos = new Vector3(vertex.x + tile.position.x, tnode.vec.y, vertex.z + tile.position.z);
+
+                                        // Build 0041, modify the propagation calculation
+                                        pos = VerticesNodeArray[i_new].globalposition;
+                                        pos.y = tnode.vec.y;
+                                        //
+
+                                        float tdist = (pos - tnode.vec).magnitude;
+
+                                        if (tdist < tmindist)
+                                        {
+                                            tmindist = tdist;
+                                            tbestNode = tnode;
+                                        }
+                                    }
+                                    labelTDM = tbestNode.index;
+                                }
+                                //
                             }
                             else
                             {
@@ -984,6 +1053,7 @@ public class ShowMap : MonoBehaviour
                     }
                     NodeIndexArrayS[c, k] = NodeIndexArray;
                     NodeArrayS[c, k] = NodeArray;
+                    //NodeDiffArrayS[c, k] = NodeDiffArray;// Build 0051
                 }
 
                 //Debug.Log(baseVertices.Length);
@@ -1998,10 +2068,10 @@ public class ShowMap : MonoBehaviour
                     Color[] colors = new Color[vertices.Length];
                     for (var i = 0; i < vertices.Length; i++)
                     {
-                        // Build 0031,
-                        if ((dropdown_graphop.value > 0) && (vertices[i].y < 0.00002f))
-                            colors[i] = Color.black;
-                        else
+                        // Build 0031, // Build 0051, label map check
+                        //if ((dropdown_graphop.value > 0) && (vertices[i].y < 0.00002f))
+                        //    colors[i] = Color.black;
+                        //else
                         {
                             colors[i] = NodeArrayS[c, timeIndex - 1][i].clr;//colorMap[iter];
                             colors[i].a = 0.5f;
