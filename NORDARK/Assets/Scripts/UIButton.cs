@@ -13,8 +13,6 @@ public class UIButton : MonoBehaviour
 
     public static GameObject bg;
     public static bool isOn = true;
-    public static bool isIFT = true;
-    public static bool isIFTCost = true;
     public static bool isCostDiff = false;
     public static bool isShowVertics = false;
 
@@ -43,18 +41,6 @@ public class UIButton : MonoBehaviour
     {
         bg.SetActive(this.GetComponent<Toggle>().isOn);
         isOn = this.GetComponent<Toggle>().isOn;
-    }
-
-    public void UseIFTChange()
-    {
-        isIFT = this.GetComponent<Toggle>().isOn;
-        OptionValueChange();
-    }
-
-    public void UseIFTCostChange()
-    {
-        isIFTCost = this.GetComponent<Toggle>().isOn;
-        OptionValueChange();
     }
 
     public void UseCostDiffChange()

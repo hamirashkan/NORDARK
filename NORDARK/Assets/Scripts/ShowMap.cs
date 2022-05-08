@@ -134,6 +134,9 @@ public class ShowMap : MonoBehaviour
         ITDM2
     }
     Density2DType PropagationType = Density2DType.ITDM2;
+    // Build 0053
+    DateTime dt1;
+    bool enabledBar = false;
 
     void Start()
     {
@@ -192,18 +195,23 @@ public class ShowMap : MonoBehaviour
         VerticesNodes.SetActive(true);
         DestroyChildren(VerticesNodes.name);
         VerticesNodeArray = new List<Node>();
+
         for (int i = 0; i < nrows * ncols; i++)
         {
             Node verticeNodeX = Node.Create<Node>("Vertex_" + i.ToString(), new Vector3(0, -1, 0));
             verticeNodeX.index = i;
             VerticesNodeArray.Add(verticeNodeX);
 
-            verticeNodeX.objTransform = Instantiate(point);
-            verticeNodeX.obj = verticeNodeX.objTransform.gameObject;
-            verticeNodeX.objTransform.name = verticeNodeX.name;
-            verticeNodeX.objTransform.position = verticeNodeX.vec;
-            verticeNodeX.objTransform.parent = VerticesNodes.transform;
-            verticeNodeX.objTransform.localScale = new Vector3(1, 1, 1);
+            // Build 0053, time record
+            if (enabledBar)
+            {
+                verticeNodeX.objTransform = Instantiate(point);
+                verticeNodeX.obj = verticeNodeX.objTransform.gameObject;
+                verticeNodeX.objTransform.name = verticeNodeX.name;
+                verticeNodeX.objTransform.position = verticeNodeX.vec;
+                verticeNodeX.objTransform.parent = VerticesNodes.transform;
+                verticeNodeX.objTransform.localScale = new Vector3(1, 1, 1);
+            }
 
             //Transform verticeNodeXtra = Instantiate(point);
             //verticeNodeXtra.name =  + (c * vertices.Length + i).ToString();
@@ -274,7 +282,7 @@ public class ShowMap : MonoBehaviour
     public IEnumerator CreateMap(float time, int graph_op = 0)
     {
         yield return new WaitForSeconds(time);
-        DateTime dt1 = DateTime.Now;
+        dt1 = DateTime.Now;
         bReadyForCFH = false;
         // Build 0032, cost init = 0, for edge calculation.
         costs = new List<float>();
@@ -297,9 +305,10 @@ public class ShowMap : MonoBehaviour
             // Build 0034
             map.Initialize(new Mapbox.Utils.Vector2d(62.4750425, 6.1914948), 17);
             bg_Mapbox.Initialize(new Mapbox.Utils.Vector2d(62.4750425, 6.1914948), 17);
+            timeSteps = 4;// 100;//4;
             GraphSet1("RoadGraph1");
             slrStartTime.minValue = 1;
-            slrStartTime.maxValue = 4;
+            slrStartTime.maxValue = timeSteps;// 4;
             slrStartTime.value = slrStartTime.minValue;
             slrStopTime.minValue = slrStartTime.minValue;
             slrStopTime.maxValue = slrStartTime.maxValue;
@@ -347,9 +356,9 @@ public class ShowMap : MonoBehaviour
             // solution 2
             //string[] strPOIs = { "278087398", "7204337168", "7379970801" };
             //Color[] clrPOIs = { Color.blue, Color.red, Color.magenta };
-            timeSteps = 59;
+            timeSteps = 20;// 59;
             // Build 0036, generic graph load function
-            GraphSetLoad("Graph4", strPOIs, clrPOIs, 1, false, false);
+            GraphSetLoad("Graph4", strPOIs, clrPOIs, 0, false);
             slrStartTime.minValue = 1;
             slrStartTime.maxValue = timeSteps;
             slrStartTime.value = slrStartTime.minValue;
@@ -540,7 +549,7 @@ public class ShowMap : MonoBehaviour
                 //
             }
             //
-
+            Debug.Log("E01051:Main cost:" + (DateTime.Now - dt1).TotalMilliseconds + " millisec");
             // Build 0018, change the mindist, bestNode to IFT calculation
             if (PropagationType != Density2DType.TDM) // isIFT
             {
@@ -548,7 +557,7 @@ public class ShowMap : MonoBehaviour
                 // Get the IFT result
                 IFTindexImageTest();
             }
-           
+            
 
             // TimeLine Initilization
             NodeIndexArrayS = new List<int>[12, timeSteps];
@@ -576,7 +585,11 @@ public class ShowMap : MonoBehaviour
             }
 
             //
-
+            // Build 0053, time record
+            double tdm_time = 0;
+            double ttdm_time = 0;
+            double mesh_time = 0;
+            double triangles_time = 0;
             for (int c = 0; c < 12; c++)
             {
 
@@ -599,7 +612,9 @@ public class ShowMap : MonoBehaviour
                 float mindist;
                 Node bestNode = null;
                 int step = 10;
-                
+                // Build 0053, time record
+                DateTime dt_mesh1 = DateTime.Now;
+
                 Mesh mesh = tile.gameObject.GetComponent<MeshFilter>().mesh;
 
                 baseVertices = mesh.vertices;// Build 0030
@@ -673,7 +688,11 @@ public class ShowMap : MonoBehaviour
                     //GetDistance(Vector2)
                     // longtitude
                 }
+                DateTime dt_mesh2 = DateTime.Now;
+                mesh_time += (dt_mesh2 - dt_mesh1).TotalMilliseconds;
 
+                // Build 0053, time record
+                DateTime dt_tdm1 = DateTime.Now;
                 for (var i = 0; i < vertices.Length; i++)
                 {
                     //int x = i % 10;
@@ -727,13 +746,6 @@ public class ShowMap : MonoBehaviour
                         // Build 0051
                         int labelIFT = 0;
                         int labelTDM = 0;
-
-                        if (((c * vertices.Length + i) == 498) || ((c * vertices.Length + i) == 508))
-                        {
-                            Debug.Log("");
-                        }
-
-
 
                         //// Build 0018, change the mindist, bestNode to IFT calculation
                         if (PropagationType != Density2DType.TDM)//(UIButton.isIFT)
@@ -917,7 +929,10 @@ public class ShowMap : MonoBehaviour
                         colorMap.Add(col);//felando
                     }
                 }
+                DateTime dt_tdm2 = DateTime.Now;
+                tdm_time += (dt_tdm2 - dt_tdm1).TotalMilliseconds;
 
+                DateTime dt_ttdm1 = DateTime.Now;
                 // TimeLine 
                 // calculate the POI value array for every points/vertics
                 for (int k = 0; k < timeSteps; k++)
@@ -1073,9 +1088,13 @@ public class ShowMap : MonoBehaviour
                     NodeArrayS[c, k] = NodeArray;
                     //NodeDiffArrayS[c, k] = NodeDiffArray;// Build 0051
                 }
+                DateTime dt_ttdm2 = DateTime.Now;
+                ttdm_time += (dt_ttdm2 - dt_ttdm1).TotalMilliseconds;
 
                 //Debug.Log(baseVertices.Length);
 
+                // Build 0053, time record
+                DateTime dt_triangle1 = DateTime.Now;
                 mesh.vertices = vertices;//felando, decrease the mesh vertices size to normal 100
 
                 // set triangles
@@ -1098,6 +1117,9 @@ public class ShowMap : MonoBehaviour
                     }
                 }
                 mesh.triangles = triangles;
+
+                DateTime dt_triangle2 = DateTime.Now;
+                triangles_time += (dt_triangle2 - dt_triangle1).TotalMilliseconds;
                 //
 
                 /*tile.gameObject.GetComponent<Renderer>().material.mainTexture = texture;
@@ -1117,6 +1139,11 @@ public class ShowMap : MonoBehaviour
 
                 texture.Apply();*/
             }
+            // Build 0053
+            Debug.Log("E0101:TDM cost:" + tdm_time + " millisec");
+            Debug.Log("E0102:TTDM cost:" + ttdm_time + " millisec");
+            Debug.Log("E0103:Mesh cost:" + mesh_time + " millisec");
+            Debug.Log("E0104:Triangle cost:" + triangles_time + " millisec");
 
             float lMin = lambdaMap.Min();
             float lMax = lambdaMap.Max();
@@ -1193,21 +1220,25 @@ public class ShowMap : MonoBehaviour
             //tilex.HeightData[0] = 100000;
             //map.TileProvider.UpdateTileProvider(); 
 
-            // Build 0003, timeline update issue
-            UISlirTimeLine.label.text = timeIndex + "/" + timeSteps;
-            StartTimeValueChangeCheck();
-            StopTimeValueChangeCheck();
-            bReadyForCFH = true;
-            // Build 0009, add IFT for Graph 1
-            if (PropagationType != Density2DType.TDM) //(UIButton.isIFT)
+            // Build 0053, record time
+            if (enabledBar)
             {
-                // Build 0015, IFT opt map
-                //IFTImageTest();
-                //IFToptImageTest();
-                // Build 0014, IFT opt test
-                //IFToptTest();
-                // Build 0018, change the mindist, bestNode to IFT calculation
-                //IFTindexImageTest();
+                // Build 0003, timeline update issue
+                UISlirTimeLine.label.text = timeIndex + "/" + timeSteps;
+                StartTimeValueChangeCheck();
+                StopTimeValueChangeCheck();
+                bReadyForCFH = true;
+                // Build 0009, add IFT for Graph 1
+                if (PropagationType != Density2DType.TDM) //(UIButton.isIFT)
+                {
+                    // Build 0015, IFT opt map
+                    //IFTImageTest();
+                    //IFToptImageTest();
+                    // Build 0014, IFT opt test
+                    //IFToptTest();
+                    // Build 0018, change the mindist, bestNode to IFT calculation
+                    //IFTindexImageTest();
+                }
             }
         }
         else
@@ -1268,63 +1299,67 @@ public class ShowMap : MonoBehaviour
         else
             Debug.Log("TDM total cost:" + diffInSeconds + " millisec");
 
-        // Build 0043, save image to geojson file
-        UpdateCFH2Bars();
-        Mapbox.Utils.Vector2d[] g_image = new Mapbox.Utils.Vector2d[ncols * nrows];
+        // Build 0053, record time
+        if(enabledBar)
+        { 
+            // Build 0043, save image to geojson file
+            UpdateCFH2Bars();
+            Mapbox.Utils.Vector2d[] g_image = new Mapbox.Utils.Vector2d[ncols * nrows];
 
-        // feed the array and concat to as a string
-        Dictionary<string, object>[] props= new Dictionary<string, object>[ncols * nrows + 1];
-        for (int i = 0; i < g_image.Length; i++)
-        {
-            //List<float> test = new List<float>();
-            //test.Add(i % 20);
-            //test.Add((i + 1) % 20);
-            //test.Add((i + 2) % 20);
-            List<float> cfhdata = new List<float>();
-            for (int k = 0; k < timeSteps; k++)
-                cfhdata.Add(rootImages[k][i]);
-            List<int> cfhlabel = new List<int>();
-            for (int k = 0; k < timeSteps; k++)
-                cfhlabel.Add(labelImages[k][i]);
+            // feed the array and concat to as a string
+            Dictionary<string, object>[] props= new Dictionary<string, object>[ncols * nrows + 1];
+            for (int i = 0; i < g_image.Length; i++)
+            {
+                //List<float> test = new List<float>();
+                //test.Add(i % 20);
+                //test.Add((i + 1) % 20);
+                //test.Add((i + 2) % 20);
+                List<float> cfhdata = new List<float>();
+                for (int k = 0; k < timeSteps; k++)
+                    cfhdata.Add(rootImages[k][i]);
+                List<int> cfhlabel = new List<int>();
+                for (int k = 0; k < timeSteps; k++)
+                    cfhlabel.Add(labelImages[k][i]);
 
-            Mapbox.Utils.Vector2d geopos= VerticesNodeArray[i].globalposition.GetGeoPosition(map.CenterMercator, map.WorldRelativeScale);
-            VerticesNodeArray[i].GeoVec.x = (float)geopos.x;
-            VerticesNodeArray[i].GeoVec.y = (float)geopos.y;
-            g_image[i] = geopos;
-            props[i] = new Dictionary<string, object>();
-            props[i].Add("name", "vertex_" + i);
-            props[i].Add("cfh", i);
-            props[i].Add("color", "white");
-            props[i].Add("clrA", "white"); // after convert the alpha
-            props[i].Add("height", 0);
-            props[i].Add("tdm_lambda", lambdaImage[i]);
-            props[i].Add("tdm_color", colorImage[i]);
-            props[i].Add("tdm_accesstime", accesstimeImage[i]);
-            props[i].Add("ift_cost", iftcostImage[i]);
-            props[i].Add("tdm_cost", tdmcostImage[i]);
-            props[i].Add("cfh_matrix", cfhdata);
-            props[i].Add("cfh_bstr", "");
-            props[i].Add("cfh_labelmatrix", cfhlabel);
+                Mapbox.Utils.Vector2d geopos= VerticesNodeArray[i].globalposition.GetGeoPosition(map.CenterMercator, map.WorldRelativeScale);
+                VerticesNodeArray[i].GeoVec.x = (float)geopos.x;
+                VerticesNodeArray[i].GeoVec.y = (float)geopos.y;
+                g_image[i] = geopos;
+                props[i] = new Dictionary<string, object>();
+                props[i].Add("name", "vertex_" + i);
+                props[i].Add("cfh", i);
+                props[i].Add("color", "white");
+                props[i].Add("clrA", "white"); // after convert the alpha
+                props[i].Add("height", 0);
+                props[i].Add("tdm_lambda", lambdaImage[i]);
+                props[i].Add("tdm_color", colorImage[i]);
+                props[i].Add("tdm_accesstime", accesstimeImage[i]);
+                props[i].Add("ift_cost", iftcostImage[i]);
+                props[i].Add("tdm_cost", tdmcostImage[i]);
+                props[i].Add("cfh_matrix", cfhdata);
+                props[i].Add("cfh_bstr", "");
+                props[i].Add("cfh_labelmatrix", cfhlabel);
+            }
+            props[ncols * nrows] = new Dictionary<string, object>();
+            props[ncols * nrows].Add("name", "0");
+            props[ncols * nrows].Add("cfh", 0);
+            props[ncols * nrows].Add("color", "white");
+            props[ncols * nrows].Add("clrA", "white"); // after convert the alpha
+            props[ncols * nrows].Add("tdm_lambda_min", rootImages[0].Min());
+            props[ncols * nrows].Add("tdm_lambda_max", rootImages[0].Max());
+            props[ncols * nrows].Add("nrows", nrows);
+            props[ncols * nrows].Add("ncols", ncols);
+            props[ncols * nrows].Add("lon_min", g_image[0].y);
+            props[ncols * nrows].Add("lat_min", g_image[0].x);
+            props[ncols * nrows].Add("lon_step", (g_image[ncols - 1].y - g_image[0].y) / (ncols - 1));
+            props[ncols * nrows].Add("lat_step", (g_image[(nrows - 1) * ncols].x - g_image[0].x) / (nrows - 1));
+            props[ncols * nrows].Add("nodes_geo", graph.nodes_geo);
+            props[ncols * nrows].Add("nodes_name", graph.nodes_name);
+            props[ncols * nrows].Add("indexPOIs", graph.indexPOIs);
+            props[ncols * nrows].Add("clrPOIs", graph.clrPOIsStr);
+            SaveToGeojson("polygon.geojson", props, g_image, AuxLines); //g_edges
+            //
         }
-        props[ncols * nrows] = new Dictionary<string, object>();
-        props[ncols * nrows].Add("name", "0");
-        props[ncols * nrows].Add("cfh", 0);
-        props[ncols * nrows].Add("color", "white");
-        props[ncols * nrows].Add("clrA", "white"); // after convert the alpha
-        props[ncols * nrows].Add("tdm_lambda_min", rootImages[0].Min());
-        props[ncols * nrows].Add("tdm_lambda_max", rootImages[0].Max());
-        props[ncols * nrows].Add("nrows", nrows);
-        props[ncols * nrows].Add("ncols", ncols);
-        props[ncols * nrows].Add("lon_min", g_image[0].y);
-        props[ncols * nrows].Add("lat_min", g_image[0].x);
-        props[ncols * nrows].Add("lon_step", (g_image[ncols - 1].y - g_image[0].y) / (ncols - 1));
-        props[ncols * nrows].Add("lat_step", (g_image[(nrows - 1) * ncols].x - g_image[0].x) / (nrows - 1));
-        props[ncols * nrows].Add("nodes_geo", graph.nodes_geo);
-        props[ncols * nrows].Add("nodes_name", graph.nodes_name);
-        props[ncols * nrows].Add("indexPOIs", graph.indexPOIs);
-        props[ncols * nrows].Add("clrPOIs", graph.clrPOIsStr);
-        SaveToGeojson("polygon.geojson", props, g_image, AuxLines); //g_edges
-        //
     }
 
     public void SaveToGeojson(string filename, Dictionary<string, object>[] properties, Mapbox.Utils.Vector2d[] geoimage, List<AuxLine> edges)
@@ -1929,13 +1964,18 @@ public class ShowMap : MonoBehaviour
         DllInterface.ExportFile(intPtrEdt, nrows, ncols, Marshal.StringToHGlobalAnsi("R.pgm"));
         // Build 0018, change the mindist, bestNode to IFT calculation
         Marshal.Copy(intPtrEdt, rootImage, 0, nrows * ncols);
-        //
-        // Build 0037, TDM for bars vis
-        BarsVis bars_script = GameObject.Find("Mapbox").GetComponent<BarsVis>();
-        bars_script.x_cols = ncols;
-        bars_script.z_rows = nrows;
-        bars_script.value = distImage;//Build 0050 distTDMdff;// distTDM;// distImage;
-        bars_script.Redraw();
+        
+        // Build 0053
+        if (enabledBar)
+        {
+            // Build 0037, TDM for bars vis
+            BarsVis bars_script = GameObject.Find("Mapbox").GetComponent<BarsVis>();
+            bars_script.x_cols = ncols;
+            bars_script.z_rows = nrows;
+            bars_script.value = distImage;//Build 0050 distTDMdff;// distTDM;// distImage;
+            bars_script.Redraw();
+        }
+
         // Build 0039
         //QuadVis quad_script = GameObject.Find("Mapbox").GetComponent<QuadVis>();
         //quad_script.x_cols = ncols;
@@ -1976,7 +2016,7 @@ public class ShowMap : MonoBehaviour
             // set test Image pixel as 1
             // Adjacent region 1, top left point
             testImage[ncols * z + x] = value;
-            Debug.Log("M0001:set rawdata x_index =" + x.ToString() + ", z_index = " + z.ToString() + " is value " + value.ToString());
+            //Debug.Log("M0001:set rawdata x_index =" + x.ToString() + ", z_index = " + z.ToString() + " is value " + value.ToString());
         }
         else
             Debug.Log("E0001:x_index =" + x.ToString() + ", z_index = " + z.ToString() + " are out of the bound");
@@ -3144,7 +3184,7 @@ public class ShowMap : MonoBehaviour
         //string[] strPOIs = { "7379970941", "8745416892" };
         //Color[] clrPOIs = { Color.blue, Color.red };
         //
-        DateTime dt1 = DateTime.Now;
+        dt1 = DateTime.Now;
         graph.CreatePOInodes(strPOIs, clrPOIs);
         DateTime dt2 = DateTime.Now;
         var diffInSeconds = (dt2 - dt1).TotalMilliseconds;
@@ -3257,7 +3297,6 @@ public class ShowMap : MonoBehaviour
             nodeX.obj.GetComponent<Lines>().line = line;
         }
 
-        timeSteps = 4;
         graph.timeSteps = timeSteps;
 
         ////H1,  A,  B,  C,  D, H2
@@ -3354,6 +3393,22 @@ public class ShowMap : MonoBehaviour
                     temporalRoad[k][3, 5] = 12;//Line 5 (C<=>H2) (12, 11)
                     temporalRoad[k][5, 3] = 11;
                     temporalRoad[k][1, 4] = 25;//Line 6 (A=>D) (0, 25)
+                }
+                else
+                {
+                    int high = 10;//500;//0
+                    int low = 0;
+                    temporalRoad[k][0, 1] = rnd.Next(low, high) + 6;//Line 1 (H1<=>A) (6, 5)
+                    temporalRoad[k][1, 0] = rnd.Next(low, high) + 5;
+                    temporalRoad[k][1, 2] = rnd.Next(low, high) + 8;//Line 2 (A<=>B) (8, 10)
+                    temporalRoad[k][2, 1] = rnd.Next(low, high) + 10;
+                    temporalRoad[k][2, 3] = rnd.Next(low, high) + 21;//Line 3 (B<=>C) (21, 10)
+                    temporalRoad[k][3, 2] = rnd.Next(low, high) + 10;
+                    temporalRoad[k][3, 4] = rnd.Next(low, high) + 15;//Line 4 (C<=>D) (15, 14)
+                    temporalRoad[k][4, 3] = rnd.Next(low, high) + 14;
+                    temporalRoad[k][3, 5] = rnd.Next(low, high) + 12;//Line 5 (C<=>H2) (12, 11)
+                    temporalRoad[k][5, 3] = rnd.Next(low, high) + 11;
+                    temporalRoad[k][1, 4] = rnd.Next(low, high) + 25;//Line 6 (A=>D) (0, 25)
                 }
                 for (int i = 0; i < nodesNames.Length; i++)
                 {
