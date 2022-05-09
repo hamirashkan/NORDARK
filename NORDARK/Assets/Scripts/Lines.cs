@@ -84,7 +84,7 @@ public class Lines : MonoBehaviour
                 Nclr = nColor;
                 newline = Instantiate(line);
                 l = newline.GetComponent<LineRenderer>();
-                newline.transform.parent = GameObject.Find("Edges").transform;
+                newline.transform.parent = sm.Edges.transform;//GameObject.Find("Edges")
                 Graph.LinesNum = Graph.LinesNum + 1;
                 newline.transform.name = "Line" + Graph.LinesNum.ToString() + "(" + currentNode.name + "," + Neighbors[i].name + ")";
 

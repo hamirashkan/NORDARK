@@ -73,13 +73,19 @@ public class ShowMap : MonoBehaviour
     private Text txtStartTime;
     private Text txtStopTime;
     private InputField IptFeatureString;
-    public Dropdown drn_Propagation;// Build 0052
+    private Dropdown drn_Propagation;// Build 0052
     private Button btnSave;// Build 0054
+    private Button btnDensityDiff;// Build 0055
+    private Button btnLabelDiff;// Build 0055
+    private Toggle cbxShowNodes;// Build 0055
+    private Toggle cbxShowEdges;// Build 0055
+    private Button btnCalculateTTDM;// Build 0055
 
     private GameObject Nodes;
-    private GameObject Edges;
+    public GameObject Edges;
     private GameObject VerticesNodes; // Build 0029
     private GameObject Camera; // Build 0036
+    private GameObject MainMenu;// Build 0055
 
     private Vector3[][] ArrayV3 = new Vector3[12][];
     private int[][] ArrayTriangles = new int[12][];
@@ -138,37 +144,21 @@ public class ShowMap : MonoBehaviour
     // Build 0053
     DateTime dt1;
     bool enabledBar = false;
+    // Build 0055
+    enum ColorMapType
+    {
+        Normal,
+        DensityDiff,
+        LabelDiff
+    }
+    ColorMapType ColorMapComputeType = ColorMapType.Normal;
+    bool prv_ShowNodes = true;
+    bool prv_ShowEdges = true;
 
     void Start()
     {
         bReadyForCFH = false;
-        // gameObject.transform.childCount. 13 (static) or 14 (dynamic)
-        Nodes = GameObject.Find("Nodes");
-        Edges = GameObject.Find("Edges");
-        VerticesNodes = GameObject.Find("Vertices");
-        Camera = GameObject.Find("Main Camera");
-
-        slrTimeLine = GameObject.Find("SlrTimeLine").GetComponent<Slider>();
-        dropdown_graphop = GameObject.Find("Drn_Graphset").GetComponent<Dropdown>();
-        bg_Mapbox = GameObject.Find("BG_Mapbox").GetComponent<AbstractMap>();
-        slrStartTime = GameObject.Find("Slr_StartTime").GetComponent<Slider>();
-        slrStopTime = GameObject.Find("Slr_StopTime").GetComponent<Slider>();
-        IptFeatureString = GameObject.Find("Ipt_PatternStr").GetComponent<InputField>();
-
-        slrStartTime.onValueChanged.AddListener(delegate { StartTimeValueChangeCheck(); });
-        txtStartTime = GameObject.Find("Txt_StartTimeValue").GetComponent<Text>();
-
-        slrStopTime.onValueChanged.AddListener(delegate { StopTimeValueChangeCheck(); });
-        txtStopTime = GameObject.Find("Txt_StopTimeValue").GetComponent<Text>();
-
-        IptFeatureString.onValueChanged.AddListener(delegate { FeatureStringValueChangeCheck(); });
-        // Build 0052
-        drn_Propagation = GameObject.Find("Drn_Propagation").GetComponent<Dropdown>();
-        // Build 0054
-        btnSave = GameObject.Find("Btn_Save").GetComponent<Button>();
-        btnSave.onClick.AddListener(delegate { SaveFile(); });
-        //
-
+        initGUIMenu();
         UIButton.bg = bg_Mapbox.gameObject;
 
         // Build 0005
@@ -232,6 +222,79 @@ public class ShowMap : MonoBehaviour
         {
             StartCoroutine(CreateMap(0.01f, 1));
         }        
+    }
+
+    // Build 0055
+    public void initGUIMenu()
+    {
+        // gameObject.transform.childCount. 13 (static) or 14 (dynamic)
+        Nodes = GameObject.Find("Nodes");
+        Edges = GameObject.Find("Edges");
+        VerticesNodes = GameObject.Find("Vertices");
+        Camera = GameObject.Find("Main Camera");
+
+        slrTimeLine = GameObject.Find("SlrTimeLine").GetComponent<Slider>();
+        dropdown_graphop = GameObject.Find("Drn_Graphset").GetComponent<Dropdown>();
+        bg_Mapbox = GameObject.Find("BG_Mapbox").GetComponent<AbstractMap>();
+        slrStartTime = GameObject.Find("Slr_StartTime").GetComponent<Slider>();
+        slrStopTime = GameObject.Find("Slr_StopTime").GetComponent<Slider>();
+        IptFeatureString = GameObject.Find("Ipt_PatternStr").GetComponent<InputField>();
+
+        slrStartTime.onValueChanged.AddListener(delegate { StartTimeValueChangeCheck(); });
+        txtStartTime = GameObject.Find("Txt_StartTimeValue").GetComponent<Text>();
+
+        slrStopTime.onValueChanged.AddListener(delegate { StopTimeValueChangeCheck(); });
+        txtStopTime = GameObject.Find("Txt_StopTimeValue").GetComponent<Text>();
+
+        IptFeatureString.onValueChanged.AddListener(delegate { FeatureStringValueChangeCheck(); });
+        // Build 0052
+        drn_Propagation = GameObject.Find("Drn_Propagation").GetComponent<Dropdown>();
+        // Build 0054
+        btnSave = GameObject.Find("Btn_Save").GetComponent<Button>();
+        btnSave.onClick.AddListener(delegate { SaveFile(); });
+        // Build 0055
+        btnDensityDiff = GameObject.Find("Btn_Test1").GetComponent<Button>();
+        btnDensityDiff.onClick.AddListener(delegate {
+            ColorMapComputeType = ColorMapType.DensityDiff;
+            ComputeTTDM();
+        });
+        btnLabelDiff = GameObject.Find("Btn_Test2").GetComponent<Button>();
+        btnLabelDiff.onClick.AddListener(delegate {
+            ColorMapComputeType = ColorMapType.LabelDiff;
+            ComputeTTDM();
+        });
+
+        cbxShowNodes = GameObject.Find("Cbx_Nodes").GetComponent<Toggle>();
+        cbxShowNodes.onValueChanged.AddListener(delegate {
+            Nodes.SetActive(cbxShowNodes.isOn);
+        });
+
+        cbxShowEdges = GameObject.Find("Cbx_Edges").GetComponent<Toggle>();
+        cbxShowEdges.onValueChanged.AddListener(delegate {
+            Edges.SetActive(cbxShowEdges.isOn);
+        });
+
+        btnCalculateTTDM = GameObject.Find("Btn_CalculateTTDM").GetComponent<Button>();
+        btnCalculateTTDM.onClick.AddListener(delegate {
+            ColorMapComputeType = ColorMapType.Normal;
+            ComputeTTDM();
+        });
+
+        MainMenu = GameObject.Find("Canvase_Mainmenu");
+    }
+
+    public void ComputeTTDM()
+    {
+        prv_ShowNodes = cbxShowNodes.isOn;
+        prv_ShowEdges = cbxShowEdges.isOn;
+        cbxShowNodes.isOn = true;
+        Nodes.SetActive(cbxShowNodes.isOn);
+        cbxShowEdges.isOn = true;
+        Edges.SetActive(cbxShowEdges.isOn);
+        DestroyChildren("Nodes");
+        DestroyChildren("Edges");
+        //other.DisplayMapbox = Instantiate(GameObject.Find("Mapbox"));
+        StartCoroutine(CreateMap(0.01f));
     }
 
     // Build 0009, add IFT for graph 1 
@@ -314,6 +377,8 @@ public class ShowMap : MonoBehaviour
             // Build 0034
             map.Initialize(new Mapbox.Utils.Vector2d(62.4750425, 6.1914948), 17);
             bg_Mapbox.Initialize(new Mapbox.Utils.Vector2d(62.4750425, 6.1914948), 17);
+            Camera.transform.position = new Vector3(-4f, 600f, -45f);
+            Camera.transform.rotation = Quaternion.Euler(90f, 0, 0);
             timeSteps = 4;// 100;//4;
             GraphSet1("RoadGraph1");
             slrStartTime.minValue = 1;
@@ -330,6 +395,8 @@ public class ShowMap : MonoBehaviour
             //map.SetCenterLatitudeLongitude(new Mapbox.Utils.Vector2d(62.4750425, 6.1914948));
             map.Initialize(new Mapbox.Utils.Vector2d(62.4750425, 6.1914948), 17);
             bg_Mapbox.Initialize(new Mapbox.Utils.Vector2d(62.4750425, 6.1914948), 17);
+            Camera.transform.position = new Vector3(-4f, 600f, -45f);
+            Camera.transform.rotation = Quaternion.Euler(90f, 0, 0);
             //map.UpdateMap();
             timeSteps = 59;
             string[] strPOIs = { "7379970941", "7379971169", "8745416901" };
@@ -354,10 +421,13 @@ public class ShowMap : MonoBehaviour
             //https://www.google.no/maps/@62.4720013,6.1645443,17z?hl=no
             map.Initialize(new Mapbox.Utils.Vector2d(62.4720013, 6.1645443), 17);
             bg_Mapbox.Initialize(new Mapbox.Utils.Vector2d(62.4720013, 6.1645443), 17);
-            Camera.transform.position = new Vector3(-43.4042f, 394.8713f, 17.70133f);
-            Camera.transform.rotation = Quaternion.Euler(91.75f, 0, 0);
-            Camera.GetComponent<RotateCamera>().default_pos = Camera.transform.position;
-            Camera.GetComponent<RotateCamera>().default_rot = new Vector3(91.75f, 0, 0);
+            //Camera.transform.position = new Vector3(-43.4042f, 394.8713f, 17.70133f);
+            //Camera.transform.rotation = Quaternion.Euler(91.75f, 0, 0);
+            //Camera.GetComponent<RotateCamera>().default_pos = Camera.transform.position;
+            //Camera.GetComponent<RotateCamera>().default_rot = new Vector3(91.75f, 0, 0);
+
+            Camera.transform.position = new Vector3(-23f, 600f, -5f);
+            Camera.transform.rotation = Quaternion.Euler(90f, 0, 0);
 
             // All
             string[] strPOIs = { "278087398", "7204337168", "8714559173", "7379970801" };
@@ -865,13 +935,16 @@ public class ShowMap : MonoBehaviour
                             // method 2, directly use the the cost matrix to avoid calculate magnitude twice
 
                             // Build 0020, save ST data to csv file
-                            if (UIButton.isCostDiff)
+                            // Build 0055
+                            if (ColorMapComputeType == ColorMapType.DensityDiff)
                             {
                                 distIFT = distImage[i_new] * 100 / (vertices_scalemax - 1);// distImage[i_new];
                                 pos = VerticesNodeArray[i_new].globalposition;
                                 pos.y = node.vec.y;
                                 distTDM = (pos - node.vec).magnitude;//dist1;// (pos - node.vec).magnitude;
-
+                            }
+                            else if (ColorMapComputeType == ColorMapType.LabelDiff)
+                            { 
                                 // Build 0051
                                 labelIFT = bestNode.index;
                                 float tmindist = Mathf.Infinity;
@@ -926,7 +999,8 @@ public class ShowMap : MonoBehaviour
                         float dis_new = bestNode.riskFactor * scale_dis / (1 + mindist);
 
                         // Build 0020, save ST data to csv file
-                        if (UIButton.isCostDiff)
+                        // Build 0055
+                        if (ColorMapComputeType != ColorMapType.Normal)
                             dis_new = 0;// disable mesh
                         //
 
@@ -979,19 +1053,22 @@ public class ShowMap : MonoBehaviour
 
                         Color col = Color.black;
                         // Build 0020, save ST data to csv file
-                        if (UIButton.isCostDiff)
+                        // Build 0055
+                        if (ColorMapComputeType == ColorMapType.DensityDiff)
                         {
                             //if (distTDM != 0)
                             //if (distTDM > 0.001f)
-                                col.a = Clamp(0, 1 - Math.Abs((distIFT - distTDM) / distTDM), 1);
+                            col.a = Clamp(0, 1 - Math.Abs((distIFT - distTDM) / distTDM), 1);
                             //else
                             //    col.a = 1;
-
-                            // Build 0051, label map check
-                            //if (labelIFT == labelTDM)
-                            //    col.a = 1;
-                            //else
-                            //    col.a = 0;
+                        }
+                        else if (ColorMapComputeType == ColorMapType.LabelDiff)
+                        {
+                            //Build 0051, label map check
+                            if (labelIFT == labelTDM)
+                                col.a = 1;
+                            else
+                                col.a = 0;
                         }
                         else
                             col = bestNode.clr;
@@ -1087,32 +1164,32 @@ public class ShowMap : MonoBehaviour
                                 labelImages[k][i_new] = bestNode.POIList[k].indexOfPOI;// ColorToHex(bestNode.POIList[k].clr);
                                 //
 
-                                if (UIButton.isCostDiff)
-                                {
-                                    // Build 0051
-                                    labelIFT = bestNode.index;
-                                    float tmindist = Mathf.Infinity;
-                                    Node tbestNode = null;
-                                    foreach (Node tnode in graph.RestNodes)
-                                    {
-                                        Vector3 pos;
-                                        pos = new Vector3(vertex.x + tile.position.x, tnode.vec.y, vertex.z + tile.position.z);
+                                //if (UIButton.isCostDiff)
+                                //{
+                                //    // Build 0051
+                                //    labelIFT = bestNode.index;
+                                //    float tmindist = Mathf.Infinity;
+                                //    Node tbestNode = null;
+                                //    foreach (Node tnode in graph.RestNodes)
+                                //    {
+                                //        Vector3 pos;
+                                //        pos = new Vector3(vertex.x + tile.position.x, tnode.vec.y, vertex.z + tile.position.z);
 
-                                        // Build 0041, modify the propagation calculation
-                                        pos = VerticesNodeArray[i_new].globalposition;
-                                        pos.y = tnode.vec.y;
-                                        //
+                                //        // Build 0041, modify the propagation calculation
+                                //        pos = VerticesNodeArray[i_new].globalposition;
+                                //        pos.y = tnode.vec.y;
+                                //        //
 
-                                        float tdist = (pos - tnode.vec).magnitude;
+                                //        float tdist = (pos - tnode.vec).magnitude;
 
-                                        if (tdist < tmindist)
-                                        {
-                                            tmindist = tdist;
-                                            tbestNode = tnode;
-                                        }
-                                    }
-                                    labelTDM = tbestNode.index;
-                                }
+                                //        if (tdist < tmindist)
+                                //        {
+                                //            tmindist = tdist;
+                                //            tbestNode = tnode;
+                                //        }
+                                //    }
+                                //    labelTDM = tbestNode.index;
+                                //}
                                 //
                             }
                             else
@@ -1246,7 +1323,8 @@ public class ShowMap : MonoBehaviour
                 {
                     colors[i] = colorMap[iter];
                     // Build 0020, save ST data to csv file
-                    if (!UIButton.isCostDiff)// 0 = transparent, 1 = solid color
+                    // Build 0055
+                    if (ColorMapComputeType == ColorMapType.Normal)// 0 = transparent, 1 = solid color
                         colors[i].a = Clamp(1 - (lambdaMap[iter] - lMin) / (lMax - lMin), 0.05f, 1);// Build 0040.2
                     else // Build 0040
                     {
@@ -1375,6 +1453,9 @@ public class ShowMap : MonoBehaviour
             // Build 0043, save image to geojson file
             UpdateCFH2Bars();
         }
+        // Build 0055
+        cbxShowNodes.isOn = prv_ShowNodes;
+        cbxShowEdges.isOn = prv_ShowEdges;
     }
 
     public void SaveToGeojson(string filename, Dictionary<string, object>[] properties, Mapbox.Utils.Vector2d[] geoimage, List<AuxLine> edges)
@@ -3799,6 +3880,82 @@ public class ShowMap : MonoBehaviour
         return GetDistance(latlng1.x, latlng1.y, latlng2.x, latlng2.y);
     }
     //
+
+    void Update()
+    {
+        if (Input.anyKeyDown)
+        {
+            foreach (KeyCode keyCode in System.Enum.GetValues(typeof(KeyCode)))
+            {
+                if (Input.GetKeyDown(keyCode))
+                {
+                    //Debug.Log(keyCode.ToString());
+                    switch (keyCode)
+                    {
+                        case KeyCode.F1:
+                            // Help
+                            break;
+                        case KeyCode.F2:
+                            // Hide / show menu
+                            MainMenu.SetActive(!MainMenu.active);
+                            break;
+                        case KeyCode.F3:
+                            // Screenshot
+                            StartCoroutine(CaptureScreen(758,568));
+                            break;
+                        case KeyCode.F4:
+                            //
+                            break;
+                        case KeyCode.F5:
+                            // Compute
+                            break;
+                        case KeyCode.F6:
+                            // Save
+                            break;
+                    }
+                }
+            }
+        }
+        /*
+        SplitPark(Park.transform.position, 1f); // min accuracy is 0.1f
+        ModeUpdate();
+        if (Input.GetMouseButtonDown(1))
+        {
+            if (CreateByPredefined)
+                CreateByPredefined = false;
+            else
+            {
+                ShowContextMenu = true;
+                lastMousePosition = Input.mousePosition;
+            }
+        }
+        if (Input.GetMouseButtonDown(0))
+        {
+            Invoke("CancelContextMenu", 0.5f);
+        }
+        */
+    }
+
+    IEnumerator CaptureScreen(int image_width, int image_height)
+    {
+        yield return new WaitForEndOfFrame();
+
+        //Here is a captured screenshot
+        Texture2D screenshot = ScreenshotCamera.CaptureScreen(image_width, image_height);
+
+        //And here is how you get a byte array of the screenshot, you can use it to save the image locally, upload it to server etc.
+        byte[] bytes = screenshot.EncodeToJPG();// EncodeToPNG();
+        string path = "Screenshots" + "/G" + (dropdown_graphop.value + 1) + "_" + DTtoUniqueName(DateTime.Now) + ".jpg";
+        File.WriteAllBytes(path, bytes);
+        Debug.Log("saved screenshot to:" + path);
+    }
+
+    public string DTtoUniqueName(DateTime dt)
+    {
+        string sp = "-";
+        string mp = "_";
+        return dt.Year.ToString() + sp + dt.Month.ToString().PadLeft(2, '0') + sp + dt.Day.ToString().PadLeft(2, '0') + mp + dt.Hour.ToString().PadLeft(2, '0') + sp + dt.Minute.ToString().PadLeft(2, '0') + sp + dt.Second.ToString().PadLeft(2, '0');
+    }
 }
 
 

@@ -13,7 +13,6 @@ public class UIButton : MonoBehaviour
 
     public static GameObject bg;
     public static bool isOn = true;
-    public static bool isCostDiff = false;
     public static bool isShowVertics = false;
 
     // Start is called before the first frame update
@@ -28,25 +27,10 @@ public class UIButton : MonoBehaviour
     {
     }
 
-    public void OptionValueChange()
-    {
-        //int op = this.GetComponent<Dropdown>().value;
-        other.DestroyChildren("Nodes");
-        other.DestroyChildren("Edges");
-        //other.DisplayMapbox = Instantiate(GameObject.Find("Mapbox"));
-        StartCoroutine(other.CreateMap(0.01f));
-    }
-
     public void HideValueChange()
     {
         bg.SetActive(this.GetComponent<Toggle>().isOn);
         isOn = this.GetComponent<Toggle>().isOn;
-    }
-
-    public void UseCostDiffChange()
-    {
-        isCostDiff = this.GetComponent<Toggle>().isOn;
-        OptionValueChange();
     }
 
     public void ShowVerticesChange()
