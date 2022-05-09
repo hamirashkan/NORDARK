@@ -74,6 +74,7 @@ public class ShowMap : MonoBehaviour
     private Text txtStopTime;
     private InputField IptFeatureString;
     public Dropdown drn_Propagation;// Build 0052
+    private Button btnSave;// Build 0054
 
     private GameObject Nodes;
     private GameObject Edges;
@@ -163,6 +164,10 @@ public class ShowMap : MonoBehaviour
         IptFeatureString.onValueChanged.AddListener(delegate { FeatureStringValueChangeCheck(); });
         // Build 0052
         drn_Propagation = GameObject.Find("Drn_Propagation").GetComponent<Dropdown>();
+        // Build 0054
+        btnSave = GameObject.Find("Btn_Save").GetComponent<Button>();
+        btnSave.onClick.AddListener(delegate { SaveFile(); });
+        //
 
         UIButton.bg = bg_Mapbox.gameObject;
 
@@ -300,6 +305,10 @@ public class ShowMap : MonoBehaviour
         else 
             PropagationType = Density2DType.ITDM2;
 
+
+        string[] POI_labels = { };
+        Color[] POI_colors = { };
+
         if (graph_op == 0)
         {
             // Build 0034
@@ -325,6 +334,8 @@ public class ShowMap : MonoBehaviour
             timeSteps = 59;
             string[] strPOIs = { "7379970941", "7379971169", "8745416901" };
             Color[] clrPOIs = { Color.blue, Color.red, Color.green };
+            POI_labels = strPOIs;
+            POI_colors = clrPOIs;
             GraphSetLoad("Graph3", strPOIs, clrPOIs, 1, false);
             //GraphSet3Old("RoadGraph3");
             slrStartTime.minValue = 1;
@@ -347,6 +358,7 @@ public class ShowMap : MonoBehaviour
             Camera.transform.rotation = Quaternion.Euler(91.75f, 0, 0);
             Camera.GetComponent<RotateCamera>().default_pos = Camera.transform.position;
             Camera.GetComponent<RotateCamera>().default_rot = new Vector3(91.75f, 0, 0);
+
             // All
             string[] strPOIs = { "278087398", "7204337168", "8714559173", "7379970801" };
             Color[] clrPOIs = { Color.blue, Color.red, Color.green, Color.magenta };
@@ -356,9 +368,11 @@ public class ShowMap : MonoBehaviour
             // solution 2
             //string[] strPOIs = { "278087398", "7204337168", "7379970801" };
             //Color[] clrPOIs = { Color.blue, Color.red, Color.magenta };
-            timeSteps = 20;// 59;
+            POI_labels = strPOIs;
+            POI_colors = clrPOIs;
+            timeSteps = 59;
             // Build 0036, generic graph load function
-            GraphSetLoad("Graph4", strPOIs, clrPOIs, 0, false);
+            GraphSetLoad("Graph4", strPOIs, clrPOIs, 1, false);
             slrStartTime.minValue = 1;
             slrStartTime.maxValue = timeSteps;
             slrStartTime.value = slrStartTime.minValue;
@@ -381,6 +395,8 @@ public class ShowMap : MonoBehaviour
             Color[] clrPOIs = { Color.blue, Color.red, Color.green};
             //string[] strPOIs = { "7379970941", "8745416892" };
             //Color[] clrPOIs = { Color.blue, Color.red };
+            POI_labels = strPOIs;
+            POI_colors = clrPOIs;
             GraphSetLoad("Graph5", strPOIs, clrPOIs, 1, true);
             //
             slrStartTime.minValue = 1;
@@ -402,9 +418,17 @@ public class ShowMap : MonoBehaviour
             //bg_Mapbox.SetCenterLatitudeLongitude(new Mapbox.Utils.Vector2d(62.6138851, 6.5737325));
             //bg_Mapbox.SetZoom(10.7f);
             //bg_Mapbox.UpdateMap();
+
+            map.Initialize(new Mapbox.Utils.Vector2d(62.4720013, 6.1645443), 17);
+            bg_Mapbox.Initialize(new Mapbox.Utils.Vector2d(62.4720013, 6.1645443), 17);
+            Camera.transform.position = new Vector3(-43.4042f, 394.8713f, 17.70133f);
+            Camera.transform.rotation = Quaternion.Euler(91.75f, 0, 0);
+
             timeSteps = 59;// 5;//59
             string[] strPOIs = { "7379970095", "278085706", "7389963213" };
             Color[] clrPOIs = { Color.blue, Color.red, Color.green };
+            POI_labels = strPOIs;
+            POI_colors = clrPOIs;
             GraphSetLoad("Graph6", strPOIs, clrPOIs, 1, true, false);
             //GraphSet6("RoadGraph6");
             slrStartTime.minValue = 1;
@@ -426,6 +450,8 @@ public class ShowMap : MonoBehaviour
             timeSteps = 59;
             string[] strPOIs = { "7379970941", "7379971169", "8745416901" };
             Color[] clrPOIs = { Color.blue, Color.red, Color.green };
+            POI_labels = strPOIs;
+            POI_colors = clrPOIs;
             GraphSetLoad("Graph3", strPOIs, clrPOIs, 1, false);
             //GraphSet2Old("RoadGraph2");//GraphSet2
             slrStartTime.minValue = 1;
@@ -434,6 +460,50 @@ public class ShowMap : MonoBehaviour
             slrStopTime.minValue = slrStartTime.minValue;
             slrStopTime.maxValue = slrStartTime.maxValue;
             slrStopTime.value = slrStopTime.maxValue;
+        }
+
+        // Build 0054, random POI numbers
+        bool randomPOI = false;
+        if (graph_op != 0)
+        {
+            if (randomPOI)
+            {
+                System.Random rnd = new System.Random();
+                List<int> listNumbers = new List<int>();
+                int max = 129;
+                int POI_num = 20;
+                listNumbers.AddRange(Enumerable.Range(0, max)
+                                   .OrderBy(i => rnd.Next())
+                                   .Take(POI_num));
+                POI_labels = new string[POI_num];
+                POI_colors = new Color[POI_num];
+                for (int index = 0; index < listNumbers.Count; index++)
+                {
+                    Debug.Log("list_" + listNumbers[index]);
+                    Debug.Log("name_" + graph.RawNodes[index].name);
+                    POI_labels[index] = graph.RawNodes[index].name;
+                    Color clr = new Color((float)(1.0 / 255 * listNumbers[index]), 0, 0);
+                    POI_colors[index] = clr;
+                    Debug.Log("color_" + clr.r);
+                }
+            }
+
+            int i = 0;
+            graph.CreatePOInodes(POI_labels, POI_colors);
+
+            for (i = 0; i < POI_labels.Length; i++)
+            {
+                GameObject.Find(POI_labels[i]).GetComponent<Renderer>().material.SetColor("_Color", POI_colors[i]);
+
+            }
+
+            for (i = 0; i < POI_labels.Length; i++)
+            {
+                Color AccessColor = GameObject.Find(POI_labels[i]).GetComponent<Renderer>().material.color;
+                GameObject.Find(POI_labels[i]).GetComponent<Lines>().nColor = AccessColor;
+            }
+
+            graph.printNodes();
         }
 
         bg_Mapbox.gameObject.SetActive(!UIButton.isOn);
@@ -918,10 +988,10 @@ public class ShowMap : MonoBehaviour
                             //    col.a = 1;
 
                             // Build 0051, label map check
-                            if (labelIFT == labelTDM)
-                                col.a = 1;
-                            else
-                                col.a = 0;
+                            //if (labelIFT == labelTDM)
+                            //    col.a = 1;
+                            //else
+                            //    col.a = 0;
                         }
                         else
                             col = bestNode.clr;
@@ -1304,61 +1374,6 @@ public class ShowMap : MonoBehaviour
         { 
             // Build 0043, save image to geojson file
             UpdateCFH2Bars();
-            Mapbox.Utils.Vector2d[] g_image = new Mapbox.Utils.Vector2d[ncols * nrows];
-
-            // feed the array and concat to as a string
-            Dictionary<string, object>[] props= new Dictionary<string, object>[ncols * nrows + 1];
-            for (int i = 0; i < g_image.Length; i++)
-            {
-                //List<float> test = new List<float>();
-                //test.Add(i % 20);
-                //test.Add((i + 1) % 20);
-                //test.Add((i + 2) % 20);
-                List<float> cfhdata = new List<float>();
-                for (int k = 0; k < timeSteps; k++)
-                    cfhdata.Add(rootImages[k][i]);
-                List<int> cfhlabel = new List<int>();
-                for (int k = 0; k < timeSteps; k++)
-                    cfhlabel.Add(labelImages[k][i]);
-
-                Mapbox.Utils.Vector2d geopos= VerticesNodeArray[i].globalposition.GetGeoPosition(map.CenterMercator, map.WorldRelativeScale);
-                VerticesNodeArray[i].GeoVec.x = (float)geopos.x;
-                VerticesNodeArray[i].GeoVec.y = (float)geopos.y;
-                g_image[i] = geopos;
-                props[i] = new Dictionary<string, object>();
-                props[i].Add("name", "vertex_" + i);
-                props[i].Add("cfh", i);
-                props[i].Add("color", "white");
-                props[i].Add("clrA", "white"); // after convert the alpha
-                props[i].Add("height", 0);
-                props[i].Add("tdm_lambda", lambdaImage[i]);
-                props[i].Add("tdm_color", colorImage[i]);
-                props[i].Add("tdm_accesstime", accesstimeImage[i]);
-                props[i].Add("ift_cost", iftcostImage[i]);
-                props[i].Add("tdm_cost", tdmcostImage[i]);
-                props[i].Add("cfh_matrix", cfhdata);
-                props[i].Add("cfh_bstr", "");
-                props[i].Add("cfh_labelmatrix", cfhlabel);
-            }
-            props[ncols * nrows] = new Dictionary<string, object>();
-            props[ncols * nrows].Add("name", "0");
-            props[ncols * nrows].Add("cfh", 0);
-            props[ncols * nrows].Add("color", "white");
-            props[ncols * nrows].Add("clrA", "white"); // after convert the alpha
-            props[ncols * nrows].Add("tdm_lambda_min", rootImages[0].Min());
-            props[ncols * nrows].Add("tdm_lambda_max", rootImages[0].Max());
-            props[ncols * nrows].Add("nrows", nrows);
-            props[ncols * nrows].Add("ncols", ncols);
-            props[ncols * nrows].Add("lon_min", g_image[0].y);
-            props[ncols * nrows].Add("lat_min", g_image[0].x);
-            props[ncols * nrows].Add("lon_step", (g_image[ncols - 1].y - g_image[0].y) / (ncols - 1));
-            props[ncols * nrows].Add("lat_step", (g_image[(nrows - 1) * ncols].x - g_image[0].x) / (nrows - 1));
-            props[ncols * nrows].Add("nodes_geo", graph.nodes_geo);
-            props[ncols * nrows].Add("nodes_name", graph.nodes_name);
-            props[ncols * nrows].Add("indexPOIs", graph.indexPOIs);
-            props[ncols * nrows].Add("clrPOIs", graph.clrPOIsStr);
-            SaveToGeojson("polygon.geojson", props, g_image, AuxLines); //g_edges
-            //
         }
     }
 
@@ -1427,6 +1442,66 @@ public class ShowMap : MonoBehaviour
         }
     }
 
+    // Build 0054
+    public void SaveFile()
+    {
+        Mapbox.Utils.Vector2d[] g_image = new Mapbox.Utils.Vector2d[ncols * nrows];
+
+        // feed the array and concat to as a string
+        Dictionary<string, object>[] props = new Dictionary<string, object>[ncols * nrows + 1];
+        for (int i = 0; i < g_image.Length; i++)
+        {
+            //List<float> test = new List<float>();
+            //test.Add(i % 20);
+            //test.Add((i + 1) % 20);
+            //test.Add((i + 2) % 20);
+            List<float> cfhdata = new List<float>();
+            for (int k = 0; k < timeSteps; k++)
+                cfhdata.Add(rootImages[k][i]);
+            List<int> cfhlabel = new List<int>();
+            for (int k = 0; k < timeSteps; k++)
+                cfhlabel.Add(labelImages[k][i]);
+
+            Mapbox.Utils.Vector2d geopos = VerticesNodeArray[i].globalposition.GetGeoPosition(map.CenterMercator, map.WorldRelativeScale);
+            VerticesNodeArray[i].GeoVec.x = (float)geopos.x;
+            VerticesNodeArray[i].GeoVec.y = (float)geopos.y;
+            g_image[i] = geopos;
+            props[i] = new Dictionary<string, object>();
+            props[i].Add("name", "vertex_" + i);
+            props[i].Add("cfh", i);
+            props[i].Add("color", "white");
+            props[i].Add("clrA", "white"); // after convert the alpha
+            props[i].Add("height", 0);
+            props[i].Add("tdm_lambda", lambdaImage[i]);
+            props[i].Add("tdm_color", colorImage[i]);
+            props[i].Add("tdm_accesstime", accesstimeImage[i]);
+            props[i].Add("ift_cost", iftcostImage[i]);
+            props[i].Add("tdm_cost", tdmcostImage[i]);
+            props[i].Add("cfh_matrix", cfhdata);
+            props[i].Add("cfh_bstr", "");
+            props[i].Add("cfh_labelmatrix", cfhlabel);
+        }
+        props[ncols * nrows] = new Dictionary<string, object>();
+        props[ncols * nrows].Add("name", "0");
+        props[ncols * nrows].Add("cfh", 0);
+        props[ncols * nrows].Add("color", "white");
+        props[ncols * nrows].Add("clrA", "white"); // after convert the alpha
+        props[ncols * nrows].Add("tdm_lambda_min", rootImages[0].Min());
+        props[ncols * nrows].Add("tdm_lambda_max", rootImages[0].Max());
+        props[ncols * nrows].Add("nrows", nrows);
+        props[ncols * nrows].Add("ncols", ncols);
+        props[ncols * nrows].Add("lon_min", g_image[0].y);
+        props[ncols * nrows].Add("lat_min", g_image[0].x);
+        props[ncols * nrows].Add("lon_step", (g_image[ncols - 1].y - g_image[0].y) / (ncols - 1));
+        props[ncols * nrows].Add("lat_step", (g_image[(nrows - 1) * ncols].x - g_image[0].x) / (nrows - 1));
+        props[ncols * nrows].Add("nodes_geo", graph.nodes_geo);
+        props[ncols * nrows].Add("nodes_name", graph.nodes_name);
+        props[ncols * nrows].Add("indexPOIs", graph.indexPOIs);
+        props[ncols * nrows].Add("clrPOIs", graph.clrPOIsStr);
+        SaveToGeojson("polygon.geojson", props, g_image, AuxLines); //g_edges
+        Debug.Log("polygon.geojson saved");
+        //
+    }
     public static string ColorToHex(Color clr)
     {
         int r = (int)(clr.r * 255);
@@ -2756,22 +2831,6 @@ public class ShowMap : MonoBehaviour
                 }
             }
         }
-
-        graph.CreatePOInodes(POI_labels, POI_colors);
-
-        for (i = 0; i < POI_labels.Length; i++)
-        {
-            GameObject.Find(POI_labels[i]).GetComponent<Renderer>().material.SetColor("_Color", POI_colors[i]);
-
-        }
-
-        for (i = 0; i < POI_labels.Length; i++)
-        {
-            Color AccessColor = GameObject.Find(POI_labels[i]).GetComponent<Renderer>().material.color;
-            GameObject.Find(POI_labels[i]).GetComponent<Lines>().nColor = AccessColor;
-        }
-
-        graph.printNodes();
     }
 
     public FeatureCollection Can_Deserialize()
