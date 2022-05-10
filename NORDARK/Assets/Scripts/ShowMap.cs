@@ -80,6 +80,8 @@ public class ShowMap : MonoBehaviour
     private Toggle cbxShowNodes;// Build 0055
     private Toggle cbxShowEdges;// Build 0055
     private Button btnCalculateTTDM;// Build 0055
+    public Dropdown dropdown_weatherop; // Build 0056
+    public Dropdown dropdown_daysop; // Build 0056
 
     private GameObject Nodes;
     public GameObject Edges;
@@ -131,8 +133,6 @@ public class ShowMap : MonoBehaviour
     int[] iftcostImage;
     float[] tdmcostImage;
     int[][] labelImages;
-    // Build 0050, save calculating time, comment diff and bar
-    bool disabledDiffCalulation = true;
     // Build 0052, TDM
     enum Density2DType
     {
@@ -154,6 +154,9 @@ public class ShowMap : MonoBehaviour
     ColorMapType ColorMapComputeType = ColorMapType.Normal;
     bool prv_ShowNodes = true;
     bool prv_ShowEdges = true;
+    int startRowIndex = 0;// Build 0056
+    int weeks = 0; // Build 0056
+    int snowlinesNum = 0; // Build 0056
 
     void Start()
     {
@@ -281,7 +284,23 @@ public class ShowMap : MonoBehaviour
         });
 
         MainMenu = GameObject.Find("Canvase_Mainmenu");
+
+        // Build 0056, snow data
+        dropdown_weatherop = GameObject.Find("Drn_WeatherData").GetComponent<Dropdown>();
+        dropdown_daysop = GameObject.Find("Drn_FilterDays").GetComponent<Dropdown>();
     }
+
+    public string SnowFileName()
+    {
+        if (dropdown_weatherop != null)
+        {
+            return "Assets/Resources/snow/SN60800/snow" + dropdown_weatherop.options[dropdown_weatherop.value].text + ".csv";
+        }
+        else
+            return "";
+    }
+
+
 
     public void ComputeTTDM()
     {
@@ -398,7 +417,7 @@ public class ShowMap : MonoBehaviour
             Camera.transform.position = new Vector3(-4f, 600f, -45f);
             Camera.transform.rotation = Quaternion.Euler(90f, 0, 0);
             //map.UpdateMap();
-            timeSteps = 59;
+            timeSteps = -1;// 59;
             string[] strPOIs = { "7379970941", "7379971169", "8745416901" };
             Color[] clrPOIs = { Color.blue, Color.red, Color.green };
             POI_labels = strPOIs;
@@ -430,17 +449,17 @@ public class ShowMap : MonoBehaviour
             Camera.transform.rotation = Quaternion.Euler(90f, 0, 0);
 
             // All
-            string[] strPOIs = { "278087398", "7204337168", "8714559173", "7379970801" };
-            Color[] clrPOIs = { Color.blue, Color.red, Color.green, Color.magenta };
+            //string[] strPOIs = { "278087398", "7204337168", "8714559173", "7379970801" };
+            //Color[] clrPOIs = { Color.blue, Color.red, Color.green, Color.magenta };
             // solution 1
-            //string[] strPOIs = { "278087398", "7204337168", "8714559173" };
-            //Color[] clrPOIs = { Color.blue, Color.red, Color.green };
+            string[] strPOIs = { "278087398", "7204337168", "8714559173" };
+            Color[] clrPOIs = { Color.blue, Color.red, Color.green };
             // solution 2
             //string[] strPOIs = { "278087398", "7204337168", "7379970801" };
             //Color[] clrPOIs = { Color.blue, Color.red, Color.magenta };
             POI_labels = strPOIs;
             POI_colors = clrPOIs;
-            timeSteps = 59;
+            timeSteps = -1; //timeSteps = 59;
             // Build 0036, generic graph load function
             GraphSetLoad("Graph4", strPOIs, clrPOIs, 1, false);
             slrStartTime.minValue = 1;
@@ -494,7 +513,7 @@ public class ShowMap : MonoBehaviour
             Camera.transform.position = new Vector3(-43.4042f, 394.8713f, 17.70133f);
             Camera.transform.rotation = Quaternion.Euler(91.75f, 0, 0);
 
-            timeSteps = 59;// 5;//59
+            timeSteps = -1; //timeSteps = 59;// 5;//59
             string[] strPOIs = { "7379970095", "278085706", "7389963213" };
             Color[] clrPOIs = { Color.blue, Color.red, Color.green };
             POI_labels = strPOIs;
@@ -1579,8 +1598,9 @@ public class ShowMap : MonoBehaviour
         props[ncols * nrows].Add("nodes_name", graph.nodes_name);
         props[ncols * nrows].Add("indexPOIs", graph.indexPOIs);
         props[ncols * nrows].Add("clrPOIs", graph.clrPOIsStr);
-        SaveToGeojson("polygon.geojson", props, g_image, AuxLines); //g_edges
-        Debug.Log("polygon.geojson saved");
+        string outputfileName = "GeojsonOutput/polygon_" + DTtoUniqueName(DateTime.Now) + ".geojson";
+        SaveToGeojson(outputfileName, props, g_image, AuxLines); //g_edges
+        Debug.Log(outputfileName + " saved");
         //
     }
     public static string ColorToHex(Color clr)
@@ -2633,6 +2653,47 @@ public class ShowMap : MonoBehaviour
 
     public void GraphSetLoad(string graphName, string[] POI_labels, Color[] POI_colors, int method_type = 1, bool isDriveRoad = false, bool bImageMapping = false)
     {
+        // Build 0056
+        if ((method_type == 1) && (timeSteps == -1))
+        {
+            snowlinesNum = File.ReadAllLines(SnowFileName()).Length;
+            
+            if (snowlinesNum - 1 > timeSteps)
+                timeSteps = snowlinesNum - 1;
+            // if all days
+            if (dropdown_daysop.value > 0)
+            {
+                startRowIndex = 0;
+                // Start from a whole week
+                // return the timeSteps
+                using (var rd = new StreamReader(SnowFileName()))
+                {
+                    rd.ReadLine();
+                    string[] values = rd.ReadLine().Split(';');
+                    // Read the startdate
+                    string[] startdate = values[2].Split('.');
+                    // Judge which day
+                    DateTime dateValue = new DateTime(int.Parse(startdate[2]), int.Parse(startdate[1]), int.Parse(startdate[0]));
+                    int dayIndex = (int)dateValue.DayOfWeek;
+                    // Force to start from the Monday of the week
+                    if (dayIndex != 1)
+                    {
+                        startRowIndex = 7 - dayIndex + 1;
+                    }
+                }
+                weeks = (timeSteps - startRowIndex) / 7;
+                if (dropdown_daysop.value == 1) // weekdays
+                {
+                    timeSteps = weeks * 4; // Monday - Thursday
+                }
+                else// weekends
+                {
+                    timeSteps = weeks * 3; // Friday - Sunday
+                }
+            }
+        }
+        //
+
         string strSaveRootPath = "Assets/Resources/" + graphName + "/";
         graph = Graph.Create(graphName);
         float y = 0.25f;// xOz plane is the map 2D coordinates
@@ -2827,7 +2888,7 @@ public class ShowMap : MonoBehaviour
                 // average start and stop points, >20cm, speed = 0
                 float[] snowdata = new float[timeSteps];
                 Dictionary<int, string> timedata = new Dictionary<int, string>();
-                LoadSnowData(ref snowdata, ref timedata, strSaveRootPath + "snow.csv");
+                LoadSnowData(ref snowdata, ref timedata, SnowFileName());// strSaveRootPath + "snow.csv");
 
                 for (int k = 0; k < timeSteps; k++)
                 {
@@ -3835,18 +3896,64 @@ public class ShowMap : MonoBehaviour
     {
         try
         {
-            using (var rd = new StreamReader(filename))
+            if (dropdown_daysop.value == 0)
             {
-                rd.ReadLine();
-                int i = 0;
-                while (!rd.EndOfStream)
+                using (var rd = new StreamReader(filename))
                 {
-                    string[] values = rd.ReadLine().Split(';');
-                    if(i < sdata.Length)
-                    { 
-                        time.Add(i, values[2]);
-                        sdata[i] = int.Parse(values[6], System.Globalization.CultureInfo.InvariantCulture);
-                        i++;
+                    rd.ReadLine();
+                    int i = 0;
+
+                    while (!rd.EndOfStream)
+                    {
+                        string[] values = rd.ReadLine().Split(';');
+                        if (i < sdata.Length)
+                        {
+                            time.Add(i, values[2]);
+                            if (values[6] == "-")
+                                sdata[i] = 0;
+                            else
+                                sdata[i] = int.Parse(values[6], System.Globalization.CultureInfo.InvariantCulture);
+                            i++;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                float[] sAlldata = new float[snowlinesNum];
+                using (var rd = new StreamReader(filename))
+                {
+                    rd.ReadLine();
+                    int i = 0;
+
+                    while (!rd.EndOfStream)
+                    {
+                        string[] values = rd.ReadLine().Split(';');
+                        if (i < sdata.Length)
+                        {
+                            time.Add(i, values[2]);
+                            if (values[6] == "-")
+                                sAlldata[i] = 0;
+                            else
+                                sAlldata[i] = int.Parse(values[6], System.Globalization.CultureInfo.InvariantCulture);
+                            i++;
+                        }
+                    }
+                }
+                if (dropdown_daysop.value == 1) // weekdays
+                {
+                    for (int i = 0; i < weeks; i++)
+                    {
+                        for (int j = 0; j < 4; j++)
+                            sdata[i * 4 + j] = sAlldata[i * 7 + j + startRowIndex];
+                    }
+                }
+                else// weekends
+                {
+                    for (int i = 0; i < weeks; i++)
+                    {
+                        for (int j = 0; j < 3; j++)
+                            sdata[i * 3 + j] = sAlldata[i * 7 + 4 + j + startRowIndex];
                     }
                 }
             }
