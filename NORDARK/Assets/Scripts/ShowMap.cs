@@ -82,6 +82,8 @@ public class ShowMap : MonoBehaviour
     private Button btnCalculateTTDM;// Build 0055
     public Dropdown dropdown_weatherop; // Build 0056
     public Dropdown dropdown_daysop; // Build 0056
+    private Slider slrScaleValue; // Build 0057
+    private Text txtScaleValue; // Build 0057
 
     private GameObject Nodes;
     public GameObject Edges;
@@ -95,7 +97,8 @@ public class ShowMap : MonoBehaviour
     private bool bReadyForCFH = false;
     // Build 0009, add IFT for Graph 1
     IntPtr intPtrImage, intPtrRMImage;
-    public int nrows = 3, ncols = 4;
+    public const int nrowsTiles = 3, ncolsTiles = 4;
+    public int nrows = 0, ncols = 0;// Build 0057
     int[] testImage;
     int[] testRMImage;
     // Build 0018, change the mindist, bestNode to IFT calculation
@@ -184,11 +187,22 @@ public class ShowMap : MonoBehaviour
             Array.Copy(tile.gameObject.GetComponent<MeshFilter>().mesh.triangles, ArrayTriangles[c], ArrayTriangles[c].Length);
         }
 
+        // Build 0057
+        updateScaleM();
+        if (!IsBGMap)// if GraphSet1
+        {
+            StartCoroutine(CreateMap(0.01f, 1));
+        }        
+    }
+
+    // Build 0057
+    public void updateScaleM()
+    {
         // Build 0029
         // Build 0009, add IFT for Graph 1
         vmax = vertices_max + (vertices_scale - 1) * (vertices_max - 1) - 1;
-        nrows = vmax * nrows + 1;
-        ncols = vmax * ncols + 1;
+        nrows = vmax * nrowsTiles + 1;
+        ncols = vmax * ncolsTiles + 1;
         initImageArray(nrows * ncols);
         VerticesNodes.SetActive(true);
         DestroyChildren(VerticesNodes.name);
@@ -217,14 +231,6 @@ public class ShowMap : MonoBehaviour
             //verticeNodeXtra.parent = VerticesNodes.transform;
             //verticeNodeXtra.localScale = new Vector3(1, 1, 1);
         }
-        
-        
-        //
-
-        if (!IsBGMap)// if GraphSet1
-        {
-            StartCoroutine(CreateMap(0.01f, 1));
-        }        
     }
 
     // Build 0055
@@ -288,6 +294,13 @@ public class ShowMap : MonoBehaviour
         // Build 0056, snow data
         dropdown_weatherop = GameObject.Find("Drn_WeatherData").GetComponent<Dropdown>();
         dropdown_daysop = GameObject.Find("Drn_FilterDays").GetComponent<Dropdown>();
+
+        // Build 0057, scale m
+        slrScaleValue = GameObject.Find("Slr_ScaleValue").GetComponent<Slider>();
+        txtScaleValue = GameObject.Find("Txt_ScaleValue").GetComponent<Text>();
+        slrScaleValue.onValueChanged.AddListener(delegate{
+            txtScaleValue.text = Mathf.RoundToInt(slrScaleValue.value).ToString();
+        });
     }
 
     public string SnowFileName()
@@ -304,6 +317,12 @@ public class ShowMap : MonoBehaviour
 
     public void ComputeTTDM()
     {
+        if (vertices_scale != Mathf.RoundToInt(slrScaleValue.value))
+        {
+            vertices_scale = Mathf.RoundToInt(slrScaleValue.value);
+            updateScaleM();
+        }
+
         prv_ShowNodes = cbxShowNodes.isOn;
         prv_ShowEdges = cbxShowEdges.isOn;
         cbxShowNodes.isOn = true;
