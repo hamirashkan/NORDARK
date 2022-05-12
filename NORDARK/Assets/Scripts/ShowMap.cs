@@ -84,6 +84,9 @@ public class ShowMap : MonoBehaviour
     public Dropdown dropdown_daysop; // Build 0056
     private Slider slrScaleValue; // Build 0057
     private Text txtScaleValue; // Build 0057
+    private Button btnSaveDensityMaps;// Build 0058
+    private Button btnSaveLabelMaps;// Build 0058
+    private Dropdown drnCFHInput;// Build 0058
 
     private GameObject Nodes;
     public GameObject Edges;
@@ -114,6 +117,7 @@ public class ShowMap : MonoBehaviour
     int[] costImage;
     int[] edtcostImage;
     float[] distImage;//sqrt(cost), sqrt(V)
+    float[] mindistImage;// Build 0058
     // Build 0010, high scale for the vertices interpolation
     int vertices_scale = 4;// 4;// scale parameters
     const int vertices_max = 10;
@@ -301,6 +305,19 @@ public class ShowMap : MonoBehaviour
         slrScaleValue.onValueChanged.AddListener(delegate{
             txtScaleValue.text = Mathf.RoundToInt(slrScaleValue.value).ToString();
         });
+
+        // Build 0058, save density maps as pgm
+        btnSaveDensityMaps = GameObject.Find("Btn_SaveDensityMaps").GetComponent<Button>();
+        btnSaveDensityMaps.onClick.AddListener(delegate {
+            SaveDensityMaps();
+        });
+        btnSaveLabelMaps = GameObject.Find("Btn_SaveLabelMaps").GetComponent<Button>();
+        btnSaveLabelMaps.onClick.AddListener(delegate {
+            ColorMapComputeType = ColorMapType.Normal;
+            SaveLabelMaps();
+        });
+
+        drnCFHInput = GameObject.Find("Drn_CFHInput").GetComponent<Dropdown>();
     }
 
     public string SnowFileName()
@@ -343,6 +360,7 @@ public class ShowMap : MonoBehaviour
         rootImage = new int[length];
         costImage = new int[length];
         distImage = new float[length];
+        mindistImage = new float[length];// Build 0058
         edtcostImage = new int[length];
         unsafe
         {
@@ -1030,6 +1048,8 @@ public class ShowMap : MonoBehaviour
                                 }
                             }
                         }
+                        // Build 0058
+                        mindistImage[i_new] = mindist;
                         // equation, K * Tv / (1 + d(P,Nr)), 
                         // Tv = bestNode.riskFactor
                         // K = scale_dis
@@ -1152,17 +1172,18 @@ public class ShowMap : MonoBehaviour
                         {
                         }
                         //else
-                        { 
+                        {
+                            // Build 0058
+                            // map to get the value of rootimage
+                            int x = i % vertices_scalemax;
+                            int z = i / vertices_scalemax;
+                            x = x + x_offset * (vertices_scalemax - 1);
+                            z = z + z_offset * (vertices_scalemax - 1);
+                            int i_new = z * ncols + x;
+
                             // Build 0018, change the mindist, bestNode to IFT calculation
                             if (PropagationType != Density2DType.TDM) //(UIButton.isIFT)
                             {
-                                // map to get the value of rootimage
-                                int x = i % vertices_scalemax;
-                                int z = i / vertices_scalemax;
-                                x = x + x_offset * (vertices_scalemax - 1);
-                                z = z + z_offset * (vertices_scalemax - 1);
-                                int i_new = z * ncols + x;
-
                                 try
                                 {
                                     Node node = graph.FindNode(rootImage[i_new] - 1);//Nodes[rootImage[i_new] - 1]; 
@@ -1187,20 +1208,6 @@ public class ShowMap : MonoBehaviour
                                 {
                                     Debug.Log(rootImage[i_new]);
                                 }
-
-                                // Build 0040
-                                //lambda = (1 / (r * Mathf.Sqrt(2 * Mathf.PI))) * Mathf.Exp(-0.5f * Mathf.Pow((Mathf.Pow((mindist + bestNode.LeastCostList[k]), -alpha) / r), 2));
-                                //rootImages[k][i_new] = bestNode.POIList[k].index + 1;
-                                float threshold = 0;// 0.000001f;
-                                if (mindist <= threshold)
-                                    mindist = threshold;
-                                lambda = (1 / r) * 1 / (1 + Mathf.Exp(Mathf.Pow((bestNode.LeastCostList[k] + mindist * scalex / 5 * 3600), -alpha) / r));  //Sigmoid
-                                if (lambda <= threshold)
-                                    lambda = threshold;
-                                rootImages[k][i_new] = lambda;
-                                // Build 0048, output all data
-                                labelImages[k][i_new] = bestNode.POIList[k].indexOfPOI;// ColorToHex(bestNode.POIList[k].clr);
-                                //
 
                                 //if (UIButton.isCostDiff)
                                 //{
@@ -1249,7 +1256,25 @@ public class ShowMap : MonoBehaviour
                                 }
                             }
 
-                            try 
+                            // Build 0058
+                            // Build 0040
+                            //lambda = (1 / (r * Mathf.Sqrt(2 * Mathf.PI))) * Mathf.Exp(-0.5f * Mathf.Pow((Mathf.Pow((mindist + bestNode.LeastCostList[k]), -alpha) / r), 2));
+                            //rootImages[k][i_new] = bestNode.POIList[k].index + 1;
+                            float threshold = 0;// 0.000001f;
+
+                            if (mindist <= threshold)
+                                mindist = threshold;
+
+                            lambda = (1 / r) * 1 / (1 + Mathf.Exp(Mathf.Pow((bestNode.LeastCostList[k] + mindist * scalex / 5 * 3600), -alpha) / r));  //Sigmoid
+
+                            if (lambda <= threshold)
+                                lambda = threshold;
+
+                            rootImages[k][i_new] = lambda;
+                            labelImages[k][i_new] = bestNode.POIList[k].indexOfPOI;// ColorToHex(bestNode.POIList[k].clr);
+                            //
+
+                            try
                             {
                                 // if it is POI node
                                 if (bestNode.POIList == null)
@@ -1424,6 +1449,73 @@ public class ShowMap : MonoBehaviour
                     //IFToptTest();
                     // Build 0018, change the mindist, bestNode to IFT calculation
                     //IFTindexImageTest();
+                }
+            }
+
+            // Build 0058
+            // CFH computation
+            bool enableCFH = true;
+            bool computeDensity = (drnCFHInput.value == 1);
+            float thr = 0;
+            if (computeDensity)
+            {
+                thr = (FindMaximum(rootImages) - FindMinimum(rootImages)) / 20f;
+                Debug.Log("thr=" + thr.ToString());
+            }
+            if ((enableCFH) && (ColorMapComputeType == ColorMapType.Normal))
+            {
+                // Build 0003, timeline update issue
+                UISlirTimeLine.label.text = timeIndex + "/" + timeSteps;
+                StartTimeValueChangeCheck();
+                StopTimeValueChangeCheck();
+                CFH CFH_script = GetComponent<CFH>();
+                if (CFH_script != null)
+                {
+                    CFH_script.stept = 1;
+                    CFH_script.start_time = SliderStartTimeValue - 1;
+                    CFH_script.stop_time = SliderStopTimeValue - 1;
+                    CFH_script.FeatureString = GameObject.Find("Ipt_PatternStr").GetComponent<InputField>().text;
+
+                    if (computeDensity)
+                    {
+                        CFH_script.inputValues = rootImages;
+                        CFH_script.ComputeCFH();
+                    }
+                    else
+                    {
+                        CFH_script.inputValuesInt = labelImages;
+                        CFH_script.ComputeCFH_Int();
+                    }
+
+                    int vertices_scalemax = vertices_max +(vertices_scale - 1) * (vertices_max - 1);
+                    for (int c = 0; c < 12; c++)
+                    {
+                        Transform tile;
+                        if (c_flag_last)
+                            tile = gameObject.transform.GetChild(c);
+                        else
+                            tile = gameObject.transform.GetChild(c + 1); //ignoring first child that is not a tile
+
+                        int x_offset = 0;
+                        int z_offset = 0;
+                        x_offset = (int)(Math.Round(tile.position.x - tx_min)) / 100;
+                        z_offset = (int)(Math.Round(tz_max - tile.position.z)) / 100;
+
+                        Mesh mesh = tile.gameObject.GetComponent<MeshFilter>().mesh;
+                        var vertices = mesh.vertices;
+
+                        for (var i = 0; i < vertices.Length; i++)
+                        {
+                            int x = i % vertices_scalemax;
+                            int z = i / vertices_scalemax;
+                            x = x + x_offset * (vertices_scalemax - 1);
+                            z = z + z_offset * (vertices_scalemax - 1);
+                            int i_new = z * ncols + x;
+                            vertices[i].y = CFH_script.outputValues[i_new] * scale_dis / (1 + mindistImage[i_new]);
+                        }
+                        mesh.vertices = vertices;
+                            //CFH_script.outputValues;// distTDM;// distImage;
+                     }
                 }
             }
         }
@@ -1710,6 +1802,108 @@ public class ShowMap : MonoBehaviour
         DllInterface.ExportFile(intPtrEdt, nrows, ncols, Marshal.StringToHGlobalAnsi("R.pgm"));
     }
     //
+
+    // Build 0058
+    public float FindMinimum(float[][] values)
+    {
+        float minVal = float.PositiveInfinity;
+        for (int i = 0; i < values.Length; i++)
+        {
+            if (values[i].Min() < minVal)
+                minVal = values[i].Min();
+        }
+        return minVal;
+    }
+
+    public float FindMaximum(float[][] values)
+    {
+        float maxVal = float.NegativeInfinity;
+        for (int i = 0; i < values.Length; i++)
+        {
+            if (values[i].Max() > maxVal)
+                maxVal = values[i].Max();
+        }
+        return maxVal;
+    }
+
+    public void SaveDensityMaps()
+    {
+        string strU = DTtoUniqueName(DateTime.Now);
+        float minVal = FindMinimum(rootImages);
+        float maxVal = FindMaximum(rootImages);
+        Debug.Log("Density minVal=" + minVal + ", Density minVal=" + maxVal);
+        for (int i = 0; i < rootImages.Length; i++)
+        {
+            string path = "DensitymapOutput" + "/G" + (dropdown_graphop.value + 1)
+                 + "_" + strU + "_densitymap_t" + (i + 1).ToString() + ".jpg";
+            SaveFileJPGasPGMFloat(path, rootImages[i], minVal,maxVal);
+        }
+        Debug.Log("Saved " + rootImages.Length.ToString() + " density maps jpg");
+    }
+
+    public void SaveLabelMaps()
+    {
+        string strU = DTtoUniqueName(DateTime.Now);
+        for (int i = 0; i < labelImages.Length; i++)
+        {
+            Marshal.Copy(labelImages[i], 0, intPtrImage, nrows * ncols);
+            DllInterface.ExportFile(intPtrImage, nrows, ncols, Marshal.StringToHGlobalAnsi("LabelmapOutput\\G" + (dropdown_graphop.value + 1) 
+                + "_" + strU + "_labelmap_t" + (i+1).ToString() + ".pgm"));
+        }
+        Debug.Log("Saved " + labelImages.Length.ToString() + " label maps pgm");
+
+        for (int i = 0; i < labelImages.Length; i++)
+        {
+            string path = "LabelmapOutput" + "/G" + (dropdown_graphop.value + 1)
+                 + "_" + strU + "_labelmap_t" + (i + 1).ToString() + ".jpg";
+            SaveFileJPGasPGM(path, labelImages[i]); 
+        }
+        Debug.Log("Saved " + labelImages.Length.ToString() + " label maps jpg");
+    }
+
+    public void SaveFileJPGasPGMFloat(string filename, float[] values, float minvalue, float maxvalue)
+    {
+        Texture2D screenshot = new Texture2D(ncols, nrows);
+        Color[] clrs = new Color[values.Length];
+        float blackClr = minvalue;
+        float whiteClr = maxvalue;
+        float diff = whiteClr - blackClr;
+        // reverse the bottom and top, setpixels is bottom-up
+        int r_index, c_index, kk;
+        for (int k = 0; k < values.Length; k++)
+        {
+            r_index = k / ncols;
+            c_index = k % ncols;
+            kk = (nrows - 1 - r_index) * ncols + c_index;
+            clrs[k] = Color.white * values[kk] / diff;
+        }
+        screenshot.SetPixels(clrs);
+        //And here is how you get a byte array of the screenshot, you can use it to save the image locally, upload it to server etc.
+        byte[] bytes = screenshot.EncodeToJPG();// EncodeToPNG();
+        File.WriteAllBytes(filename, bytes);
+    }
+
+    public void SaveFileJPGasPGM(string filename, int[] values)
+    {
+        Texture2D screenshot = new Texture2D(ncols, nrows);
+        Color[] clrs = new Color[values.Length];
+        int blackClr = values.Min();
+        int whiteClr = values.Max();
+        int diff = whiteClr - blackClr;
+        // reverse the bottom and top, setpixels is bottom-up
+        int r_index, c_index, kk;
+        for (int k = 0; k < values.Length; k++)
+        {
+            r_index = k / ncols;
+            c_index = k % ncols;
+            kk = (nrows - 1 - r_index) * ncols + c_index;
+            clrs[k] = Color.white * values[kk] / diff;
+        }
+        screenshot.SetPixels(clrs);
+        //And here is how you get a byte array of the screenshot, you can use it to save the image locally, upload it to server etc.
+        byte[] bytes = screenshot.EncodeToJPG();// EncodeToPNG();
+        File.WriteAllBytes(filename, bytes);
+    }
 
     // Build 0015, IFT opt map
     public void IFToptImageTest()

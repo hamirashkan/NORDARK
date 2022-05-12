@@ -5,6 +5,7 @@ using UnityEngine;
 public class CFH : MonoBehaviour
 {
     public float[][] inputValues;
+    public int[][] inputValuesInt;
     public float[] outputValues;
     public string FeatureString = "0";
     public float patternMax;
@@ -24,13 +25,13 @@ public class CFH : MonoBehaviour
 
     }
 
-    public void ComputeCFH()
+    public void ComputeCFH_Int()
     {
         int t_count = 0;
         int i_count = 0;
         patternMax = 0;
-        t_count = inputValues.Length;
-        i_count = inputValues[0].Length;
+        t_count = inputValuesInt.Length;
+        i_count = inputValuesInt[0].Length;
         outputValues = new float[i_count];
         float Threshold = 1;
         for (var i = 0; i < i_count; i++)
@@ -50,14 +51,56 @@ public class CFH : MonoBehaviour
                     //int binaryMapData = inputValues[t][i] != inputValues[t + 1][i] ? 1 : 0;
                     //data[t] = binaryMapData;
                     //// ITDM_Cost change or not
-                    int binaryMapData = (inputValues[t][i] - inputValues[t + 1][i]) > Threshold ? 1 : 0;
+                    int binaryMapData = Mathf.Abs(inputValuesInt[t][i] - inputValuesInt[t + 1][i]) >= Threshold ? 1 : 0;
                     data[t] = binaryMapData;
                 }
                 List<int> a = Fun_SubFeatureForData(data, sub);
                 histogram = a.Count;
                 if (histogram > patternMax)
                     patternMax = histogram;
-                outputValues[i] = histogram * 2;
+                outputValues[i] = histogram;// * 2;
+            }
+            else
+            {
+                patternMax = 0;
+            }
+
+        }
+    }
+
+    public void ComputeCFH(float Threshold = 1)
+    {
+        int t_count = 0;
+        int i_count = 0;
+        patternMax = 0;
+        t_count = inputValues.Length;
+        i_count = inputValues[0].Length;
+        outputValues = new float[i_count];
+        for (var i = 0; i < i_count; i++)
+        {
+            if (t_count >= 2)
+            {
+                // t count = frame size of t
+                int[] sub;// = new int[] { 0, 1 };//{ 1, 1, 1 }
+                sub = Fun_FeatureStrToInt(FeatureString);
+                int[] data = new int[t_count - 1];
+                int histogram = 0;
+
+                for (int t = start_time; t < stop_time - 1; t += stept)
+                {
+                    // ComputeMatrixD, binary pattern
+                    //// ITDM_Label change or not
+                    //int binaryMapData = inputValues[t][i] != inputValues[t + 1][i] ? 1 : 0;
+                    //data[t] = binaryMapData;
+                    //// ITDM_Cost change or not
+                    int binaryMapData = Mathf.Abs(inputValues[t][i] - inputValues[t + 1][i]) >= Threshold ? 1 : 0;
+                    data[t] = binaryMapData;
+                }
+                List<int> a = Fun_SubFeatureForData(data, sub);
+                histogram = a.Count;
+                if (histogram > patternMax)
+                    patternMax = histogram;
+                outputValues[i] = histogram;
             }
             else
             {
