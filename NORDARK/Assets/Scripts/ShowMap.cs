@@ -489,11 +489,11 @@ public class ShowMap : MonoBehaviour
             //string[] strPOIs = { "278087398", "7204337168", "8714559173", "7379970801" };
             //Color[] clrPOIs = { Color.blue, Color.red, Color.green, Color.magenta };
             // solution 1
-            string[] strPOIs = { "278087398", "7204337168", "8714559173" };
-            Color[] clrPOIs = { Color.blue, Color.red, Color.green };
+            //string[] strPOIs = { "278087398", "7204337168", "8714559173" };
+            //Color[] clrPOIs = { Color.blue, Color.red, Color.green };
             // solution 2
-            //string[] strPOIs = { "278087398", "7204337168", "7379970801" };
-            //Color[] clrPOIs = { Color.blue, Color.red, Color.magenta };
+            string[] strPOIs = { "278087398", "7204337168", "7379970801" };
+            Color[] clrPOIs = { Color.blue, Color.red, Color.magenta };
             POI_labels = strPOIs;
             POI_colors = clrPOIs;
             timeSteps = -1; //timeSteps = 59;
@@ -545,12 +545,15 @@ public class ShowMap : MonoBehaviour
             //bg_Mapbox.SetZoom(10.7f);
             //bg_Mapbox.UpdateMap();
 
-            map.Initialize(new Mapbox.Utils.Vector2d(62.4720013, 6.1645443), 17);
-            bg_Mapbox.Initialize(new Mapbox.Utils.Vector2d(62.4720013, 6.1645443), 17);
-            Camera.transform.position = new Vector3(-43.4042f, 394.8713f, 17.70133f);
-            Camera.transform.rotation = Quaternion.Euler(91.75f, 0, 0);
+            // Build 0060, change map for graphset6  62.4714707, 6.1545401 62.4720013,6.1557632
+            map.Initialize(new Mapbox.Utils.Vector2d(62.4714707, 6.1557632), 17);
+            bg_Mapbox.Initialize(new Mapbox.Utils.Vector2d(62.4714707, 6.1557632), 17);
+            //map.Initialize(new Mapbox.Utils.Vector2d(62.4720013, 6.1645443), 17);
+            //bg_Mapbox.Initialize(new Mapbox.Utils.Vector2d(62.4720013, 6.1645443), 17);
+            //Camera.transform.position = new Vector3(-43.4042f, 394.8713f, 17.70133f);
+            //Camera.transform.rotation = Quaternion.Euler(91.75f, 0, 0);
 
-            timeSteps = -1; //timeSteps = 59;// 5;//59
+            timeSteps = -1;// -1; //timeSteps = 59;// 5;//59
             string[] strPOIs = { "7379970095", "278085706", "7389963213" };
             Color[] clrPOIs = { Color.blue, Color.red, Color.green };
             POI_labels = strPOIs;
@@ -596,7 +599,7 @@ public class ShowMap : MonoBehaviour
             {
                 System.Random rnd = new System.Random();
                 List<int> listNumbers = new List<int>();
-                int max = 129;
+                int max = 1552;//129;
                 int POI_num = 20;
                 listNumbers.AddRange(Enumerable.Range(0, max)
                                    .OrderBy(i => rnd.Next())
@@ -994,6 +997,33 @@ public class ShowMap : MonoBehaviour
                             // Build 0055
                             if (ColorMapComputeType == ColorMapType.DensityDiff)
                             {
+                                // the densitydiff for ITDM1 and TDM
+                                //float tmindist = Mathf.Infinity;
+                                //Node tbestNode = null;
+                                //foreach (Node tnode in graph.RestNodes)
+                                //{
+                                //    pos = new Vector3(vertex.x + tile.position.x, tnode.vec.y, vertex.z + tile.position.z);
+
+                                //    // Build 0041, modify the propagation calculation
+                                //    pos = VerticesNodeArray[i_new].globalposition;
+                                //    pos.y = tnode.vec.y;
+                                //    //
+
+                                //    float tdist = (pos - tnode.vec).magnitude;
+
+                                //    if (tdist < tmindist)
+                                //    {
+                                //        tmindist = tdist;
+                                //        tbestNode = tnode;
+                                //    }
+                                //}
+                                //pos = VerticesNodeArray[i_new].globalposition;
+                                //pos.y = tbestNode.vec.y;
+                                //distTDM = (pos - tbestNode.vec).magnitude;// distImage[i_new];
+                                //pos = VerticesNodeArray[i_new].globalposition;
+                                //pos.y = node.vec.y;
+                                //distIFT = (pos - node.vec).magnitude;//dist1;// (pos - node.vec).magnitude;
+
                                 distIFT = distImage[i_new] * 100 / (vertices_scalemax - 1);// distImage[i_new];
                                 pos = VerticesNodeArray[i_new].globalposition;
                                 pos.y = node.vec.y;
@@ -1454,7 +1484,7 @@ public class ShowMap : MonoBehaviour
 
             // Build 0058
             // CFH computation
-            bool enableCFH = true;
+            bool enableCFH = false;
             bool computeDensity = (drnCFHInput.value == 1);
             float thr = 0;
             if (computeDensity)
@@ -3121,7 +3151,9 @@ public class ShowMap : MonoBehaviour
                                 double avgDist = (dist1 + dist2) / 2;
                                 // linear interpolation
                                 double maxDis = 50;
-                                float newspeed = Clamp((float)(speedlimitRoad[i, j] * (1 - avgDist / maxDis * snowdata[k] / 25)), 5, maxRisk);
+                                // Build 0060, change equation
+                                //float newspeed = Clamp((float)(speedlimitRoad[i, j] * (1 - avgDist / maxDis * snowdata[k] / 25)), 5, maxRisk);
+                                float newspeed = Clamp((float)(0.7*speedlimitRoad[i, j]  - avgDist / maxDis * snowdata[k] * 2.5f), 5, maxRisk);
                                 // y = -2.5x+50, x is snow depth (cm), y is speed(km/h)
                                 // equation to get the parameters
                                 // Build 0046
