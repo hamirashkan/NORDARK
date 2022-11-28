@@ -62,6 +62,13 @@
 				int zoom = _map.AbsoluteZoom;
 				_map.UpdateMap(response.Features[0].Center, zoom);
 			}
+			// Build 0068
+			else
+			{
+				int zoom = _map.AbsoluteZoom;
+				_map.UpdateMap(new Utils.Vector2d(double.Parse(response.Query[0]), double.Parse(response.Query[1])), zoom);
+			}
+			//
 		}
 
 		void ForwardGeocoder_OnGeocoderResponse(ForwardGeocodeResponse response, bool resetCamera)

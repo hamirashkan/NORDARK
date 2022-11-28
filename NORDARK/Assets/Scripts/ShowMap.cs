@@ -433,8 +433,10 @@ public class ShowMap : MonoBehaviour
             // Build 0034
             map.Initialize(new Mapbox.Utils.Vector2d(62.4750425, 6.1914948), 17);
             bg_Mapbox.Initialize(new Mapbox.Utils.Vector2d(62.4750425, 6.1914948), 17);
-            Camera.transform.position = new Vector3(-4f, 600f, -45f);
-            Camera.transform.rotation = Quaternion.Euler(90f, 0, 0);
+            //Camera.transform.position = new Vector3(-4f, 600f, -45f);
+            //Camera.transform.rotation = Quaternion.Euler(90f, 0, 0);
+            Camera.transform.position = new Vector3(-160f, 35f, -130f);
+            Camera.transform.rotation = Quaternion.Euler(12, 53, 0);
             timeSteps = 4;// 100;//4;
             GraphSet1("RoadGraph1");
             slrStartTime.minValue = 1;
