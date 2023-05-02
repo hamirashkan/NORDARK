@@ -36,9 +36,11 @@ public class ShowMap : MonoBehaviour
     public List<Texture2D> textMap;
     public List<float> costs;
     public AbstractMap map;
-    public string Kernel = "G"; //defaults to sigmoid, "G" for gaussian
-    public float r = 0.05f;//for Graph4, 0.005f;//1f;//0.003f;
-    public float alpha = 2;//1;//2
+    // Build 0084, only panel values take effect
+    public string Kernel = "S"; //defaults to sigmoid, "G" for gaussian
+    public float r = 0.005f;//for Graph4, 0.005f;//1f;//0.003f;
+    public float alpha = 1.5f;//1;//2
+    //
     public float scale_dis = 1000;
     public float scale_risk = 10;
     // CFH
@@ -86,6 +88,7 @@ public class ShowMap : MonoBehaviour
     private Text txtScaleValue; // Build 0057
     private Button btnSaveDensityMaps;// Build 0058
     private Button btnSaveLabelMaps;// Build 0058
+    private Button btnSaveCostMaps;// Build 0081
     private Dropdown drnCFHInput;// Build 0058
 
     private GameObject Nodes;
@@ -133,6 +136,8 @@ public class ShowMap : MonoBehaviour
     public List<Node> VerticesNodeArray;
     // Build 0040
     public float[][] rootImages;
+    // Build 0081
+    public float[][] costImages;
     // Build 0043
     float[] lambdaImage;
     string[] colorImage;
@@ -316,6 +321,11 @@ public class ShowMap : MonoBehaviour
             ColorMapComputeType = ColorMapType.Normal;
             SaveLabelMaps();
         });
+        // Build 0081, cost map
+        btnSaveCostMaps = GameObject.Find("Btn_SaveCostMaps").GetComponent<Button>();
+        btnSaveCostMaps.onClick.AddListener(delegate {
+            SaveCostMaps();
+        });
 
         drnCFHInput = GameObject.Find("Drn_CFHInput").GetComponent<Dropdown>();
     }
@@ -437,7 +447,7 @@ public class ShowMap : MonoBehaviour
             //Camera.transform.rotation = Quaternion.Euler(90f, 0, 0);
             Camera.transform.position = new Vector3(-160f, 35f, -130f);
             Camera.transform.rotation = Quaternion.Euler(12, 53, 0);
-            timeSteps = 4;// 100;//4;
+            timeSteps =  4;// 100;//4;
             GraphSet1("RoadGraph1");
             slrStartTime.minValue = 1;
             slrStartTime.maxValue = timeSteps;// 4;
@@ -456,7 +466,7 @@ public class ShowMap : MonoBehaviour
             Camera.transform.position = new Vector3(-4f, 600f, -45f);
             Camera.transform.rotation = Quaternion.Euler(90f, 0, 0);
             //map.UpdateMap();
-            timeSteps = -1;// 59;
+            timeSteps = -1; //20;// -1;// 59;
             string[] strPOIs = { "7379970941", "7379971169", "8745416901" };
             Color[] clrPOIs = { Color.blue, Color.red, Color.green };
             POI_labels = strPOIs;
@@ -484,23 +494,23 @@ public class ShowMap : MonoBehaviour
             //Camera.GetComponent<RotateCamera>().default_pos = Camera.transform.position;
             //Camera.GetComponent<RotateCamera>().default_rot = new Vector3(91.75f, 0, 0);
 
-            Camera.transform.position = new Vector3(-23f, 600f, -5f);
-            Camera.transform.rotation = Quaternion.Euler(90f, 0, 0);
+            //Camera.transform.position = new Vector3(-23f, 600f, -5f);
+            //Camera.transform.rotation = Quaternion.Euler(90f, 0, 0);
 
             // All
             //string[] strPOIs = { "278087398", "7204337168", "8714559173", "7379970801" };
             //Color[] clrPOIs = { Color.blue, Color.red, Color.green, Color.magenta };
             // solution 1
-            //string[] strPOIs = { "278087398", "7204337168", "8714559173" };
-            //Color[] clrPOIs = { Color.blue, Color.red, Color.green };
+            string[] strPOIs = { "278087398", "7204337168", "8714559173" };
+            Color[] clrPOIs = { Color.blue, Color.red, Color.green };
             // solution 2
-            string[] strPOIs = { "278087398", "7204337168", "7379970801" };
-            Color[] clrPOIs = { Color.blue, Color.red, Color.magenta };
+            //string[] strPOIs = { "278087398", "7204337168", "7379970801" };
+            //Color[] clrPOIs = { Color.blue, Color.red, Color.magenta };
             POI_labels = strPOIs;
             POI_colors = clrPOIs;
-            timeSteps = -1; //timeSteps = 59;
+            timeSteps = -1;//100;// - 1; //timeSteps = 59;
             // Build 0036, generic graph load function
-            GraphSetLoad("Graph4", strPOIs, clrPOIs, 1, false);
+            GraphSetLoad("Graph4", strPOIs, clrPOIs, 1, false); // Build 0082
             slrStartTime.minValue = 1;
             slrStartTime.maxValue = timeSteps;
             slrStartTime.value = slrStartTime.minValue;
@@ -560,7 +570,7 @@ public class ShowMap : MonoBehaviour
             Color[] clrPOIs = { Color.blue, Color.red, Color.green };
             POI_labels = strPOIs;
             POI_colors = clrPOIs;
-            GraphSetLoad("Graph6", strPOIs, clrPOIs, 1, true, false);
+            GraphSetLoad("Graph6", strPOIs, clrPOIs, 2, true, false);
             //GraphSet6("RoadGraph6");
             slrStartTime.minValue = 1;
             slrStartTime.maxValue = timeSteps;
@@ -601,8 +611,8 @@ public class ShowMap : MonoBehaviour
             {
                 System.Random rnd = new System.Random();
                 List<int> listNumbers = new List<int>();
-                int max = 1552;//129;
-                int POI_num = 20;
+                int max = 1552;// 34;//1552;//129;
+                int POI_num = 2;//20;
                 listNumbers.AddRange(Enumerable.Range(0, max)
                                    .OrderBy(i => rnd.Next())
                                    .Take(POI_num));
@@ -783,6 +793,14 @@ public class ShowMap : MonoBehaviour
             {
                 labelImages[r] = null;
                 labelImages[r] = new int[ncols * nrows];
+            }
+            // Build 0081
+            costImages = null;
+            costImages = new float[timeSteps][];
+            for (int r = 0; r < timeSteps; r++)
+            {
+                costImages[r] = null;
+                costImages[r] = new float[ncols * nrows];
             }
 
             //
@@ -1120,12 +1138,13 @@ public class ShowMap : MonoBehaviour
                         if (mindist <= threshold)
                             mindist = threshold;
 
+                        // Build 0084, lambda problem
                         //choice of kernel function for density estimation
-                        if (Kernel == "G")
-                        {// Build 0038, careful to add distance to time accessibility directly
-                            lambda = (1 / (r * Mathf.Sqrt(2 * Mathf.PI))) * Mathf.Exp(-0.5f * Mathf.Pow((Mathf.Pow((bestNode.LeastCost + mindist * scalex / 5 * 3600), -alpha) / r), 2));  //Gaussian
-                        }
-                        else
+                        //if (Kernel == "G")
+                        //{// Build 0038, careful to add distance to time accessibility directly
+                        //    lambda = (1 / (r * Mathf.Sqrt(2 * Mathf.PI))) * Mathf.Exp(-0.5f * Mathf.Pow((Mathf.Pow((bestNode.LeastCost + mindist * scalex / 5 * 3600), -alpha) / r), 2));  //Gaussian
+                        //}
+                        //else
                         {
                             lambda = (1 / r) * 1 / (1 + Mathf.Exp(Mathf.Pow((bestNode.LeastCost + mindist * scalex / 5 * 3600), -alpha) / r));  //Sigmoid
                         }
@@ -1296,14 +1315,15 @@ public class ShowMap : MonoBehaviour
 
                             if (mindist <= threshold)
                                 mindist = threshold;
-
+                            // Build 0083, recover lamba formula
                             lambda = (1 / r) * 1 / (1 + Mathf.Exp(Mathf.Pow((bestNode.LeastCostList[k] + mindist * scalex / 5 * 3600), -alpha) / r));  //Sigmoid
-
+                            
                             if (lambda <= threshold)
                                 lambda = threshold;
 
                             rootImages[k][i_new] = lambda;
                             labelImages[k][i_new] = bestNode.POIList[k].indexOfPOI;// ColorToHex(bestNode.POIList[k].clr);
+                            costImages[k][i_new] = bestNode.LeastCostList[k] + mindist * scalex / 5 * 3600;// 0081, cost map
                             //
 
                             try
@@ -1698,9 +1718,10 @@ public class ShowMap : MonoBehaviour
             //test.Add(i % 20);
             //test.Add((i + 1) % 20);
             //test.Add((i + 2) % 20);
+            // Build 0084,save cost maps to cfh data, use equation to comput density maps
             List<float> cfhdata = new List<float>();
             for (int k = 0; k < timeSteps; k++)
-                cfhdata.Add(rootImages[k][i]);
+                cfhdata.Add(costImages[k][i]);// rootImages[k][i]);
             List<int> cfhlabel = new List<int>();
             for (int k = 0; k < timeSteps; k++)
                 cfhlabel.Add(labelImages[k][i]);
@@ -1729,8 +1750,26 @@ public class ShowMap : MonoBehaviour
         props[ncols * nrows].Add("cfh", 0);
         props[ncols * nrows].Add("color", "white");
         props[ncols * nrows].Add("clrA", "white"); // after convert the alpha
-        props[ncols * nrows].Add("tdm_lambda_min", rootImages[0].Min());
-        props[ncols * nrows].Add("tdm_lambda_max", rootImages[0].Max());
+        // Build 0083, fix the tdm_lamba_max value from rootImages0 to rootImages, consider average lamba value also
+        float minLamba = FindMinimum(rootImages);
+        if (lambdaImage.Min() < minLamba)
+            minLamba = lambdaImage.Min();
+        float maxLamba = FindMaximum(rootImages);
+        if (lambdaImage.Max() > maxLamba)
+            maxLamba = lambdaImage.Max();
+        // cost map only used for CFH value computation, density map compuated by cost map
+        props[ncols * nrows].Add("tdm_lambda_min", minLamba);// rootImages[0].Min());
+        props[ncols * nrows].Add("tdm_lambda_max", maxLamba);// rootImages[0].Max());
+        // Build 0084, access time
+        float minTime= FindMinimum(costImages);
+        if (accesstimeImage.Min() < minLamba)
+            minTime = accesstimeImage.Min();
+        float maxTime = FindMaximum(costImages);
+        if (accesstimeImage.Max() > maxLamba)
+            maxTime = accesstimeImage.Max();
+        props[ncols * nrows].Add("tdm_accesstime_min", minTime);
+        props[ncols * nrows].Add("tdm_accesstime_max", maxTime);
+        //
         props[ncols * nrows].Add("nrows", nrows);
         props[ncols * nrows].Add("ncols", ncols);
         props[ncols * nrows].Add("lon_min", g_image[0].y);
@@ -1891,6 +1930,22 @@ public class ShowMap : MonoBehaviour
             SaveFileJPGasPGM(path, labelImages[i]); 
         }
         Debug.Log("Saved " + labelImages.Length.ToString() + " label maps jpg");
+    }
+
+    // Build 0081, save cost maps ()
+    public void SaveCostMaps()
+    {
+        string strU = DTtoUniqueName(DateTime.Now);
+        float minVal = FindMinimum(costImages);
+        float maxVal = FindMaximum(costImages);
+        Debug.Log("Cost minVal=" + minVal + ", Cost minVal=" + maxVal);
+        for (int i = 0; i < costImages.Length; i++)
+        {
+            string path = "CostmapOutput" + "/G" + (dropdown_graphop.value + 1)
+                 + "_" + strU + "_costmap_t" + (i + 1).ToString() + ".jpg";
+            SaveFileJPGasPGMFloat(path, costImages[i], minVal, maxVal);
+        }
+        Debug.Log("Saved " + costImages.Length.ToString() + " cost maps jpg");
     }
 
     public void SaveFileJPGasPGMFloat(string filename, float[] values, float minvalue, float maxvalue)
@@ -2898,8 +2953,9 @@ public class ShowMap : MonoBehaviour
 
     public void GraphSetLoad(string graphName, string[] POI_labels, Color[] POI_colors, int method_type = 1, bool isDriveRoad = false, bool bImageMapping = false)
     {
+        //method_type = 0;
         // Build 0056
-        if ((method_type == 1) && (timeSteps == -1))
+        if (((method_type == 1 ) || (method_type == 2)) && (timeSteps == -1))
         {
             snowlinesNum = File.ReadAllLines(SnowFileName()).Length;
             
@@ -3024,6 +3080,11 @@ public class ShowMap : MonoBehaviour
         int edgesNum = edges_data.Length - 2;
         edgesNames = new string[edgesNum];
 
+        //Build 0082
+        int[] startindexs = new int[edgesNum];
+        int[] stopindexs = new int[edgesNum];
+        //
+
         for (i = 0; i < edgesNames.Length; i++)
         {
             try
@@ -3036,6 +3097,7 @@ public class ShowMap : MonoBehaviour
                 int stopindex = nodeDict[values[2]]; //graph.FindFirstNode(values[2]).index;
                 if (startindex != stopindex)
                 {
+
                     /*if ((values[6] == "nan") || (values[6] == "nan\r"))
                         t0Road[startindex, stopindex] = 300 / 300;// 1e-4f;
                     else
@@ -3087,6 +3149,10 @@ public class ShowMap : MonoBehaviour
                     AuxLineX.startNodePosition = graph.Nodes[startindex].vec;
                     AuxLineX.stopNodeIndex = stopindex;
                     AuxLineX.stopNodePosition = graph.Nodes[stopindex].vec;
+                    //
+                    // Build 0082
+                    startindexs[i] = startindex;
+                    stopindexs[i] = stopindex;
                     //
 
                     //AuxLineX.Add()
@@ -3172,6 +3238,71 @@ public class ShowMap : MonoBehaviour
                                 }
                             }
                             roads[i, j] += temporalRoad[k][i, j];
+                        }
+                    }
+                }
+            }
+            // Build 0083, fixed the error, compute roads cost fault with random values
+            else if (method_type == 2) // Build 0082, use QGIS result
+            {
+                String filename = "Assets/Resources/" + graphName + "/snow_3c.csv";
+
+                // if all days
+                //if (dropdown_daysop.value > 0)
+                {
+                    // startRowIndex = 0; // week, 0083
+                    // Start from a whole week
+                    // return the timeSteps
+                    using (var rd = new StreamReader(filename))
+                    {
+                        rd.ReadLine();
+                        for (i = 0; i < edgesNames.Length; i++)
+                        {
+                            string[] values = rd.ReadLine().Split(',');
+                            int startindex = startindexs[i];
+                            int stopindex = stopindexs[i];
+
+                            for (int k = 0; k < timeSteps; k++)
+                            {
+                                // Build 0083
+                                int t;
+                                if (dropdown_daysop.value == 1) // weekdays
+                                {
+                                    int tj = k % 4;
+                                    int ti = k / 4;
+                                    t = ti * 7 + tj + startRowIndex;
+                                }
+                                else if (dropdown_daysop.value == 2) // weekends
+                                {
+                                    int tj = k % 3;
+                                    int ti = k / 3;
+                                    t = ti * 7 + 4 + tj + startRowIndex;
+                                }
+                                else
+                                    t = k;
+                                Debug.Log(k);
+                                float snowdata = float.Parse(values[t + 2]); // Build 0083, not divided by 10
+                                // Build 0028, adjust distance and time calculation
+                                if (distanceRoad[startindex, stopindex] != 0) // toRoad
+                                {
+                                    //float newspeed = Clamp((float)(speedlimitRoad[i, j] * (1 - avgDist / maxDis * snowdata[k] / 25)), 5, maxRisk);
+                                    float newspeed = Clamp((float)(0.7 * speedlimitRoad[startindex, stopindex] - snowdata * 2.5f), 5, maxRisk);
+                                    // y = -2.5x+50, x is snow depth (cm), y is speed(km/h)
+                                    // equation to get the parameters
+                                    if (isDriveRoad)
+                                    {
+                                        // big region, drive, calculate
+                                        temporalRoad[k][startindex, stopindex] = distanceRoad[startindex, stopindex] / newspeed * KMh2MSEC;
+                                    }
+                                    else
+                                    {
+                                        // small region, walk
+                                        float walknewspeed = Clamp((float)(5 - snowdata / 10.0), 2f, 5); // not snowdata[k], will be zero
+                                        temporalRoad[k][startindex, stopindex] = distanceRoad[startindex, stopindex] / walknewspeed * KMh2MSEC; // distance unit = meter
+                                    }
+                                }
+                                roads[startindex, stopindex] += temporalRoad[k][startindex, stopindex]; // compute the average later
+                            }
                         }
                     }
                 }
@@ -3540,7 +3671,7 @@ public class ShowMap : MonoBehaviour
         else
         {
             // Build 0026
-            int method_type = 1;
+            int method_type = 1;// 1;
 
             if (method_type == 1)
             {
@@ -3585,7 +3716,7 @@ public class ShowMap : MonoBehaviour
 
                 for (int k = 0; k < timeSteps; k++)
                 {
-                    int high = 100;//500;//0
+                    int high = 20;//500;//0
                     int low = 0;
 
                     //temporalRoad[k][0, 13] = rnd.Next(low, high) + 40;//Line 1 (1<=>14) (40, 39)
