@@ -5233,17 +5233,9 @@ MonoBehaviour:
   m_CaptionImage: {fileID: 0}
   m_ItemText: {fileID: 486827786}
   m_ItemImage: {fileID: 0}
-  m_Value: 8
+  m_Value: 4
   m_Options:
     m_Options:
-    - m_Text: 2020Q1
-      m_Image: {fileID: 0}
-    - m_Text: 2020Q2
-      m_Image: {fileID: 0}
-    - m_Text: 2020Q3
-      m_Image: {fileID: 0}
-    - m_Text: 2020Q4
-      m_Image: {fileID: 0}
     - m_Text: 2021Q1
       m_Image: {fileID: 0}
     - m_Text: 2021Q2
@@ -5253,6 +5245,14 @@ MonoBehaviour:
     - m_Text: 2021Q4
       m_Image: {fileID: 0}
     - m_Text: 2022Q1
+      m_Image: {fileID: 0}
+    - m_Text: 2022Q2
+      m_Image: {fileID: 0}
+    - m_Text: 2022Q3
+      m_Image: {fileID: 0}
+    - m_Text: 2022Q4
+      m_Image: {fileID: 0}
+    - m_Text: 2023Q1
       m_Image: {fileID: 0}
   m_OnValueChanged:
     m_PersistentCalls:

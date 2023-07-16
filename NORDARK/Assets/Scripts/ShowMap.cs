@@ -510,7 +510,7 @@ public class ShowMap : MonoBehaviour
             POI_colors = clrPOIs;
             timeSteps = -1;//100;// - 1; //timeSteps = 59;
             // Build 0036, generic graph load function
-            GraphSetLoad("Graph4", strPOIs, clrPOIs, 1, false); // Build 0082
+            GraphSetLoad("Graph4", strPOIs, clrPOIs, 2, false); // Build 0082
             slrStartTime.minValue = 1;
             slrStartTime.maxValue = timeSteps;
             slrStartTime.value = slrStartTime.minValue;
@@ -3245,7 +3245,8 @@ public class ShowMap : MonoBehaviour
             // Build 0083, fixed the error, compute roads cost fault with random values
             else if (method_type == 2) // Build 0082, use QGIS result
             {
-                String filename = "Assets/Resources/" + graphName + "/snow_3c.csv";
+                // Build 0085, all seasons
+                String filename = "Assets/Resources/" + graphName + "/Snow_" + dropdown_weatherop.options[dropdown_weatherop.value].text + ".csv";
 
                 // if all days
                 //if (dropdown_daysop.value > 0)
