@@ -447,7 +447,7 @@ public class ShowMap : MonoBehaviour
             //Camera.transform.rotation = Quaternion.Euler(90f, 0, 0);
             Camera.transform.position = new Vector3(-160f, 35f, -130f);
             Camera.transform.rotation = Quaternion.Euler(12, 53, 0);
-            timeSteps =  4;// 100;//4;
+            timeSteps = 4;// 20;// 4;// 100;//4;
             GraphSet1("RoadGraph1");
             slrStartTime.minValue = 1;
             slrStartTime.maxValue = timeSteps;// 4;
@@ -456,7 +456,7 @@ public class ShowMap : MonoBehaviour
             slrStopTime.maxValue = slrStartTime.maxValue;
             slrStopTime.value = slrStopTime.maxValue;
         }
-        else if (graph_op == 2)
+        else if (graph_op == 2)// topology 2
         {
             //map.ResetMap();           
             //map.SetZoom(17);
@@ -480,9 +480,8 @@ public class ShowMap : MonoBehaviour
             slrStopTime.maxValue = slrStartTime.maxValue;
             slrStopTime.value = slrStopTime.maxValue;
         }
-        else if (graph_op == 3)
+        else if (graph_op == 3)// topology 3
         {
-
             //map.Initialize(new Mapbox.Utils.Vector2d(62.4750425, 6.1914948), 17);
             //bg_Mapbox.Initialize(new Mapbox.Utils.Vector2d(62.4750425, 6.1914948), 17);
             //string[] strPOIs = { "7379970941", "7379971169", "8745416901" };
@@ -604,15 +603,15 @@ public class ShowMap : MonoBehaviour
         }
 
         // Build 0054, random POI numbers
-        bool randomPOI = false;
+        bool randomPOI = true; // false
         if (graph_op != 0)
         {
             if (randomPOI)
             {
                 System.Random rnd = new System.Random();
                 List<int> listNumbers = new List<int>();
-                int max = 1552;// 34;//1552;//129;
-                int POI_num = 2;//20;
+                int max = 1552; //1552;// 34;//1552;//129;
+                int POI_num = 100;// 2;//20;
                 listNumbers.AddRange(Enumerable.Range(0, max)
                                    .OrderBy(i => rnd.Next())
                                    .Take(POI_num));
@@ -1897,6 +1896,78 @@ public class ShowMap : MonoBehaviour
         return maxVal;
     }
 
+    // Build 0086, save float array to csv file
+    public void SaveCsvFiles(float[][] rawdata, string label)
+    {
+        string strU = DTtoUniqueName(DateTime.Now);
+        for (int i = 0; i < rawdata.Length; i++)
+        {
+            string path = "CsvOutput" + "/G" + (dropdown_graphop.value + 1)
+                 + "_" + strU + "_" + label + "_t" + (i + 1).ToString() + ".csv";
+            float[] imagevalues = rawdata[i];
+            FileStream stream = null;
+            try
+            {
+                // Create a FileStream with mode CreateNew  
+                stream = new FileStream(path, FileMode.Create,
+                                           FileAccess.ReadWrite,
+                                           FileShare.None);
+                // Create a StreamWriter from FileStream  
+                using (var w = new StreamWriter(stream, Encoding.UTF8))
+                {
+                    for (int j = 0; j < nrows; j++)
+                    {
+                        float[] onerow = new float[ncols];
+                        Array.Copy(imagevalues, j * ncols, onerow, 0, ncols);
+                        w.Write(string.Join(",", onerow));
+                    }
+                }
+            }
+            finally
+            {
+                if (stream != null)
+                    stream.Dispose();
+            }
+
+        }
+    }
+
+    public void SaveCsvFilesInt(int[][] rawdata, string label)
+    {
+        string strU = DTtoUniqueName(DateTime.Now);
+        for (int i = 0; i < rawdata.Length; i++)
+        {
+            string path = "CsvOutput" + "/G" + (dropdown_graphop.value + 1)
+                 + "_" + strU + "_" + label + "_t" + (i + 1).ToString() + ".csv";
+            int[] imagevalues = rawdata[i];
+            FileStream stream = null;
+            try
+            {
+                // Create a FileStream with mode CreateNew  
+                stream = new FileStream(path, FileMode.Create,
+                                           FileAccess.ReadWrite,
+                                           FileShare.None);
+                // Create a StreamWriter from FileStream  
+                using (var w = new StreamWriter(stream, Encoding.UTF8))
+                {
+                    for (int j = 0; j < nrows; j++)
+                    {
+                        int[] onerow = new int[ncols];
+                        Array.Copy(imagevalues, j * ncols, onerow, 0, ncols);
+                        w.Write(string.Join(",", onerow));
+                    }
+                }
+            }
+            finally
+            {
+                if (stream != null)
+                    stream.Dispose();
+            }
+
+        }
+    }
+    //
+
     public void SaveDensityMaps()
     {
         string strU = DTtoUniqueName(DateTime.Now);
@@ -1910,6 +1981,9 @@ public class ShowMap : MonoBehaviour
             SaveFileJPGasPGMFloat(path, rootImages[i], minVal,maxVal);
         }
         Debug.Log("Saved " + rootImages.Length.ToString() + " density maps jpg");
+        // Build 0086
+        SaveCsvFiles(rootImages, "densitymap");
+        //
     }
 
     public void SaveLabelMaps()
@@ -1930,6 +2004,7 @@ public class ShowMap : MonoBehaviour
             SaveFileJPGasPGM(path, labelImages[i]); 
         }
         Debug.Log("Saved " + labelImages.Length.ToString() + " label maps jpg");
+        SaveCsvFilesInt(labelImages, "labelmap");
     }
 
     // Build 0081, save cost maps ()
@@ -1946,6 +2021,7 @@ public class ShowMap : MonoBehaviour
             SaveFileJPGasPGMFloat(path, costImages[i], minVal, maxVal);
         }
         Debug.Log("Saved " + costImages.Length.ToString() + " cost maps jpg");
+        SaveCsvFiles(costImages, "costmap");
     }
 
     public void SaveFileJPGasPGMFloat(string filename, float[] values, float minvalue, float maxvalue)
@@ -2953,7 +3029,10 @@ public class ShowMap : MonoBehaviour
 
     public void GraphSetLoad(string graphName, string[] POI_labels, Color[] POI_colors, int method_type = 1, bool isDriveRoad = false, bool bImageMapping = false)
     {
-        //method_type = 0;
+        method_type = 0; // random
+        // method_type = 1; // radical
+        // method_type = 2; // QGIS
+        timeSteps = 500;
         // Build 0056
         if (((method_type == 1 ) || (method_type == 2)) && (timeSteps == -1))
         {
