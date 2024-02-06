@@ -1919,7 +1919,7 @@ public class ShowMap : MonoBehaviour
                     {
                         float[] onerow = new float[ncols];
                         Array.Copy(imagevalues, j * ncols, onerow, 0, ncols);
-                        w.Write(string.Join(",", onerow));
+                        w.WriteLine(string.Join(",", onerow));
                     }
                 }
             }
@@ -1954,7 +1954,7 @@ public class ShowMap : MonoBehaviour
                     {
                         int[] onerow = new int[ncols];
                         Array.Copy(imagevalues, j * ncols, onerow, 0, ncols);
-                        w.Write(string.Join(",", onerow));
+                        w.WriteLine(string.Join(",", onerow));
                     }
                 }
             }
