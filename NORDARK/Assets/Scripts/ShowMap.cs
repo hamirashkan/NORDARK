@@ -456,6 +456,30 @@ public class ShowMap : MonoBehaviour
             slrStopTime.maxValue = slrStartTime.maxValue;
             slrStopTime.value = slrStopTime.maxValue;
         }
+        else if (graph_op == 1)// Build 0087, DT
+        {
+            // Config temporal change files name, use light poles or not, one of three indicators
+
+            //https://www.google.no/maps/@62.4676953,6.3011909,17z?hl=no
+            map.Initialize(new Mapbox.Utils.Vector2d(62.4676953, 6.3011909), 16);
+            bg_Mapbox.Initialize(new Mapbox.Utils.Vector2d(62.4676953, 6.3011909), 16);
+
+            // solution 1
+            string[] strPOIs = { "6286881125", "419670438"};
+            Color[] clrPOIs = { Color.blue, Color.red};
+            
+            POI_labels = strPOIs;
+            POI_colors = clrPOIs;
+            timeSteps = -1;//100;// - 1; //timeSteps = 59;
+            // Build 0036, generic graph load function
+            GraphSetLoad("Graph2", strPOIs, clrPOIs, 3, false); // Build 0082
+            slrStartTime.minValue = 1;
+            slrStartTime.maxValue = timeSteps;
+            slrStartTime.value = slrStartTime.minValue;
+            slrStopTime.minValue = slrStartTime.minValue;
+            slrStopTime.maxValue = slrStartTime.maxValue;
+            slrStopTime.value = slrStopTime.maxValue;
+        }
         else if (graph_op == 2)// topology 2
         {
             //map.ResetMap();           
@@ -603,7 +627,7 @@ public class ShowMap : MonoBehaviour
         }
 
         // Build 0054, random POI numbers
-        bool randomPOI = true; // false
+        bool randomPOI = false; // false
         if (graph_op != 0)
         {
             if (randomPOI)
@@ -3029,10 +3053,11 @@ public class ShowMap : MonoBehaviour
 
     public void GraphSetLoad(string graphName, string[] POI_labels, Color[] POI_colors, int method_type = 1, bool isDriveRoad = false, bool bImageMapping = false)
     {
-        method_type = 0; // random
+        // method_type = 0; // random
         // method_type = 1; // radical
         // method_type = 2; // QGIS
-        timeSteps = 500;
+        // method_type = 3; // DT others, Build 0087
+        timeSteps = 25;// 500;
         // Build 0056
         if (((method_type == 1 ) || (method_type == 2)) && (timeSteps == -1))
         {
@@ -3189,10 +3214,16 @@ public class ShowMap : MonoBehaviour
                     //    t0Road[startindex, stopindex] = float.Parse(values[5], System.Globalization.CultureInfo.InvariantCulture) / float.Parse(values[6], System.Globalization.CultureInfo.InvariantCulture) * KMh2MSEC;
                     // risk = distance
                     distanceRoad[startindex, stopindex] = float.Parse(values[5], System.Globalization.CultureInfo.InvariantCulture);
-                    if ((values[6] == "nan") || (values[6] == "nan\r"))
+                    //if ((values[6] == "nan") || (values[6] == "nan\r"))
+                    //    speedlimitRoad[startindex, stopindex] = 70;
+                    //else
+                    //    speedlimitRoad[startindex, stopindex] = float.Parse(values[6], System.Globalization.CultureInfo.InvariantCulture);
+
+                    // Build 0087, DT
+                    //if (speedlimitRoad[startindex, stopindex] == 0)
+                    {
                         speedlimitRoad[startindex, stopindex] = 70;
-                    else
-                        speedlimitRoad[startindex, stopindex] = float.Parse(values[6], System.Globalization.CultureInfo.InvariantCulture);
+                    }
                     //if ((values[6] == "nan") || (values[6] == "nan\r"))// access time unit, second
                     //    t0Road[startindex, stopindex] = float.Parse(values[5], System.Globalization.CultureInfo.InvariantCulture) / 5 * KMh2MSEC;// 1e-4f;
                     //else
@@ -3387,6 +3418,29 @@ public class ShowMap : MonoBehaviour
                     }
                 }
             }
+            else if (method_type == 3) // Build 0087, DT
+            {
+                System.Random rnd = new System.Random();
+
+                for (int k = 0; k < timeSteps; k++)
+                {
+                    int high = 100;//500;//0
+                    int low = 10;
+
+                    //temporalRoad[k][0, 13] = rnd.Next(low, high) + 40;//Line 1 (1<=>14) (40, 39)
+
+                    for (i = 0; i < graph.Nodes.Count; i++) // nodesNames.Length
+                    {
+                        for (int j = 0; j < graph.Nodes.Count; j++) // nodesNames.Length
+                        {
+                            // Buil 0047, check random values
+                            if (distanceRoad[i, j] != 0) // toRoad
+                                temporalRoad[k][i, j] = distanceRoad[i, j] / (rnd.Next(low, high)); //speedlimitRoad[i, j] * KMh2MSEC * (1 + rnd.Next(low, high) / 100f);// toRoad
+                            roads[i, j] += temporalRoad[k][i, j];
+                        }
+                    }
+                }
+            }
             else
             {
                 System.Random rnd = new System.Random();
@@ -3417,6 +3471,7 @@ public class ShowMap : MonoBehaviour
         {
             for (int j = 0; j < roads.GetLength(1); j++)
             {
+                // Build 0087, Compute representative TDM, divided by number of timestep
                 roads[i, j] = roads[i, j] / timeSteps;
                 float weight = roads[i, j];
                 if (weight != 0)
