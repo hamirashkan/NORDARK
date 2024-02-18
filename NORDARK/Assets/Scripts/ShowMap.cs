@@ -1169,7 +1169,8 @@ public class ShowMap : MonoBehaviour
                         //}
                         //else
                         {
-                            lambda = (1 / r) * 1 / (1 + Mathf.Exp(Mathf.Pow((bestNode.LeastCost + mindist * scalex / 5 * 3600), -alpha) / r));  //Sigmoid
+                            lambda = (1 / r) * 1 / (1 + Mathf.Exp(Mathf.Pow((bestNode.LeastCost + mindist * scalex * 1000 * 0.1f), -alpha) / r));  //Sigmoid
+                            //lambda = (1 / r) * 1 / (1 + Mathf.Exp(Mathf.Pow((bestNode.LeastCost + mindist * scalex / 5 * 3600), -alpha) / r));  //Sigmoid
                         }
 
                         if(lambda <= threshold)
@@ -1179,7 +1180,8 @@ public class ShowMap : MonoBehaviour
                         // Build 0043
                         lambdaImage[i_new] = lambda;
                         colorImage[i_new]= ColorToHex(bestNode.MostAccessPOI.clr);
-                        accesstimeImage[i_new] = bestNode.LeastCost + mindist * scalex / 5 * 3600;//s
+                        //accesstimeImage[i_new] = bestNode.LeastCost + mindist * scalex / 5 * 3600;//s
+                        accesstimeImage[i_new] = bestNode.LeastCost + mindist * scalex * 1000 * 0.1f;
                         iftcostImage[i_new] = costImage[i_new];
                         tdmcostImage[i_new] = mindist * scalex * 1000;//m
 
@@ -1339,14 +1341,17 @@ public class ShowMap : MonoBehaviour
                             if (mindist <= threshold)
                                 mindist = threshold;
                             // Build 0083, recover lamba formula
-                            lambda = (1 / r) * 1 / (1 + Mathf.Exp(Mathf.Pow((bestNode.LeastCostList[k] + mindist * scalex / 5 * 3600), -alpha) / r));  //Sigmoid
-                            
+                            //lambda = (1 / r) * 1 / (1 + Mathf.Exp(Mathf.Pow((bestNode.LeastCostList[k] + mindist * scalex / 5 * 3600), -alpha) / r));  //Sigmoid
+                            lambda = (1 / r) * 1 / (1 + Mathf.Exp(Mathf.Pow((bestNode.LeastCostList[k] + mindist * scalex * 1000 * 0.1f), -alpha) / r));  //Sigmoid
+
                             if (lambda <= threshold)
                                 lambda = threshold;
 
                             rootImages[k][i_new] = lambda;
                             labelImages[k][i_new] = bestNode.POIList[k].indexOfPOI;// ColorToHex(bestNode.POIList[k].clr);
-                            costImages[k][i_new] = bestNode.LeastCostList[k] + mindist * scalex / 5 * 3600;// 0081, cost map
+                            // Build 0087
+                            costImages[k][i_new] = bestNode.LeastCostList[k] + mindist * scalex * 1000 * 0.1f;
+                            //costImages[k][i_new] = bestNode.LeastCostList[k] + mindist * scalex / 5 * 3600;// 0081, cost map
                             //
 
                             try
@@ -3420,23 +3425,27 @@ public class ShowMap : MonoBehaviour
             }
             else if (method_type == 3) // Build 0087, DT
             {
-                System.Random rnd = new System.Random();
+                // Build 0087, DT
+                String filename = "Assets/Resources/" + graphName + "/s" + (dropdown_weatherop.value + 1).ToString() + ".csv";
 
-                for (int k = 0; k < timeSteps; k++)
+                // if s1 or s2
+                if (dropdown_weatherop.value == 0 || dropdown_weatherop.value == 1|| dropdown_weatherop.value == 2 || dropdown_weatherop.value == 3 || dropdown_weatherop.value == 4)
                 {
-                    int high = 100;//500;//0
-                    int low = 10;
-
-                    //temporalRoad[k][0, 13] = rnd.Next(low, high) + 40;//Line 1 (1<=>14) (40, 39)
-
-                    for (i = 0; i < graph.Nodes.Count; i++) // nodesNames.Length
+                    using (var rd = new StreamReader(filename))
                     {
-                        for (int j = 0; j < graph.Nodes.Count; j++) // nodesNames.Length
+                        rd.ReadLine();
+                        for (i = 0; i < edgesNames.Length; i++)
                         {
-                            // Buil 0047, check random values
-                            if (distanceRoad[i, j] != 0) // toRoad
-                                temporalRoad[k][i, j] = distanceRoad[i, j] / (rnd.Next(low, high)); //speedlimitRoad[i, j] * KMh2MSEC * (1 + rnd.Next(low, high) / 100f);// toRoad
-                            roads[i, j] += temporalRoad[k][i, j];
+                            string[] values = rd.ReadLine().Split(',');
+                            int startindex = startindexs[i];
+                            int stopindex = stopindexs[i];
+
+                            for (int k = 0; k < timeSteps; k++)
+                            {
+                                float val = float.Parse(values[k + 2]);
+                                temporalRoad[k][startindex, stopindex] = val;
+                                roads[startindex, stopindex] += temporalRoad[k][startindex, stopindex]; // compute the average later
+                            }
                         }
                     }
                 }
